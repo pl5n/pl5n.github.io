@@ -147,6 +147,20 @@ button.primary:hover{filter:brightness(1.08)}
 #recent .gm:hover{background:#34322e}
 #recent .gm span:last-child{color:var(--muted);white-space:nowrap}
 #resume{display:none;background:#33401f;border-radius:10px;padding:14px 16px;margin:12px 0;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+#hub .hello{font-size:1.6rem;font-weight:800;margin:18px 0 4px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-top:16px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:18px;border-radius:14px;background:var(--panel);border:1px solid #3a3835;min-height:170px;transition:transform .15s,border-color .15s,background .15s}
+.tile:hover{transform:translateY(-3px);border-color:var(--accent);background:#2c2b27}
+.tile .ic{width:64px;height:64px;border-radius:12px;background:var(--dark);display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.tile .ic img{width:52px;height:52px}
+.tile b{font-size:1.15rem}
+.tile span{color:var(--muted);font-size:.88rem}
+.tile .go{margin-top:auto;background:var(--accent);color:#fff;font-weight:700;padding:6px 14px;border-radius:8px;font-size:.9rem}
+.tile.soon{border-style:dashed;cursor:default;opacity:.7}
+.tile.soon:hover{transform:none;border-color:#3a3835;background:var(--panel)}
+.tile.soon .ic{background:#3a3835;font-size:1.8rem;color:var(--muted)}
+.back{font-weight:700}
 </style>
 </head>
 <body>
@@ -169,10 +183,23 @@ button.primary:hover{filter:brightness(1.08)}
     </div>
   </div>
 
-  <div id="home" class="screen hidden">
+  <div id="hub" class="screen hidden">
     <div class="topbar">
       <span class="logo" data-logo></span>
-      <div class="chip"><span>👤 <span id="me">Guest</span></span><button id="logout">Sign out</button><button id="tosignin" class="primary hidden">Sign in</button></div>
+      <div class="chip"><span>👤 <span class="js-me">Guest</span></span><button class="js-logout">Sign out</button><button class="js-signin primary hidden">Sign in</button></div>
+    </div>
+    <div class="hello">Hi, <span class="js-me">Guest</span> 👋</div>
+    <div class="muted">Pick something to open.</div>
+    <div class="tiles">
+      <button class="tile" id="openchess"><div class="ic"><img data-piece="wN" alt=""></div><b>Chess</b><span>Play friends online, take on the bots, and review your games.</span><div class="go">Open</div></button>
+      <div class="tile soon"><div class="ic">＋</div><b>More coming soon</b><span>New apps will show up here.</span></div>
+    </div>
+  </div>
+
+  <div id="home" class="screen hidden">
+    <div class="topbar">
+      <div class="row"><button class="back" id="tohub">← Home</button><span class="logo" data-logo></span></div>
+      <div class="chip"><span>👤 <span class="js-me">Guest</span></span><button class="js-logout">Sign out</button><button class="js-signin primary hidden">Sign in</button></div>
     </div>
 
     <div id="resume"><div><b>Unfinished game</b> <span class="muted" id="resumeinfo"></span></div><div class="row"><button class="primary" id="resumebtn">Resume</button><button id="discard">Discard</button></div></div>
@@ -1091,12 +1118,14 @@ function banner(text,btns){
 
 
 // ---------- screens, accounts glue, saving ----------
-const SCREENS=['splash','welcome','home','game'];
+const SCREENS=['splash','welcome','hub','home','game'];
+const all=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
 function showScreen(id){
   for(const s of SCREENS) $(s).classList.toggle('hidden',s!==id);
   document.body.classList.toggle('playing',id==='game');
   window.scrollTo(0,0);
 }
+for(const el of document.querySelectorAll('[data-piece]')) el.src=pieceUrl(el.dataset.piece);
 for(const el of document.querySelectorAll('[data-logo]')) el.innerHTML=`C<span class="o"><img src="${pieceUrl('wP')}" alt=""></span>mputer Science`;
 
 const uci=m=>sqName(m.from)+sqName(m.to)+(m.promo?m.promo.toLowerCase():'');
@@ -1117,14 +1146,14 @@ function savePrefs(){
   if(window.Acct&&Acct.user) Acct.savePrefs({botLevel,botcol:$('botcol').value,pref:$('pref').value,tc:$('tc').value,tclocal:$('tclocal').value,evalOn});
 }
 let isGuest=false, resumeData=null;
-function runPendingJoin(){ if(pendingJoin){ const c=pendingJoin; pendingJoin=null; joinGame(c); } }
+function runPendingJoin(){ if(pendingJoin){ const c=pendingJoin; pendingJoin=null; showScreen('home'); joinGame(c); } }
 window.App={
   showScreen,
   signedIn(name){
-    isGuest=false; $('me').textContent=name;
+    isGuest=false; all('.js-me',e=>e.textContent=name);
     for(const el of document.querySelectorAll('.acctonly')) el.classList.remove('hidden');
-    $('logout').classList.remove('hidden'); $('tosignin').classList.add('hidden');
-    if(!G) showScreen('home');
+    all('.js-logout',e=>e.classList.remove('hidden')); all('.js-signin',e=>e.classList.add('hidden'));
+    if(!G) showScreen('hub');
     runPendingJoin();
   },
   signedOut(msg){ if(G&&G.mode==='online') return; G=null; resetNet(); $('pw').value=''; $('wmsg').textContent=msg||''; showScreen('welcome'); },
@@ -1170,13 +1199,15 @@ $('resumebtn').onclick=()=>{
 };
 $('discard').onclick=()=>{ if(window.Acct&&Acct.user) Acct.clearCurrent(); };
 $('guest').onclick=()=>{
-  isGuest=true; $('me').textContent='Guest';
+  isGuest=true; all('.js-me',e=>e.textContent='Guest');
   for(const el of document.querySelectorAll('.acctonly')) el.classList.add('hidden');
-  $('logout').classList.add('hidden'); $('tosignin').classList.remove('hidden');
+  all('.js-logout',e=>e.classList.add('hidden')); all('.js-signin',e=>e.classList.remove('hidden'));
   $('resume').style.display='none';
-  showScreen('home'); runPendingJoin();
+  showScreen('hub'); runPendingJoin();
 };
-$('tosignin').onclick=()=>{ $('wmsg').textContent=''; showScreen('welcome'); };
+all('.js-signin',e=>e.onclick=()=>{ $('wmsg').textContent=''; showScreen('welcome'); });
+$('openchess').onclick=()=>showScreen('home');
+$('tohub').onclick=()=>{ resetNet(); $('linkbox').style.display='none'; showScreen('hub'); };
 
 // ---------- buttons ----------
 function setBotLevel(l){ if(!BOTS[l]) return; botLevel=l; for(const x of document.querySelectorAll('#bots button')) x.classList.toggle('on',x.dataset.l===l); }
@@ -1340,7 +1371,7 @@ if(!FIREBASE_CONFIG){
     let creating=null;
     $('pw').onkeydown=e=>{ if(e.key==='Enter') $('login').click(); };
     $('uname').onkeydown=e=>{ if(e.key==='Enter') $('pw').focus(); };
-    $('logout').onclick=()=>signOut(auth);
+    document.querySelectorAll('.js-logout').forEach(e=>e.onclick=()=>signOut(auth));
 
     onAuthStateChanged(auth,async u=>{
       Acct.user=u;
