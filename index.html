@@ -149,7 +149,7 @@ button.primary:hover{filter:brightness(1.08)}
 #resume{display:none;background:#33401f;border-radius:10px;padding:14px 16px;margin:12px 0;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 
 #hub .hello{font-size:1.6rem;font-weight:800;margin:18px 0 4px}
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-top:16px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:16px}
 .tile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:18px;border-radius:14px;background:var(--panel);border:1px solid #3a3835;min-height:170px;transition:transform .15s,border-color .15s,background .15s}
 .tile:hover{transform:translateY(-3px);border-color:var(--accent);background:#2c2b27}
 .tile .ic{width:64px;height:64px;border-radius:12px;background:var(--dark);display:flex;align-items:center;justify-content:center;margin-bottom:6px}
@@ -161,6 +161,71 @@ button.primary:hover{filter:brightness(1.08)}
 .tile.soon:hover{transform:none;border-color:#3a3835;background:var(--panel)}
 .tile.soon .ic{background:#3a3835;font-size:1.8rem;color:var(--muted)}
 .back{font-weight:700}
+
+/* apps: notes + flashcards */
+.apphead{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.apphead h2{margin:0;font-size:1.4rem}
+.apphead .sp{flex:1}
+.empty{color:var(--muted);text-align:center;margin:auto;padding:24px}
+.mobonly{display:none!important}
+#notes .wrapn{display:grid;grid-template-columns:300px 1fr;gap:14px;height:calc(100vh - 110px);min-height:420px}
+.nlist{background:var(--panel);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.nlist input{margin:10px}
+.nitems{flex:1;overflow:auto}
+.nitem{padding:10px 14px;border-top:1px solid #33312e;cursor:pointer}
+.nitem:hover{background:#2f2d2a}
+.nitem.on{background:#3a3835}
+.nitem b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nitem span{font-size:.82rem;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ned{background:var(--panel);border-radius:12px;display:flex;flex-direction:column;padding:14px;min-width:0;min-height:0}
+#nedbody{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0}
+.ned input.t{font-size:1.35rem;font-weight:700;background:none;border:0;padding:4px 2px;width:100%}
+.ned input.t:focus{outline:none}
+.ned textarea,.cardrow textarea{background:#1f1e1b;border:1px solid #3a3835;border-radius:8px;color:var(--text);font:inherit;padding:12px;line-height:1.5}
+.ned textarea{flex:1;resize:none;font-size:1rem;min-height:200px}
+.decks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.deck{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--panel);border:1px solid #3a3835;border-radius:12px;padding:16px;min-height:120px}
+.deck:hover{border-color:var(--accent);background:#2c2b27}
+.deck b{font-size:1.1rem}
+.deck .muted{flex:1}
+#cname{font-size:1.2rem;font-weight:700;flex:1;min-width:160px}
+.cardrow{display:grid;grid-template-columns:2.2em 1fr 1fr auto;grid-template-areas:"n f b x";gap:8px;margin-bottom:8px;align-items:start}
+.cardrow .n{grid-area:n;color:var(--muted);padding-top:12px;text-align:right}
+.cardrow .f{grid-area:f}.cardrow .b{grid-area:b}.cardrow .x{grid-area:x;padding:8px 12px}
+.cardrow textarea{resize:vertical;min-height:48px;padding:10px;width:100%}
+.study{max-width:640px;margin:0 auto;text-align:center}
+.pbarx{height:6px;background:#403d39;border-radius:3px;overflow:hidden}
+#sfill{height:100%;width:0;background:var(--accent);transition:width .3s}
+.flip{perspective:1400px;height:min(360px,48vh);margin:18px 0 10px;cursor:pointer;user-select:none}
+.flip .in{position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+.flip.show .in{transform:rotateY(180deg)}
+.flip .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;display:flex;align-items:center;justify-content:center;padding:28px;font-size:clamp(1.1rem,3.5vw,1.6rem);font-weight:600;background:var(--panel);border:1px solid #3a3835;white-space:pre-wrap;overflow:auto;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.flip .back{transform:rotateY(180deg);background:#2d3a22;border-color:#4b6b33}
+.flip .lbl{position:absolute;top:12px;left:16px;font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.08em}
+#sbtns button{min-width:140px;padding:12px 18px;font-size:1rem}
+#sbtns{visibility:hidden;gap:12px}
+.flip.show~#sbtns{visibility:visible}
+#sagain{background:#5a2a24;border-color:#7a3a32}
+/* responsive */
+@media (max-width:700px){
+  body{padding:10px}
+  .mobonly{display:flex!important}
+  #notes .wrapn{grid-template-columns:1fr;height:auto}
+  #notes.editing .nlist{display:none}
+  #notes:not(.editing) .ned{display:none}
+  .nlist{min-height:60vh}
+  .ned textarea{min-height:55vh}
+  .cardrow{grid-template-columns:1fr auto;grid-template-areas:"f x" "b x";padding-bottom:10px;border-bottom:1px solid #33312e}
+  .cardrow .n{display:none}
+  .tiles{grid-template-columns:repeat(2,1fr);gap:10px}
+  .tile{min-height:150px;padding:14px}
+  .tile .ic{width:52px;height:52px}.tile .ic img{width:42px;height:42px}
+  .topbar .logo{font-size:1.3rem}
+  .wcard{padding:24px 18px}
+  .wcard .logo{font-size:1.9rem}
+  .grid{grid-template-columns:1fr}
+  .clock{min-width:78px;font-size:1.15rem;padding:4px 8px}
+}
 </style>
 </head>
 <body>
@@ -179,7 +244,7 @@ button.primary:hover{filter:brightness(1.08)}
         <div class="muted" style="margin-top:8px;font-size:.82rem">No email needed. Just pick a username (3–20 letters/numbers) and a password (6+ characters). Don't forget it — there's no reset!</div>
       </div>
       <div id="wmsg" class="muted"></div>
-      <button class="link" id="guest">Play as guest (nothing is saved)</button>
+      <button class="link" id="guest">Play as guest (no account)</button>
     </div>
   </div>
 
@@ -191,7 +256,9 @@ button.primary:hover{filter:brightness(1.08)}
     <div class="hello">Hi, <span class="js-me">Guest</span> 👋</div>
     <div class="muted">Pick something to open.</div>
     <div class="tiles">
-      <button class="tile" id="openchess"><div class="ic"><img data-piece="wN" alt=""></div><b>Chess</b><span>Play friends online, take on the bots, and review your games.</span><div class="go">Open</div></button>
+      <button class="tile" id="openchess"><div class="ic"><img data-piece="wN" alt=""></div><b><span class="logo" data-logo style="font-size:1.15rem"></span></b><span>Play friends online, take on the bots, and review your games.</span><div class="go">View</div></button>
+      <button class="tile" id="opennotes"><div class="ic" style="background:#3b5f8a;font-size:2rem">📝</div><b>Notes</b><span>Write and search your notes. Saves as you type.</span><div class="go">View</div></button>
+      <button class="tile" id="opencards"><div class="ic" style="background:#7a4d8f;font-size:2rem">🗂️</div><b>Flashcards</b><span>Make decks and test yourself with flip cards.</span><div class="go">View</div></button>
       <div class="tile soon"><div class="ic">＋</div><b>More coming soon</b><span>New apps will show up here.</span></div>
     </div>
   </div>
@@ -254,6 +321,51 @@ button.primary:hover{filter:brightness(1.08)}
         <h3>🏆 Leaderboard</h3>
         <table id="lb"></table>
         <div class="muted" style="margin-top:6px;font-size:.82rem">Online games against people only.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="notes" class="screen hidden">
+    <div class="apphead"><button class="back js-tohub">← Home</button><h2>📝 Notes</h2><span class="sp"></span><span class="muted" id="nsaved"></span><button class="primary" id="nnew">+ New note</button></div>
+    <div class="wrapn">
+      <div class="nlist"><input id="nsearch" placeholder="Search notes…"><div class="nitems" id="nitems"></div></div>
+      <div class="ned">
+        <div class="mobonly" style="margin-bottom:8px"><button id="nback">← All notes</button></div>
+        <div id="nedbody" class="hidden">
+          <input class="t" id="ntitle" placeholder="Title" maxlength="200">
+          <textarea id="nbody" placeholder="Start typing…"></textarea>
+          <div class="row" style="justify-content:space-between"><span class="muted" id="ndate"></span><button id="ndel">🗑 Delete</button></div>
+        </div>
+        <div class="empty" id="nempty">Pick a note, or click <b>+ New note</b>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="cards" class="screen hidden">
+    <div id="cdecks">
+      <div class="apphead"><button class="back js-tohub">← Home</button><h2>🗂️ Flashcards</h2><span class="sp"></span><button class="primary" id="cnew">+ New deck</button></div>
+      <div class="decks" id="decklist"></div>
+    </div>
+    <div id="cedit" class="hidden">
+      <div class="apphead"><button class="back" id="ceback">← Decks</button><input id="cname" placeholder="Deck name" maxlength="80"><span class="muted" id="csaved"></span><button class="primary" id="cstudy">▶ Study</button></div>
+      <div class="muted" style="margin-bottom:10px">Front = question, back = answer. Changes save automatically.</div>
+      <div id="crows"></div>
+      <div class="row" style="justify-content:space-between;margin-top:6px"><button id="cadd">+ Add card</button><button id="cdel">🗑 Delete deck</button></div>
+    </div>
+    <div id="cstudyv" class="hidden study">
+      <div class="apphead"><button class="back" id="csback">← Deck</button><h2 id="sname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50vw"></h2><span class="sp"></span><span class="muted" id="sprog"></span></div>
+      <div class="pbarx"><div id="sfill"></div></div>
+      <div id="splay">
+        <div class="flip" id="flip"><div class="in"><div class="face front"><span class="lbl">QUESTION</span><div id="sfront"></div></div><div class="face back"><span class="lbl">ANSWER</span><div id="sback"></div></div></div></div>
+        <div class="muted" id="shint" style="margin-bottom:10px">Tap the card (or press space) to flip it</div>
+        <div class="row" id="sbtns" style="justify-content:center"><button id="sagain">✗ Again</button><button class="primary" id="sgot">✓ Got it</button></div>
+      </div>
+      <div id="sdone" class="hidden card" style="margin-top:20px">
+        <div style="font-size:2.4rem">🎉</div>
+        <h3 id="sdonetxt" style="margin:8px 0"></h3>
+        <div class="muted" id="sdonesub"></div>
+        <div class="row" style="justify-content:center;margin-top:14px"><button class="primary" id="sagainall">Study again</button><button id="sdoneback">Back to deck</button></div>
       </div>
     </div>
   </div>
@@ -1118,7 +1230,7 @@ function banner(text,btns){
 
 
 // ---------- screens, accounts glue, saving ----------
-const SCREENS=['splash','welcome','hub','home','game'];
+const SCREENS=['splash','welcome','hub','home','game','notes','cards'];
 const all=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
 function showScreen(id){
   for(const s of SCREENS) $(s).classList.toggle('hidden',s!==id);
@@ -1244,7 +1356,7 @@ $('moves').onclick=e=>{ const m=e.target.closest('.m'); if(m&&m.dataset.i!=null)
 $('nFirst').onclick=()=>setView(0); $('nPrev').onclick=()=>G&&setView(viewIdx()-1);
 $('nNext').onclick=()=>G&&setView(viewIdx()+1); $('nLast').onclick=()=>G&&setView(G.hist.length-1);
 document.addEventListener('keydown',e=>{
-  if(!G||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  if(!G||$('game').classList.contains('hidden')||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
   if(e.key==='ArrowLeft'){ setView(viewIdx()-1); e.preventDefault(); }
   else if(e.key==='ArrowRight'){ setView(viewIdx()+1); e.preventDefault(); }
   else if(e.key==='Home') setView(0); else if(e.key==='End') setView(G.hist.length-1);
@@ -1255,6 +1367,215 @@ $('chatin').onkeydown=e=>{ if(e.key==='Enter'){ sendChat($('chatin').value); $('
 let pendingJoin=location.hash.length>1?location.hash.slice(1).toUpperCase():null;
 if(pendingJoin){ $('joincode').value=pendingJoin; $('wsub').textContent='Sign in (or play as guest) to join your friend\'s game.'; }
 setTimeout(()=>{ if(!$('splash').classList.contains('hidden')) App.noAccounts("Couldn't reach the account server. You can still play as a guest."); },9000);
+</script>
+
+<script>
+// ---------- storage: account (Firebase) when signed in, this device for guests ----------
+const Store={
+  local(kind){ try{ return JSON.parse(localStorage.getItem('cs_'+kind)||'{}'); }catch(e){ return {}; } },
+  setLocal(kind,o){ try{ localStorage.setItem('cs_'+kind,JSON.stringify(o)); }catch(e){} },
+  remote(){ return !!(window.Acct&&Acct.user&&Acct.store); },
+  async list(kind){
+    if(this.remote()) return Acct.store.list(kind);
+    return Object.entries(this.local(kind)).map(([id,v])=>({...v,id})).sort((a,b)=>(b.updated||0)-(a.updated||0));
+  },
+  async save(kind,id,data){
+    data={...data,updated:Date.now()}; delete data.id;
+    if(this.remote()) return Acct.store.save(kind,id,data);
+    const o=this.local(kind); o[id]=data; this.setLocal(kind,o);
+  },
+  async remove(kind,id){
+    if(this.remote()) return Acct.store.remove(kind,id);
+    const o=this.local(kind); delete o[id]; this.setLocal(kind,o);
+  }
+};
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const fmtDate=t=>t?new Date(t).toLocaleString(undefined,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+const debounce=(fn,ms)=>{ let t; const f=(...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; return f; };
+const LOADFAIL='Couldn\'t load. If you run this site, update the Firestore rules (see setup).';
+function confirmBtn(btn,label,fn){
+  if(btn.dataset.armed){ delete btn.dataset.armed; btn.textContent=label; fn(); return; }
+  btn.dataset.armed=1; btn.textContent='Sure? Click again';
+  setTimeout(()=>{ if(btn.dataset.armed){ delete btn.dataset.armed; btn.textContent=label; } },3000);
+}
+
+// ================= NOTES =================
+const N={list:[],cur:null,dirty:false};
+async function openNotes(){
+  showScreen('notes'); N.cur=null; showNote(null);
+  $('nitems').innerHTML='<div class="empty">Loading…</div>'; $('nsaved').textContent=Store.remote()?'':'Saved on this device';
+  try{ N.list=await Store.list('notes'); }catch(e){ N.list=[]; $('nitems').innerHTML=`<div class="empty">${LOADFAIL}</div>`; return; }
+  renderNoteList();
+}
+function renderNoteList(){
+  const q=$('nsearch').value.trim().toLowerCase(), box=$('nitems'); box.innerHTML='';
+  const items=N.list.filter(n=>!q||((n.title||'')+' '+(n.body||'')).toLowerCase().includes(q));
+  if(!items.length){ box.innerHTML=`<div class="empty">${N.list.length?'No matching notes.':'No notes yet. Click <b>+ New note</b>.'}</div>`; return; }
+  for(const n of items){
+    const d=document.createElement('div'); d.className='nitem'+(N.cur&&N.cur.id===n.id?' on':'');
+    const b=document.createElement('b'); b.textContent=n.title||'Untitled';
+    const s=document.createElement('span'); s.textContent=(n.body||'').replace(/\s+/g,' ').slice(0,90)||'No text';
+    d.append(b,s); d.onclick=()=>showNote(n); box.appendChild(d);
+  }
+}
+function showNote(n){
+  flushNote(); N.cur=n;
+  $('nedbody').classList.toggle('hidden',!n); $('nempty').classList.toggle('hidden',!!n);
+  $('notes').classList.toggle('editing',!!n);
+  if(n){ $('ntitle').value=n.title||''; $('nbody').value=n.body||''; $('ndate').textContent=n.updated?'Edited '+fmtDate(n.updated):''; }
+  renderNoteList();
+}
+const saveNoteSoon=debounce(()=>flushNote(),700);
+function flushNote(){
+  if(!N.dirty||!N.cur) return;
+  N.dirty=false; const n=N.cur;
+  $('nsaved').textContent='Saving…';
+  Store.save('notes',n.id,{title:n.title||'',body:n.body||''})
+    .then(()=>{ $('nsaved').textContent='Saved ✓'; if(N.cur===n) $('ndate').textContent='Edited '+fmtDate(Date.now()); })
+    .catch(()=>{ $('nsaved').textContent='⚠ Not saved — check connection'; N.dirty=true; });
+}
+function noteEdited(){
+  const n=N.cur; if(!n) return;
+  n.title=$('ntitle').value; n.body=$('nbody').value; n.updated=Date.now();
+  if(N.list[0]!==n){ N.list=N.list.filter(x=>x!==n); N.list.unshift(n); }
+  N.dirty=true; $('nsaved').textContent='Editing…'; saveNoteSoon(); renderNoteList();
+}
+$('ntitle').oninput=noteEdited; $('nbody').oninput=noteEdited;
+$('nsearch').oninput=renderNoteList;
+$('nnew').onclick=()=>{
+  const n={id:newId(),title:'',body:'',updated:Date.now()};
+  $('nsearch').value=''; N.list.unshift(n); showNote(n); N.dirty=true; flushNote(); $('ntitle').focus();
+};
+$('ndel').onclick=()=>confirmBtn($('ndel'),'🗑 Delete',()=>{
+  const n=N.cur; if(!n) return;
+  N.dirty=false; N.list=N.list.filter(x=>x!==n); N.cur=null; showNote(null);
+  Store.remove('notes',n.id).then(()=>$('nsaved').textContent='Deleted').catch(()=>$('nsaved').textContent='⚠ Couldn\'t delete');
+});
+$('nback').onclick=()=>showNote(null);
+$('opennotes').onclick=openNotes;
+
+// ================= FLASHCARDS =================
+const C={decks:[],cur:null,dirty:false,S:null};
+function cview(v){ for(const [id,k] of [['cdecks','decks'],['cedit','edit'],['cstudyv','study']]) $(id).classList.toggle('hidden',k!==v); window.scrollTo(0,0); }
+async function openCards(){
+  showScreen('cards'); cview('decks');
+  $('decklist').innerHTML='<div class="empty">Loading…</div>';
+  try{ C.decks=await Store.list('decks'); }catch(e){ C.decks=[]; $('decklist').innerHTML=`<div class="empty">${LOADFAIL}</div>`; return; }
+  renderDecks();
+}
+function renderDecks(){
+  const box=$('decklist'); box.innerHTML='';
+  if(!C.decks.length){ box.innerHTML='<div class="empty" style="grid-column:1/-1">No decks yet. Click <b>+ New deck</b> to make one.</div>'; return; }
+  for(const d of C.decks){
+    const el=document.createElement('button'); el.className='deck';
+    const b=document.createElement('b'); b.textContent=d.name||'Untitled deck';
+    const s=document.createElement('span'); s.className='muted'; const n=(d.cards||[]).length; s.textContent=`${n} card${n===1?'':'s'}`;
+    const row=document.createElement('div'); row.className='row';
+    const st=document.createElement('span'); st.className='go'; st.textContent='▶ Study'; st.style.cssText='background:var(--accent);color:#fff;font-weight:700;padding:5px 12px;border-radius:8px;font-size:.88rem';
+    const ed=document.createElement('span'); ed.className='muted'; ed.textContent='Edit';
+    row.append(st,ed); el.append(b,s,row);
+    el.onclick=e=>{ if(e.target===st){ C.cur=d; startStudy(); } else openDeck(d); };
+    box.appendChild(el);
+  }
+}
+function openDeck(d){ flushDeck(); C.cur=d; d.cards=d.cards||[]; cview('edit'); $('cname').value=d.name||''; $('csaved').textContent=''; renderRows(); }
+function renderRows(){
+  const box=$('crows'); box.innerHTML='';
+  if(!C.cur.cards.length){ box.innerHTML='<div class="empty">No cards yet. Click <b>+ Add card</b>.</div>'; return; }
+  C.cur.cards.forEach((c,i)=>{
+    const row=document.createElement('div'); row.className='cardrow';
+    const n=document.createElement('span'); n.className='n'; n.textContent=(i+1)+'.';
+    const f=document.createElement('textarea'); f.className='f'; f.placeholder='Front (question)'; f.value=c.f||''; f.rows=2;
+    const b=document.createElement('textarea'); b.className='b'; b.placeholder='Back (answer)'; b.value=c.b||''; b.rows=2;
+    const x=document.createElement('button'); x.className='x'; x.textContent='✕'; x.title='Delete card';
+    f.oninput=()=>{ c.f=f.value; deckEdited(); }; b.oninput=()=>{ c.b=b.value; deckEdited(); };
+    b.onkeydown=e=>{ if(e.key==='Tab'&&!e.shiftKey&&i===C.cur.cards.length-1){ e.preventDefault(); addCard(); } };
+    x.onclick=()=>{ C.cur.cards.splice(i,1); deckEdited(); renderRows(); };
+    row.append(n,f,b,x); box.appendChild(row);
+  });
+}
+const saveDeckSoon=debounce(()=>flushDeck(),700);
+function deckEdited(){ C.dirty=true; $('csaved').textContent='Editing…'; saveDeckSoon(); }
+function flushDeck(){
+  if(!C.dirty||!C.cur) return;
+  C.dirty=false; const d=C.cur; d.updated=Date.now();
+  $('csaved').textContent='Saving…';
+  Store.save('decks',d.id,{name:d.name||'',cards:(d.cards||[]).map(c=>({f:c.f||'',b:c.b||''}))})
+    .then(()=>{ $('csaved').textContent='Saved ✓'; })
+    .catch(()=>{ $('csaved').textContent='⚠ Not saved'; C.dirty=true; });
+}
+function addCard(){
+  if(!C.cur) return;
+  C.cur.cards.push({f:'',b:''}); deckEdited(); renderRows();
+  const rows=$('crows').querySelectorAll('.cardrow'); rows[rows.length-1].querySelector('.f').focus();
+}
+$('cname').oninput=()=>{ if(C.cur){ C.cur.name=$('cname').value; deckEdited(); } };
+$('cadd').onclick=addCard;
+$('cnew').onclick=()=>{
+  const d={id:newId(),name:'New deck',cards:[{f:'',b:''}],updated:Date.now()};
+  C.decks.unshift(d); openDeck(d); C.dirty=true; flushDeck(); $('cname').select();
+};
+$('cdel').onclick=()=>confirmBtn($('cdel'),'🗑 Delete deck',()=>{
+  const d=C.cur; if(!d) return; C.dirty=false; C.cur=null;
+  C.decks=C.decks.filter(x=>x!==d); Store.remove('decks',d.id).catch(()=>{}); cview('decks'); renderDecks();
+});
+$('ceback').onclick=()=>{ flushDeck(); cview('decks'); renderDecks(); };
+$('opencards').onclick=openCards;
+
+// ----- study mode -----
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function startStudy(){
+  flushDeck();
+  const cards=(C.cur.cards||[]).filter(c=>(c.f||'').trim()||(c.b||'').trim());
+  if(!cards.length){ if($('cedit').classList.contains('hidden')) openDeck(C.cur); $('csaved').textContent='Add some cards first!'; return; }
+  C.S={cards,queue:shuffle(cards.map((_,i)=>i)),known:0,misses:0,total:cards.length};
+  $('sname').textContent=C.cur.name||'Study';
+  cview('study'); $('splay').classList.remove('hidden'); $('sdone').classList.add('hidden');
+  showCard();
+}
+function setFlip(on,instant){
+  const fl=$('flip'), inner=fl.querySelector('.in');
+  if(instant){ inner.style.transition='none'; fl.classList.toggle('show',on); inner.getBoundingClientRect(); inner.style.transition=''; }
+  else fl.classList.toggle('show',on);
+}
+function showCard(){
+  const S=C.S;
+  $('sprog').textContent=`${S.known} / ${S.total} known`;
+  $('sfill').style.width=(S.known/S.total*100)+'%';
+  if(!S.queue.length){
+    $('splay').classList.add('hidden'); $('sdone').classList.remove('hidden');
+    $('sdonetxt').textContent=`You know all ${S.total} card${S.total===1?'':'s'}!`;
+    $('sdonesub').textContent=S.misses?`You needed ${S.misses} extra tr${S.misses===1?'y':'ies'}.`:'Perfect run, no mistakes.';
+    return;
+  }
+  const c=S.cards[S.queue[0]];
+  setFlip(false,true);
+  $('sfront').textContent=c.f||'(blank)'; $('sback').textContent=c.b||'(blank)';
+  $('shint').textContent='Tap the card (or press space) to flip it';
+}
+function flipCard(){ if(!C.S||!C.S.queue.length) return; const on=!$('flip').classList.contains('show'); setFlip(on); $('shint').textContent=on?'Did you know it?':'Tap the card (or press space) to flip it'; }
+function answer(knew){
+  const S=C.S; if(!S||!S.queue.length||!$('flip').classList.contains('show')) return;
+  const i=S.queue.shift();
+  if(knew) S.known++; else { S.misses++; S.queue.splice(Math.min(S.queue.length,2+Math.floor(Math.random()*3)),0,i); }
+  showCard();
+}
+$('flip').onclick=flipCard;
+$('sgot').onclick=()=>answer(true); $('sagain').onclick=()=>answer(false);
+$('cstudy').onclick=startStudy;
+$('sagainall').onclick=startStudy;
+$('sdoneback').onclick=$('csback').onclick=()=>openDeck(C.cur);
+document.addEventListener('keydown',e=>{
+  if($('cstudyv').classList.contains('hidden')||$('cards').classList.contains('hidden')||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  if(e.key===' '||e.key==='Enter'){ e.preventDefault(); flipCard(); }
+  else if(e.key==='ArrowRight'||e.key==='2') answer(true);
+  else if(e.key==='ArrowLeft'||e.key==='1') answer(false);
+});
+
+// shared: back to home from apps (save anything pending first)
+all('.js-tohub',e=>e.onclick=()=>{ flushNote(); flushDeck(); showScreen('hub'); });
+window.addEventListener('beforeunload',()=>{ flushNote(); flushDeck(); });
+document.addEventListener('visibilitychange',()=>{ if(document.hidden){ flushNote(); flushDeck(); } });
 </script>
 
 <script type="module">
@@ -1289,7 +1610,7 @@ if(!FIREBASE_CONFIG){
     const V='10.12.2', base=`https://www.gstatic.com/firebasejs/${V}/`;
     const {initializeApp}=await import(base+'firebase-app.js');
     const {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,updateProfile,setPersistence,browserLocalPersistence}=await import(base+'firebase-auth.js');
-    const {getFirestore,doc,getDoc,setDoc,updateDoc,deleteField,addDoc,collection,query,orderBy,limit,getDocs,increment,serverTimestamp}=await import(base+'firebase-firestore.js');
+    const {getFirestore,doc,getDoc,setDoc,deleteDoc,addDoc,collection,query,orderBy,limit,getDocs,increment,serverTimestamp}=await import(base+'firebase-firestore.js');
     const app=initializeApp(FIREBASE_CONFIG), auth=getAuth(app), db=getFirestore(app);
     await setPersistence(auth,browserLocalPersistence); // stay signed in
 
@@ -1317,7 +1638,13 @@ if(!FIREBASE_CONFIG){
       saveCurrent(cur){ if(this.user) safe(setDoc(userDoc(),{current:cur},{merge:true})); },
       clearCurrent(){ if(this.user){ App.setResume(null); safe(setDoc(userDoc(),{current:null},{merge:true})); } },
       savePrefs(p){ if(this.user) safe(setDoc(userDoc(),{prefs:p},{merge:true})); },
-      refresh(){ loadHome(); }};
+      refresh(){ loadHome(); },
+      // notes + flashcards: users/{uid}/notes/{id} and users/{uid}/decks/{id} (private to the owner)
+      store:{
+        async list(kind){ const qs=await getDocs(collection(db,'users',Acct.user.uid,kind)); const out=[]; qs.forEach(d=>out.push({...d.data(),id:d.id})); return out.sort((a,b)=>(b.updated||0)-(a.updated||0)); },
+        save(kind,id,data){ return setDoc(doc(db,'users',Acct.user.uid,kind,id),data); },
+        remove(kind,id){ return deleteDoc(doc(db,'users',Acct.user.uid,kind,id)); }
+      }};
 
     async function loadHome(){
       const u=Acct.user; if(!u) return;
