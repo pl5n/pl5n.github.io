@@ -325,6 +325,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 .replybar button{padding:2px 8px}
 .quote{display:block;border-left:3px solid rgba(255,255,255,.45);padding:2px 8px;margin:2px 0 4px;font-size:.8rem;opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
 .rbtn{text-decoration:none;margin-left:6px;cursor:pointer;opacity:.7}
+#dm .apphead h2{flex:1 1 140px!important}
+#dm .apphead select{flex:0 0 auto}
 </style>
 </head>
 <body>
@@ -513,11 +515,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
   </div>
 
   <div id="dm" class="screen hidden">
-    <div class="apphead"><button class="back" id="dmback">← Messages</button><h2 id="dmname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1"></h2><button class="primary" id="dmstudy">📚 Study</button><button id="dmchal">♟ Challenge</button></div>
+    <div class="apphead"><button class="back" id="dmback">← Messages</button><h2 id="dmname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1"></h2><select id="dmkeep" title="How long messages are kept"><option value="forever">Keep forever</option><option value="24h">Delete after 24h</option></select><button class="primary" id="dmstudy">📚 Study</button><button id="dmchal">♟ Challenge</button></div>
     <div class="dmwrap">
       <div id="dmlog"></div>
       <div class="replybar hidden" id="dmreply"><span></span><button title="Cancel reply">✕</button></div>
-      <div class="chatin"><input id="dmin" maxlength="500" placeholder="Message…" autocomplete="off"><button class="primary" id="dmsend">Send</button></div>
+      <div class="chatin"><button id="dmimgbtn" title="Send a photo">📷</button><input type="file" id="dmimg" accept="image/*" class="hidden"><input id="dmin" maxlength="500" placeholder="Message…" autocomplete="off"><button class="primary" id="dmsend">Send</button></div>
     </div>
     <div class="muted" style="font-size:.8rem;margin-top:6px">Only you and your friend can read these messages. Don't share personal info.</div>
   </div>
@@ -525,7 +527,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
   <div id="chat" class="screen hidden">
     <div class="apphead"><button class="back js-tohub">← Home</button><h2>💬 Chat</h2></div>
     <div class="dmwrap"><div id="clog"></div><div class="replybar hidden" id="creply"><span></span><button title="Cancel reply">✕</button></div>
-      <div class="chatin"><input id="cin" maxlength="300" placeholder="Message everyone…" autocomplete="off"><button class="primary" id="csend">Send</button></div></div>
+      <div class="chatin"><button id="cimgbtn" title="Send a photo">📷</button><input type="file" id="cimg" accept="image/*" class="hidden"><input id="cin" maxlength="300" placeholder="Message everyone…" autocomplete="off"><button class="primary" id="csend">Send</button></div></div>
     <div class="muted" style="font-size:.8rem;margin-top:6px">Everyone who's signed in can see this chat. Swearing, rude words and personal info (numbers, emails, socials) are blocked.</div>
   </div>
 
@@ -1955,29 +1957,30 @@ function openDM(f){
   closeDM(); D.cur=f; showScreen('dm');
   $('dmname').textContent='💬 '+(f.name||'Friend');
   $('dmlog').innerHTML='<div class="sys">Loading…</div>';
+  D.keep='forever'; $('dmkeep').value='forever';
+  D.unmeta=Acct.dm.meta(f.id,m=>{ D.keep=(m&&m.keep)||'forever'; $('dmkeep').value=D.keep; if(D.msgs) renderDM(D.msgs); });
+  Acct.dm.cleanup(f.id);
   D.unsub=Acct.dm.listen(f.id,renderDM,()=>{ $('dmlog').innerHTML='<div class="sys">Couldn\'t load messages. The site owner may need to update the Firestore rules.</div>'; });
   if(D.inboxMap[f.id]&&D.inboxMap[f.id].unread) Acct.dm.markRead(f.id);
   $('mtoast').style.display='none';
   setTimeout(()=>$('dmin').focus(),50);
 }
-function closeDM(){ setReply('dm',null); if(D.unsub){ D.unsub(); D.unsub=null; } D.cur=null; }
+function closeDM(){ setReply('dm',null); if(D.unmeta){ D.unmeta(); D.unmeta=null; } D.msgs=null; if(D.unsub){ D.unsub(); D.unsub=null; } D.cur=null; }
 window.closeDM=closeDM;
 function renderDM(msgs){
+  D.msgs=msgs;
   const log=$('dmlog'); log.innerHTML='';
-  if(!msgs.length){ log.innerHTML='<div class="sys">No messages yet. Say hi!</div>'; return; }
-  for(const x of msgs){
-    const mine=x.from===Acct.user.uid, d=document.createElement('div');
-    d.className='bub '+(mine?'me':'them'); addQuote(d,x); d.appendChild(document.createTextNode(SAFETY.clean(x.text||'')));
-    const t=document.createElement('small'); t.textContent=x.at?fmtTime(x.at):''; addReplyBtn(t,'dm',x,mine?'You':(D.cur&&D.cur.name)||'Friend'); d.appendChild(t);
-    log.appendChild(d);
-  }
+  const now=Date.now(), list=msgs.filter(x=>!HIDDEN.has(x.id)&&!(x.expires&&x.expires<now));
+  if(D.keep==='24h') log.appendChild(Object.assign(document.createElement('div'),{className:'sys',textContent:'⏳ New messages in this chat disappear after 24 hours.'}));
+  if(!list.length){ log.appendChild(Object.assign(document.createElement('div'),{className:'sys',textContent:'No messages yet. Say hi!'})); return; }
+  for(const x of list) log.appendChild(bubble(x,{k:'dm',partner:D.cur&&D.cur.name,where:'private',canDelete:x.from===Acct.user.uid,onDelete:id=>Acct.dm.remove(D.cur.id,id).catch(()=>{})}));
   log.scrollTop=log.scrollHeight;
 }
 function sendDM(){
   const text=$('dmin').value.trim().slice(0,500); if(!text||!D.cur) return;
   const bad=SAFETY.check(text); if(bad){ const s=document.createElement('div'); s.className='sys'; s.textContent=bad; $('dmlog').appendChild(s); $('dmlog').scrollTop=1e9; return; }
   $('dmin').value=''; const rt=REPLY.dm; setReply('dm',null);
-  Acct.dm.send(D.cur,text,rt).catch(e=>{ const s=document.createElement('div'); s.className='sys'; s.textContent=e.code==='permission-denied'?'Couldn\'t send. You can only message friends (and the site rules must be up to date).':'Couldn\'t send. Check your connection.'; $('dmlog').appendChild(s); $('dmin').value=text; });
+  Acct.dm.send(D.cur,text,rt,null,D.keep).catch(e=>{ const s=document.createElement('div'); s.className='sys'; s.textContent=e.code==='permission-denied'?'Couldn\'t send. You can only message friends (and the site rules must be up to date).':'Couldn\'t send. Check your connection.'; $('dmlog').appendChild(s); $('dmin').value=text; });
 }
 $('dmsend').onclick=sendDM;
 $('dmstudy').onclick=()=>{ if(D.cur) pickStudy(D.cur); };
@@ -2017,30 +2020,72 @@ function setReply(k,msg){
 for(const k of ['c','dm']) $(k+'reply').querySelector('button').onclick=()=>setReply(k,null);
 function addQuote(d,x){ if(x.replyTo&&x.replyTo.text){ const q=document.createElement('span'); q.className='quote'; q.textContent=`${x.replyTo.name}: ${SAFETY.clean(String(x.replyTo.text)).slice(0,80)}`; d.appendChild(q); } }
 function addReplyBtn(t,k,x,name){ const r=document.createElement('a'); r.className='rbtn'; r.textContent='↩'; r.title='Reply'; r.onclick=e=>{ e.preventDefault(); setReply(k,{name,text:x.text}); }; t.appendChild(r); }
+
+// ----- message helpers: images, hide, delete, report -----
+const DAY=24*60*60*1000;
+let HIDDEN=new Set(); try{ HIDDEN=new Set(JSON.parse(localStorage.getItem('cs_hidden')||'[]')); }catch(e){}
+function hideMsg(id){ HIDDEN.add(id); try{ localStorage.setItem('cs_hidden',JSON.stringify([...HIDDEN].slice(-2000))); }catch(e){} }
+function compressImage(file){
+  return new Promise((res,rej)=>{
+    if(!file||!/^image\//.test(file.type)) return rej(new Error('Not an image'));
+    const url=URL.createObjectURL(file), im=new Image();
+    im.onload=()=>{ URL.revokeObjectURL(url);
+      let max=1024,q=.72,out='';
+      for(let i=0;i<6;i++){
+        const sc=Math.min(1,max/Math.max(im.width,im.height)), cv=document.createElement('canvas');
+        cv.width=Math.round(im.width*sc); cv.height=Math.round(im.height*sc);
+        cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+        out=cv.toDataURL('image/jpeg',q); if(out.length<380000) return res(out);
+        max=Math.round(max*.8); q=Math.max(.45,q-.08);
+      }
+      out.length<580000?res(out):rej(new Error('Image too big'));
+    };
+    im.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('Couldn\'t read image')); };
+    im.src=url;
+  });
+}
+function lightbox(src){ const o=document.createElement('div'); o.style.cssText='position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+  const i=document.createElement('img'); i.src=src; i.style.cssText='max-width:95vw;max-height:92vh;border-radius:8px'; o.appendChild(i); o.onclick=()=>o.remove(); document.body.appendChild(o); }
+function act(label,title,fn){ const a=document.createElement('a'); a.className='rbtn'; a.textContent=label; a.title=title; a.href='#'; a.onclick=e=>{ e.preventDefault(); fn(); }; return a; }
+// builds one chat bubble. o = {k:'c'|'dm', showName, partner, canDelete, onDelete, blur, where}
+function bubble(x,o){
+  const mine=x.from===Acct.user.uid, d=document.createElement('div'); d.className='bub '+(mine?'me':'them');
+  if(o.showName&&!mine){ const b=document.createElement('b'); b.textContent=x.name||'?'; d.appendChild(b); }
+  addQuote(d,x);
+  if(x.img&&/^data:image\/jpeg;base64,/.test(x.img)){
+    const im=document.createElement('img'); im.src=x.img; im.alt='Photo'; im.style.cssText='display:block;max-width:min(240px,60vw);max-height:300px;border-radius:8px;margin:2px 0;cursor:zoom-in';
+    if(o.blur&&!mine){ im.style.filter='blur(18px)'; im.title='Tap to view'; let shown=false; im.onclick=()=>{ if(!shown){ shown=true; im.style.filter=''; im.title=''; } else lightbox(x.img); }; }
+    else im.onclick=()=>lightbox(x.img);
+    d.appendChild(im);
+  }
+  if(x.text) d.appendChild(document.createTextNode(SAFETY.clean(x.text)));
+  const t=document.createElement('small'); t.textContent=(x.at?fmtTime(x.at):'')+(x.expires?' ⏳':'');
+  const who=mine?'You':(o.showName?x.name:o.partner)||'Friend';
+  t.appendChild(act('↩','Reply',()=>setReply(o.k,{name:who,text:x.text||'📷 Photo'})));
+  t.appendChild(act('🙈','Hide for me',()=>{ hideMsg(x.id); d.remove(); }));
+  if(o.canDelete) t.appendChild(act('🗑','Delete for everyone',()=>{ if(confirm('Delete this message for everyone?')) o.onDelete(x.id); }));
+  if(!mine) t.appendChild(act('🚩','Report',()=>{ Acct.feedback&&Acct.feedback.send('report',`Reported ${o.where} message from ${x.name||o.partner||'?'} (id ${x.id}): ${x.text||''}${x.img?' [image]':''}`).then(()=>alertMsg('Reported. Thanks!')).catch(()=>{}); }));
+  d.appendChild(t); return d;
+}
 // ================= GROUP CHAT =================
 const R={unsub:null,last:0};
 function openRoom(){
   showScreen('chat'); closeRoom();
   $('clog').innerHTML='<div class="sys">Loading…</div>';
+  Acct.chat.cleanup();
   R.unsub=Acct.chat.listen(renderRoom,()=>{ $('clog').innerHTML='<div class="sys">Couldn\'t load the chat. The site owner may need to update the Firestore rules.</div>'; });
   setTimeout(()=>$('cin').focus(),50);
 }
 function closeRoom(){ setReply('c',null); if(R.unsub){ R.unsub(); R.unsub=null; } }
 window.closeRoom=closeRoom;
 function renderRoom(msgs){
+  R.msgs=msgs;
   const log=$('clog'), atBottom=log.scrollHeight-log.scrollTop-log.clientHeight<80; log.innerHTML='';
-  if(!msgs.length){ log.innerHTML='<div class="sys">No messages yet. Say hi to everyone!</div>'; return; }
-  for(const x of msgs){
-    const mine=x.from===Acct.user.uid, d=document.createElement('div'); d.className='bub '+(mine?'me':'them');
-    if(!mine){ const b=document.createElement('b'); b.textContent=x.name||'?'; d.appendChild(b); }
-    addQuote(d,x);
-    d.appendChild(document.createTextNode(SAFETY.clean(x.text||'')));
-    const t=document.createElement('small'); t.textContent=x.at?fmtTime(x.at):''; addReplyBtn(t,'c',x,mine?'You':x.name);
-    if(Acct.isAdmin||mine){ const del=document.createElement('a'); del.textContent=' 🗑'; del.href='#'; del.title='Delete message'; del.style.textDecoration='none';
-      del.onclick=e=>{ e.preventDefault(); Acct.chat.remove(x.id).catch(()=>{}); }; t.appendChild(del); }
-    d.appendChild(t); log.appendChild(d);
-  }
-  if(atBottom||msgs[msgs.length-1].from===Acct.user.uid) log.scrollTop=log.scrollHeight;
+  const now=Date.now(), list=msgs.filter(x=>!HIDDEN.has(x.id)&&(x.at||0)>now-DAY);
+  if(!list.length){ log.innerHTML='<div class="sys">No messages in the last 24 hours. Say hi to everyone!</div>'; return; }
+  log.appendChild(Object.assign(document.createElement('div'),{className:'sys',textContent:'Messages here disappear after 24 hours.'}));
+  for(const x of list) log.appendChild(bubble(x,{k:'c',showName:true,where:'group chat',blur:true,canDelete:Acct.isAdmin||x.from===Acct.user.uid,onDelete:id=>Acct.chat.remove(id).catch(()=>{})}));
+  if(atBottom||list[list.length-1].from===Acct.user.uid) log.scrollTop=log.scrollHeight;
 }
 function roomNote(t){ const s=document.createElement('div'); s.className='sys'; s.textContent=t; $('clog').appendChild(s); $('clog').scrollTop=1e9; }
 function sendRoom(){
@@ -2172,6 +2217,24 @@ $('openadmin').onclick=openAdmin;
 all('.js-tohub',e=>e.onclick=()=>{ flushNote(); flushDeck(); showScreen('hub'); });
 window.addEventListener('beforeunload',()=>{ flushNote(); flushDeck(); });
 document.addEventListener('visibilitychange',()=>{ if(document.hidden){ flushNote(); flushDeck(); } });
+</script>
+<script>
+// image sending + keep setting + periodic expiry refresh
+async function sendImage(k,file){
+  const note=k==='c'?roomNote:(t=>{ const s=document.createElement('div'); s.className='sys'; s.textContent=t; $('dmlog').appendChild(s); $('dmlog').scrollTop=1e9; });
+  try{
+    note('Sending photo…');
+    const img=await compressImage(file);
+    if(k==='c'){ if(Date.now()-R.last<2000) return note('Slow down a bit!'); R.last=Date.now(); const rt=REPLY.c; setReply('c',null); await Acct.chat.send('',rt,img); }
+    else { const rt=REPLY.dm; setReply('dm',null); await Acct.dm.send(D.cur,'',rt,img,D.keep); }
+  }catch(e){ note(e.code==='permission-denied'?'Couldn\'t send. The site rules may need updating.':(e.message||'Couldn\'t send the photo.')); }
+}
+for(const [k,btn,inp] of [['c','cimgbtn','cimg'],['dm','dmimgbtn','dmimg']]){
+  $(btn).onclick=()=>$(inp).click();
+  $(inp).onchange=()=>{ const f=$(inp).files[0]; $(inp).value=''; if(f) sendImage(k,f); };
+}
+$('dmkeep').onchange=()=>{ if(D.cur) Acct.dm.setKeep(D.cur.id,$('dmkeep').value).catch(()=>{}); };
+setInterval(()=>{ if(R.msgs&&!$('chat').classList.contains('hidden')) renderRoom(R.msgs); if(D.msgs&&!$('dm').classList.contains('hidden')) renderDM(D.msgs); },60000);
 </script>
 <script>
 // ---------- GCSE subject content (original revision notes + quiz questions) ----------
@@ -3054,7 +3117,7 @@ if(!FIREBASE_CONFIG){
     const V='10.12.2', base=`https://www.gstatic.com/firebasejs/${V}/`;
     const {initializeApp}=await import(base+'firebase-app.js');
     const {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,updateProfile,setPersistence,browserLocalPersistence}=await import(base+'firebase-auth.js');
-    const {getFirestore,doc,getDoc,setDoc,updateDoc,deleteField,deleteDoc,onSnapshot,addDoc,collection,query,orderBy,limit,limitToLast,getDocs,increment,serverTimestamp}=await import(base+'firebase-firestore.js');
+    const {getFirestore,doc,getDoc,setDoc,updateDoc,deleteField,deleteDoc,onSnapshot,addDoc,collection,query,where,orderBy,limit,limitToLast,getDocs,increment,serverTimestamp}=await import(base+'firebase-firestore.js');
     const app=initializeApp(FIREBASE_CONFIG), auth=getAuth(app), db=getFirestore(app);
     await setPersistence(auth,browserLocalPersistence); // stay signed in
 
@@ -3128,23 +3191,31 @@ if(!FIREBASE_CONFIG){
     Acct.dm={
       listen(other,cb,err){
         return onSnapshot(query(collection(db,'chats',chatId(other),'messages'),orderBy('at'),limitToLast(150)),
-          qs=>{ const out=[]; qs.forEach(d=>out.push(d.data())); cb(out); },e=>{ console.warn(e); err&&err(e); });
+          qs=>{ const out=[]; qs.forEach(d=>out.push({...d.data(),id:d.id})); cb(out); },e=>{ console.warn(e); err&&err(e); });
       },
-      async send(f,text,replyTo){
-        const me=Acct.user.uid, at=Date.now(), m={from:me,text,at}; if(replyTo) m.replyTo=replyTo;
+      async send(f,text,replyTo,img,keep){
+        const me=Acct.user.uid, at=Date.now(), m={from:me,text,at}; if(replyTo) m.replyTo=replyTo; if(img) m.img=img;
+        if(keep==='24h'){ m.expires=at+86400000; m.expireAt=new Date(m.expires); }
         await addDoc(collection(db,'chats',chatId(f.id),'messages'),m);
-        await setDoc(doc(db,'users',f.id,'inbox',me),{name:Acct.name,text,at,unread:true});
-        await setDoc(doc(db,'users',me,'inbox',f.id),{name:f.name||'',text,at,unread:false,mine:true});
+        const preview=img?'📷 Photo':text;
+        await setDoc(doc(db,'users',f.id,'inbox',me),{name:Acct.name,text:preview,at,unread:true});
+        await setDoc(doc(db,'users',me,'inbox',f.id),{name:f.name||'',text:preview,at,unread:false,mine:true});
       },
+      remove(other,id){ return deleteDoc(doc(db,'chats',chatId(other),'messages',id)); },
+      meta(other,cb){ return onSnapshot(doc(db,'chats',chatId(other)),d=>cb(d.exists()?d.data():null),()=>cb(null)); },
+      setKeep(other,keep){ return setDoc(doc(db,'chats',chatId(other)),{keep,by:Acct.user.uid,at:Date.now()},{merge:true}); },
+      async cleanup(other){ try{ const qs=await getDocs(query(collection(db,'chats',chatId(other),'messages'),where('expires','<',Date.now()),limit(100))); qs.forEach(d=>deleteDoc(d.ref).catch(()=>{})); }catch(e){} },
       markRead(other){ return setDoc(doc(db,'users',Acct.user.uid,'inbox',other),{unread:false},{merge:true}).catch(()=>{}); }
     };
     // group chat: rooms/global/messages/{id}
     Acct.chat={
       listen(cb,err){
-        return onSnapshot(query(collection(db,'rooms','global','messages'),orderBy('at'),limitToLast(120)),
+        return onSnapshot(query(collection(db,'rooms','global','messages'),where('at','>',Date.now()-86400000),orderBy('at'),limitToLast(120)),
           qs=>{ const out=[]; qs.forEach(d=>out.push({...d.data(),id:d.id})); cb(out); },e=>{ console.warn(e); err&&err(e); });
       },
-      send(text,replyTo){ const m={from:Acct.user.uid,name:Acct.name,text,at:Date.now()}; if(replyTo) m.replyTo=replyTo; return addDoc(collection(db,'rooms','global','messages'),m); },
+      send(text,replyTo,img){ const at=Date.now(), m={from:Acct.user.uid,name:Acct.name,text,at,expireAt:new Date(at+86400000)}; if(replyTo) m.replyTo=replyTo; if(img) m.img=img; return addDoc(collection(db,'rooms','global','messages'),m); },
+      // delete anything older than 24 hours (keeps the database small)
+      async cleanup(){ try{ const qs=await getDocs(query(collection(db,'rooms','global','messages'),where('at','<',Date.now()-86400000),limit(100))); qs.forEach(d=>deleteDoc(d.ref).catch(()=>{})); }catch(e){} },
       remove(id){ return deleteDoc(doc(db,'rooms','global','messages',id)); }
     };
     // study together: sessions/{id} readable/writable only by the two friends
