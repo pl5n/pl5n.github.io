@@ -372,7 +372,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
       <button class="tile" id="openchat"><div class="ic" style="background:linear-gradient(135deg,#2b7a8a,#1f4f6b);font-size:2rem">💬</div><b>Chat</b><span>Chat here</span><div class="go">View</div></button>
       <button class="tile" id="opensearch"><div class="ic" style="background:linear-gradient(135deg,#4a5bd6,#2c3a99);font-size:2rem">🔎</div><b>Search</b><span>Search the web</span><div class="go">View</div></button>
       <button class="tile hidden" id="openadmin"><div class="ic" style="background:#8a2b2b;font-size:2rem">👑</div><b>Admin</b><span>Manage players</span><div class="go">View</div></button>
-      <div class="tile soon"><div class="ic">＋</div><b>More coming soon</b><span>Coming soon</span></div>
+      <button class="tile" id="openfb"><div class="ic" style="background:#6b6b2b;font-size:2rem">🐞</div><b>Bugs & ideas</b><span>Report a bug or suggest something</span><div class="go">View</div></button>
     </div>
     </div>
   </div>
@@ -537,7 +537,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 
   <div id="subject" class="screen hidden">
     <div class="apphead"><button class="back" id="subback">← Subjects</button><h2 id="subname"></h2></div>
-    <div class="seg" id="subseg"><button data-v="cls" id="segcls">Class notes</button><button data-v="res" class="on">Resources</button><button data-v="topics">Topics</button></div>
+    <div class="seg" id="subseg"><button data-v="topics" class="on">Topics</button><button data-v="res">Resources</button></div>
     <div id="subbody"></div>
   </div>
 
@@ -558,6 +558,26 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
       <div class="flist" id="picklist"></div>
       <button style="margin-top:12px;width:100%" id="pickcancel">Cancel</button>
     </div>
+  </div>
+
+  <div id="topic" class="screen hidden">
+    <div class="apphead"><button class="back" id="tpback">← Topics</button><h2 id="tpname" style="flex:1;min-width:0"></h2></div>
+    <div class="muted" id="tpsub" style="margin:-6px 0 10px"></div>
+    <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">Key points</h3><span class="rag" id="tprag"></span></div>
+      <div class="muted" style="font-size:.8rem;margin:4px 0">Tap a point to highlight it.</div><ul id="tpkeys" style="line-height:1.6;padding-left:20px"></ul></div>
+    <div class="card"><h3>▶ Watch & practise</h3><div class="row" id="tplinks"></div></div>
+    <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">📝 My notes</h3><span class="muted" id="tpsaved"></span></div>
+      <textarea id="tpnotes" placeholder="Write your own notes for this topic… they save automatically." style="width:100%;min-height:160px;margin-top:8px;resize:vertical;padding:12px;border-radius:8px;color:var(--text);font:inherit;line-height:1.5"></textarea></div>
+    <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">🗂️ My flashcards</h3><div class="row"><button id="tpaddc">+ Card</button><button class="primary" id="tpstudy">▶ Study</button></div></div>
+      <div id="tpcards" style="margin-top:10px"></div></div>
+  </div>
+
+  <div id="fb" class="screen hidden">
+    <div class="apphead"><button class="back js-tohub">← Home</button><h2>🐞 Bugs & ideas</h2></div>
+    <div class="card"><div class="seg" id="fbtype"><button data-t="bug" class="on">🐞 Bug</button><button data-t="idea">💡 Suggestion</button></div>
+      <textarea id="fbtext" maxlength="1000" placeholder="What happened, or what would you like added?" style="width:100%;min-height:140px;padding:12px;border-radius:8px;color:var(--text);font:inherit"></textarea>
+      <div class="row" style="margin-top:10px"><button class="primary" id="fbsend">Send</button><span class="muted" id="fbmsg"></span></div></div>
+    <div class="card hidden" id="fbinbox"><h3>📥 Received (admin only)</h3><div class="flist" id="fblist"></div></div>
   </div>
   <div id="game" class="hidden">
     <div id="boardcol">
@@ -1424,7 +1444,7 @@ function banner(text,btns){
 
 
 // ---------- screens, accounts glue, saving ----------
-const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin','dm','search','chat','subject','together'];
+const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin','dm','search','chat','subject','together','topic','fb'];
 const all=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
 function showScreen(id){
   if(id!=='chat'&&window.closeRoom) closeRoom();
@@ -2519,6 +2539,453 @@ $('togback').onclick=()=>{ if(T.sid) Acct.study.update(T.sid,{ended:true}).catch
 setInterval(()=>{ const e=T.s&&T.s.timerEnd; if(!e||$('together').classList.contains('hidden')){ $('togclock').textContent=''; return; }
   const left=Math.max(0,Math.round((e-Date.now())/1000)); $('togclock').textContent=left?`⏱ ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`:'⏱ Break time!'; },500);
 </script>
+<script>
+// ================= GCSE SPEC CONTENT (original summaries written for this site) =================
+// Each subject: sections -> topics [name, [key points]]. Links for each topic are generated below.
+const YT=q=>'https://www.youtube.com/results?search_query='+encodeURIComponent(q);
+const BITE=q=>'https://www.bbc.co.uk/bitesize/search?q='+encodeURIComponent(q);
+const SPEC=[
+{id:'cs',name:'Computer Science',board:'Edexcel 1CP2',icon:'💻',color:'#2b7a8a',
+ links:[['Craig\'n\'Dave Edexcel videos','https://student.craigndave.org/1CP2','Every 1CP2 topic, video by video'],['Craig\'n\'Dave (YouTube)',YT('craig n dave edexcel gcse computer science'),'Their full video channel'],['BBC Bitesize',BITE('edexcel computer science'),'Revision guides and tests'],['Physics & Maths Tutor','https://www.physicsandmathstutor.com/','Past papers and mark schemes']],
+ vids:t=>[['Craig\'n\'Dave',YT('craig n dave edexcel 1CP2 '+t)],['BBC Bitesize',BITE(t+' computer science')]],
+ sections:[
+ {s:'Topic 1: Computational thinking',t:[
+  ['Decomposition & abstraction',['Decomposition: break a problem into smaller, easier sub-problems.','Abstraction: remove unnecessary detail to focus on what matters (e.g. a tube map).','Algorithms can be shown as flowcharts, pseudocode or written descriptions.']],
+  ['Inputs, processes & outputs',['Identify what goes in, what happens to it, and what comes out of a program.','Trace tables track the values of variables line by line to find errors or work out outputs.','Logic errors give wrong results; syntax errors stop code running; runtime errors crash it.']],
+  ['Searching',['Linear search: check each item in turn. Works on unsorted data but is slow on big lists.','Binary search: data must be sorted. Check the middle item and throw away half each time.','Binary search is much more efficient on large data sets.']],
+  ['Sorting',['Bubble sort: compare neighbours and swap; repeat passes until no swaps are needed.','Merge sort: split the list into single items, then merge pairs back in order.','Merge sort is faster on large lists but uses more memory.']],
+  ['Truth tables & logic',['AND: true only if both inputs are true. OR: true if at least one is. NOT: flips the input.','Truth tables list every combination of inputs and the resulting output.','Order of precedence: brackets, NOT, AND, OR.']]]},
+ {s:'Topic 2: Data',t:[
+  ['Binary & denary',['Computers use binary because transistors have two states: on and off.','Place values in 8 bits: 128, 64, 32, 16, 8, 4, 2, 1.','n bits can represent 2ⁿ different values (8 bits = 256).']],
+  ['Binary addition & overflow',['Rules: 0+0=0, 0+1=1, 1+1=0 carry 1, 1+1+1=1 carry 1.','Overflow happens when the result needs more bits than are available.']],
+  ['Two\'s complement',['Used to store negative numbers. The leftmost bit is worth −128 in 8 bits.','To make a negative: write the positive version, flip every bit, add 1.','8-bit range: −128 to +127.']],
+  ['Binary shifts',['Logical left shift by n multiplies by 2ⁿ; logical right shift divides by 2ⁿ (losing remainders).','Arithmetic right shift copies the sign bit in from the left so negative numbers stay negative.','Bits shifted off the end are lost, which can cause inaccuracy.']],
+  ['Hexadecimal',['Base 16: digits 0–9 then A–F (A = 10, F = 15).','One hex digit = 4 bits (a nibble), so it\'s a shorter, easier-to-read way of writing binary.','Convert by splitting binary into nibbles and converting each one.']],
+  ['Characters (ASCII)',['Each character is given a binary code. 7-bit ASCII has 128 characters.','Codes are in order, so \'B\' is one more than \'A\'.','Unicode uses more bits so it can represent characters from every language and emoji.']],
+  ['Images & sound',['Bitmap images are made of pixels; colour depth = bits per pixel. File size = width × height × colour depth.','Sound is sampled: sample rate (samples per second) × bit depth × seconds = file size in bits.','Higher resolution, colour depth, sample rate or bit depth = better quality but bigger files.']],
+  ['Units & compression',['bit → nibble (4) → byte (8) → KiB (1024 bytes) → MiB → GiB → TiB.','Lossless compression (e.g. run-length encoding) keeps all data; lossy removes some data permanently.','Compression saves storage and transmission time.']]]},
+ {s:'Topic 3: Computers',t:[
+  ['Von Neumann architecture & CPU',['Program instructions and data are stored together in the same memory.','CPU parts: ALU (calculations/logic), control unit (coordinates), registers, clock, buses.','Performance depends on clock speed, number of cores and cache size.']],
+  ['Fetch–decode–execute',['Fetch: the next instruction is copied from memory using the address in the program counter.','Decode: the control unit works out what the instruction means.','Execute: the instruction is carried out, then the cycle repeats.']],
+  ['Memory & storage',['RAM is volatile and holds programs/data in use; ROM is non-volatile and holds start-up instructions.','Secondary storage is non-volatile: magnetic (HDD), optical (CD/DVD) and solid state (SSD/flash).','Choose storage by capacity, speed, portability, durability, reliability and cost.']],
+  ['Embedded systems',['A computer built into a larger device to do one dedicated job (e.g. washing machine, car ECU).','Usually small, cheap, low power and very reliable.']],
+  ['Operating systems',['Manage memory, processes (multitasking), files, peripherals and users.','Provide a user interface (GUI or command line) and handle security such as logins.','Device drivers let the OS talk to hardware.']],
+  ['Utility software',['Helps maintain the computer: defragmentation, backup, compression, encryption, anti-malware.','Defragmenting a hard disk puts file pieces back together so reading is faster.']],
+  ['Programming languages & translators',['High-level languages are readable and portable; low-level (machine code, assembly) is close to the hardware.','Compiler: translates the whole program into machine code once. Interpreter: translates and runs line by line.','Assembler: translates assembly language into machine code.']]]},
+ {s:'Topic 4: Networks',t:[
+  ['LANs & WANs',['LAN: a small area such as one building, usually with its own hardware.','WAN: a large geographical area, often using rented telecoms links. The internet is the biggest WAN.']],
+  ['Network speed & performance',['Bandwidth: the amount of data that can be sent per second (bits per second).','Latency, interference, number of users and the type of connection all affect speed.','Transmission time = file size ÷ bit rate.']],
+  ['Wired vs wireless',['Wired (Ethernet, fibre): faster, more reliable and secure, but less flexible.','Wireless (Wi-Fi): convenient and mobile, but slower, affected by interference and easier to intercept.']],
+  ['Topologies',['Star: every device connects to a central switch. If one cable fails the others keep working.','Mesh: devices connect to each other, so data has several routes. Very robust but expensive.','Bus and ring are older layouts with more weaknesses.']],
+  ['Protocols & the TCP/IP model',['A protocol is a set of rules for communication.','TCP/IP layers: application (HTTP, HTTPS, SMTP, IMAP, POP3, FTP), transport (TCP), internet (IP), link.','Packet switching: data is split into packets that may take different routes and are reassembled.']],
+  ['Network security',['Threats include malware, hackers, interception and denial of service.','Protection: firewalls, encryption, strong passwords, access levels, keeping software updated.']]]},
+ {s:'Topic 5: Issues & impact',t:[
+  ['Environmental impact',['Making devices uses energy and rare materials; e-waste can be toxic.','Data centres use lots of electricity. Recycling and efficient design reduce the impact.']],
+  ['Ethical & legal issues',['The Data Protection Act controls how personal data is collected, stored and used.','Issues: privacy, surveillance, AI bias, unequal access to technology (the digital divide).']],
+  ['Intellectual property',['Copyright protects creative work automatically; patents protect inventions; trademarks protect brands.','Open-source software can be shared and changed; proprietary software can\'t.']],
+  ['Malware',['Virus (attaches to files), worm (spreads itself), trojan (pretends to be useful), ransomware, spyware, keyloggers.','Prevention: anti-malware, updates, firewalls, not opening unknown attachments.']],
+  ['Hackers & technical vulnerabilities',['Unpatched software, weak passwords and open ports are common weaknesses.','Brute-force attacks try every possible password; SQL injection puts code into input boxes.']],
+  ['Social engineering',['Tricking people rather than computers: phishing, pretexting (blagging), shoulder surfing, baiting.','Training staff and being suspicious of unexpected requests are the best defences.']],
+  ['Protecting digital systems',['Strong passwords and two-factor authentication.','Encryption, backups, firewalls, user access levels and penetration testing.']]]},
+ {s:'Topic 6: Programming (Python)',t:[
+  ['Data types & variables',['Types: integer, real (float), Boolean, string, character.','Casting converts between types, e.g. int("5").','Constants hold values that don\'t change while the program runs.']],
+  ['Selection & iteration',['Selection: if / elif / else chooses which code runs.','Count-controlled loops (for) repeat a set number of times; condition-controlled (while) repeat until a condition changes.']],
+  ['Lists & 2D arrays',['A list stores many items under one name, accessed by index starting at 0.','2D lists (lists of lists) are like tables: table[row][column].','Records group related data of different types.']],
+  ['Subprograms',['Functions return a value; procedures don\'t.','Parameters pass data in. Local variables only exist inside the subprogram; global variables can be used anywhere.','Subprograms make code reusable and easier to test.']],
+  ['String manipulation',['len() gives length; slicing like s[0:3] gets part of a string.','.upper(), .lower(), .find() and concatenation with +.']],
+  ['File handling',['Open a file, read or write, then close it. Modes: "r" read, "w" write (overwrite), "a" append.','Reading line by line lets you process large files.']],
+  ['Validation & authentication',['Validation checks input is sensible: range, length, presence, type and format checks.','Authentication checks who a user is, e.g. username and password.']],
+  ['Testing',['Use normal, boundary and erroneous test data.','Iterative testing happens during development; final testing at the end.']]]}]},
+
+{id:'maths',name:'Maths',board:'Edexcel 1MA1',icon:'📐',color:'#3b5f8a',
+ links:[['Corbettmaths','https://corbettmaths.com/','Videos, worksheets and the 5-a-day'],['Maths Genie','https://www.mathsgenie.co.uk/','Exam questions by topic and grade, with video solutions'],['Physics & Maths Tutor','https://www.physicsandmathstutor.com/','Past papers and mark schemes'],['BBC Bitesize',BITE('edexcel maths'),'Revision guides']],
+ vids:t=>[['Corbettmaths','https://corbettmaths.com/?s='+encodeURIComponent(t)],['Maths Genie (YouTube)',YT('maths genie '+t)],['Corbettmaths (YouTube)',YT('corbettmaths '+t)]],
+ sections:[
+ {s:'Number',t:[
+  ['Rounding & bounds',['Round to decimal places or significant figures (count from the first non-zero digit).','Error interval: the range a rounded value could have come from, e.g. 7 to 1 s.f. → 6.5 ≤ x < 7.5.','For calculations with bounds, pick the bounds that give the biggest/smallest answer.']],
+  ['Fractions, decimals & percentages',['To add/subtract fractions, find a common denominator. To divide, flip the second fraction and multiply.','Recurring decimals can be turned into fractions using algebra (e.g. let x = 0.4̇ and subtract).']],
+  ['Primes, HCF & LCM',['Prime factorisation: write as a product of primes using a factor tree.','HCF: multiply the shared prime factors. LCM: multiply all the prime factors, using the highest powers.']],
+  ['Indices & surds',['aᵐ × aⁿ = aᵐ⁺ⁿ, aᵐ ÷ aⁿ = aᵐ⁻ⁿ, a⁰ = 1, a⁻ⁿ = 1/aⁿ, a^(1/n) = ⁿ√a.','Simplify surds: √50 = √25 × √2 = 5√2.','Rationalise the denominator: multiply top and bottom by the surd.']],
+  ['Standard form',['A × 10ⁿ with 1 ≤ A < 10.','To multiply, multiply the A numbers and add the powers; then adjust so A is between 1 and 10.']]]},
+ {s:'Algebra',t:[
+  ['Expanding & factorising',['Expand double brackets by multiplying every term by every term.','Factorise quadratics x² + bx + c by finding two numbers that add to b and multiply to c.','Difference of two squares: a² − b² = (a + b)(a − b).']],
+  ['Linear equations & inequalities',['Do the same to both sides. When multiplying or dividing an inequality by a negative, flip the sign.','Show inequalities on a number line: open circle for < or >, closed for ≤ or ≥.']],
+  ['Quadratic equations',['Solve by factorising, using the formula x = (−b ± √(b² − 4ac)) / 2a, or completing the square.','Completing the square: x² + bx + c = (x + b/2)² − (b/2)² + c. The turning point is (−b/2, …).']],
+  ['Simultaneous equations',['Linear: eliminate a variable by adding/subtracting, or substitute.','Linear + quadratic: rearrange the linear one and substitute into the quadratic.']],
+  ['Sequences',['Linear nth term: an + b, where a is the common difference.','Quadratic sequences have a constant second difference; the n² coefficient is half of it.','Geometric sequences multiply by the same number each time.']],
+  ['Straight-line graphs',['y = mx + c: m is the gradient, c is the y-intercept.','Parallel lines have equal gradients; perpendicular gradients multiply to −1.']],
+  ['Other graphs',['Quadratics are U-shaped (or ∩ if negative); roots are where the graph crosses the x-axis.','Know the shapes of cubic, reciprocal (1/x) and exponential graphs.','Gradient of a curve = rate of change; area under a velocity-time graph = distance.']],
+  ['Functions, iteration & proof',['f(x) notation: substitute the value. Inverse f⁻¹(x) undoes f; composite fg(x) means do g first.','Iteration: repeatedly put the answer back into the formula to approach a solution.','Algebraic proof: use 2n for even numbers and 2n + 1 for odd numbers.']]]},
+ {s:'Ratio, proportion & rates of change',t:[
+  ['Ratio',['Share in a ratio: total parts → value of one part → multiply.','Ratios can be written as fractions of the whole, e.g. 2 : 3 means 2/5 and 3/5.']],
+  ['Percentages',['Multiplier for an increase of r%: 1 + r/100; decrease: 1 − r/100.','Reverse percentages: divide by the multiplier to find the original.','Compound interest/depreciation: amount = original × multiplierⁿ.']],
+  ['Direct & inverse proportion',['Direct: y = kx (or kx², k√x…). Inverse: y = k/x.','Find k using a pair of values, then use the formula.']],
+  ['Compound measures',['Speed = distance ÷ time; density = mass ÷ volume; pressure = force ÷ area.','Check the units match before calculating.']]]},
+ {s:'Geometry & measures',t:[
+  ['Angles & polygons',['Angles on a straight line = 180°, around a point = 360°, in a triangle = 180°.','Parallel lines: alternate angles are equal, corresponding angles are equal, co-interior angles add to 180°.','Exterior angles of any polygon add to 360°.']],
+  ['Area & perimeter',['Trapezium = ½(a + b)h; circle = πr²; sector = (θ/360) × πr².','Arc length = (θ/360) × 2πr.']],
+  ['Volume & surface area',['Prism = cross-section × length; cylinder = πr²h.','Cone = ⅓πr²h; sphere = (4/3)πr³; pyramid = ⅓ × base × height.']],
+  ['Pythagoras & trigonometry',['a² + b² = c² (c is the hypotenuse).','SOH CAH TOA for right-angled triangles.','Know exact values: sin 30° = ½, cos 60° = ½, tan 45° = 1, sin 60° = √3/2.']],
+  ['Sine & cosine rules',['Sine rule: a/sin A = b/sin B. Cosine rule: a² = b² + c² − 2bc cos A.','Area of a triangle = ½ab sin C.']],
+  ['Circle theorems',['The angle at the centre is twice the angle at the circumference.','Angles in the same segment are equal; opposite angles in a cyclic quadrilateral add to 180°.','A tangent meets a radius at 90°.']],
+  ['Transformations',['Reflection (give the mirror line), rotation (angle, direction, centre), translation (vector), enlargement (scale factor, centre).','A negative scale factor flips the shape through the centre of enlargement.']],
+  ['Similarity & congruence',['Congruent triangles: SSS, SAS, ASA, RHS.','Similar shapes: lengths × k, areas × k², volumes × k³.']],
+  ['Vectors',['Add vectors nose to tail. A vector in the opposite direction is negative.','To prove points lie on a straight line, show one vector is a multiple of the other and they share a point.']],
+  ['Constructions, loci & bearings',['Bearings are measured clockwise from north and written with 3 figures.','Loci: equidistant from two points → perpendicular bisector; from two lines → angle bisector.']]]},
+ {s:'Probability',t:[
+  ['Probability basics',['P(not A) = 1 − P(A). Relative frequency = frequency ÷ number of trials.','Expected outcomes = probability × number of trials.']],
+  ['Tree diagrams',['Multiply along the branches; add the end results for "or".','Without replacement: the second set of probabilities changes.']],
+  ['Venn diagrams & sets',['∩ = intersection (both), ∪ = union (either), A\' = not A.','Conditional probability: P(A given B) = P(A and B) ÷ P(B).']]]},
+ {s:'Statistics',t:[
+  ['Averages & spread',['Mean, median, mode and range. For grouped data, estimate the mean using midpoints.','Choose the average that best represents the data (median if there are outliers).']],
+  ['Cumulative frequency & box plots',['Plot cumulative frequency at the upper end of each class.','Median at n/2, lower quartile at n/4, upper quartile at 3n/4. IQR = UQ − LQ.']],
+  ['Histograms',['Frequency density = frequency ÷ class width. The area of each bar is the frequency.']],
+  ['Scatter graphs & sampling',['Describe correlation (positive, negative, none). Use a line of best fit to estimate within the data range.','Random sampling avoids bias; a bigger sample is more reliable.']]]}]},
+
+{id:'sci',name:'Science',board:'AQA Combined (Trilogy) + Triple',icon:'🔬',color:'#2b7a4b',
+ links:[['Free Science Lessons','https://www.freesciencelessons.co.uk/','Every AQA topic, video by video'],['Free Science Lessons (YouTube)','https://www.youtube.com/@Freesciencelessons','The full channel'],['Cognito','https://cognitoedu.org/','Videos, quizzes and exam questions'],['Physics & Maths Tutor','https://www.physicsandmathstutor.com/','Past papers and revision notes'],['BBC Bitesize',BITE('aqa combined science trilogy'),'Revision guides']],
+ vids:t=>[['Free Science Lessons',YT('freesciencelessons '+t)],['Cognito',YT('cognito gcse '+t)],['BBC Bitesize',BITE(t)]],
+ sections:[
+ {s:'Biology: Cell biology',t:[
+  ['Cell structure',['Eukaryotic cells (animal, plant) have a nucleus; prokaryotic cells (bacteria) have loose DNA and plasmids.','Plant cells also have a cell wall, chloroplasts and a permanent vacuole.','Magnification = image size ÷ actual size.']],
+  ['Cell division & stem cells',['Mitosis makes two identical cells for growth and repair.','Embryonic stem cells can become any cell; adult stem cells are more limited. Plant meristems make new cells all their lives.']],
+  ['Transport in cells',['Diffusion: high to low concentration. Osmosis: water through a partially permeable membrane.','Active transport uses energy to move substances against the concentration gradient.']]]},
+ {s:'Biology: Organisation',t:[
+  ['Digestive system & enzymes',['Enzymes are biological catalysts with an active site; high temperature or wrong pH denatures them.','Amylase breaks starch into sugars; protease breaks proteins into amino acids; lipase breaks lipids into fatty acids and glycerol.','Bile (from the liver) neutralises stomach acid and emulsifies fats.']],
+  ['Heart, blood & lungs',['The heart is a double pump; arteries carry blood away, veins carry it back, capillaries exchange substances.','Red blood cells carry oxygen; white blood cells fight disease; platelets help clotting.','Alveoli have a large surface area and thin walls for gas exchange.']],
+  ['Non-communicable disease',['Risk factors include smoking, diet, alcohol and lack of exercise.','Coronary heart disease: fatty deposits narrow arteries. Treatments: stents, statins, transplants.']],
+  ['Plant tissues & transport',['Xylem carries water and minerals up; phloem carries sugars (translocation).','Transpiration rate rises with light, temperature and air movement, and falls with humidity.']]]},
+ {s:'Biology: Infection & response',t:[
+  ['Pathogens & disease',['Bacteria, viruses, fungi and protists cause disease. Examples: measles, HIV, salmonella, malaria.','Spread is reduced by hygiene, isolation, destroying vectors and vaccination.']],
+  ['Immune system & vaccines',['White blood cells engulf pathogens, make antibodies and make antitoxins.','Vaccines use dead or inactive pathogens so memory cells respond quickly next time.']],
+  ['Drugs',['Antibiotics kill bacteria but not viruses; antibiotic resistance is a growing problem.','New drugs are tested on cells/animals, then in double-blind trials using placebos.']]]},
+ {s:'Biology: Bioenergetics',t:[
+  ['Photosynthesis',['Carbon dioxide + water → glucose + oxygen, using light, in chloroplasts.','Limiting factors: light intensity, CO₂ concentration and temperature.']],
+  ['Respiration',['Aerobic: glucose + oxygen → carbon dioxide + water (lots of energy).','Anaerobic in muscles: glucose → lactic acid (oxygen debt). In yeast: glucose → ethanol + carbon dioxide.']]]},
+ {s:'Biology: Homeostasis & response',t:[
+  ['Nervous system',['Receptor → sensory neurone → relay neurone → motor neurone → effector.','Reflexes are fast and automatic and protect the body.']],
+  ['Hormones & blood glucose',['Insulin lowers blood glucose; glucagon raises it. Type 1 diabetes: no insulin made. Type 2: cells stop responding.','Hormones are carried in the blood and act more slowly but for longer than nerves.']],
+  ['Reproductive hormones',['Oestrogen, progesterone, FSH and LH control the menstrual cycle.','Contraception can be hormonal (pill, implant) or non-hormonal (condoms).']]]},
+ {s:'Biology: Inheritance & evolution',t:[
+  ['DNA & genetics',['DNA is a double helix; a gene codes for a protein. The genome is all of an organism\'s DNA.','Dominant alleles show when present; recessive only when there are two copies. Use Punnett squares.']],
+  ['Meiosis & reproduction',['Meiosis makes four genetically different gametes with half the chromosomes.','Sexual reproduction creates variation; asexual reproduction makes clones.']],
+  ['Evolution & selective breeding',['Natural selection: variation → best adapted survive → reproduce → pass on alleles.','Selective breeding and genetic engineering change organisms deliberately.']]]},
+ {s:'Biology: Ecology',t:[
+  ['Ecosystems',['Abiotic factors (light, temperature, water) and biotic factors (predators, disease, competition) affect populations.','Use quadrats and transects to sample organisms.']],
+  ['Cycles & biodiversity',['Carbon and water cycles move materials through living things and the environment.','Human impacts: deforestation, pollution and global warming reduce biodiversity.']]]},
+ {s:'Chemistry: Atomic structure & periodic table',t:[
+  ['Atoms & isotopes',['Protons (+1) and neutrons (0) in the nucleus; electrons (−1) in shells.','Isotopes have the same protons but different neutrons. The plum pudding model was replaced by the nuclear model.']],
+  ['Periodic table & groups',['Group 1 gets more reactive going down; Group 7 gets less reactive going down; Group 0 is unreactive.','A more reactive halogen displaces a less reactive one from its salt.']]]},
+ {s:'Chemistry: Bonding & structure',t:[
+  ['Ionic, covalent & metallic bonding',['Ionic: electrons transferred from metal to non-metal, forming a lattice.','Covalent: shared pairs of electrons between non-metals. Metallic: positive ions in a sea of delocalised electrons.']],
+  ['Properties of substances',['Giant ionic and giant covalent structures have high melting points; simple molecules have low ones.','Diamond is very hard; graphite conducts and is slippery; graphene is one layer of graphite.']]]},
+ {s:'Chemistry: Quantitative chemistry',t:[
+  ['Moles & masses',['Moles = mass ÷ Mr. Mass is conserved in reactions.','Use mole ratios from balanced equations to calculate masses.']],
+  ['Concentration',['Concentration (g/dm³) = mass ÷ volume (dm³). 1 dm³ = 1000 cm³.']]]},
+ {s:'Chemistry: Chemical changes',t:[
+  ['Reactivity & extraction',['Reactivity series: potassium, sodium, lithium, calcium, magnesium, (carbon), zinc, iron, copper.','Metals less reactive than carbon are extracted by reduction with carbon; more reactive ones by electrolysis.']],
+  ['Acids, bases & salts',['Acid + metal → salt + hydrogen; acid + base → salt + water; acid + carbonate → salt + water + CO₂.','pH < 7 acidic, 7 neutral, > 7 alkaline.']],
+  ['Electrolysis',['Positive ions go to the cathode (−), negative ions to the anode (+).','In aqueous solutions, hydrogen is made at the cathode if the metal is more reactive than hydrogen.']]]},
+ {s:'Chemistry: Energy, rates & equilibrium',t:[
+  ['Energy changes',['Exothermic reactions release energy (temperature rises); endothermic reactions take it in.','Bond breaking takes in energy; bond making releases it.']],
+  ['Rates of reaction',['Rate increases with temperature, concentration, pressure, surface area and catalysts.','Collision theory: particles must collide with at least the activation energy.']],
+  ['Reversible reactions',['At equilibrium the forward and backward rates are equal.','Le Chatelier: if conditions change, the equilibrium shifts to oppose the change.']]]},
+ {s:'Chemistry: Organic, analysis, atmosphere & resources',t:[
+  ['Crude oil & hydrocarbons',['Alkanes are saturated hydrocarbons (CₙH₂ₙ₊₂). Fractional distillation separates crude oil.','Cracking breaks long alkanes into shorter ones and alkenes. Bromine water turns colourless with alkenes.']],
+  ['Chemical analysis',['Pure substances melt at a specific temperature. Chromatography: Rf = distance moved by spot ÷ distance moved by solvent.','Gas tests: hydrogen pops; oxygen relights a splint; CO₂ turns limewater cloudy; chlorine bleaches litmus.']],
+  ['The atmosphere',['Early atmosphere: mostly CO₂; oxygen came from photosynthesis.','Greenhouse gases (CO₂, methane, water vapour) trap heat, causing climate change.']],
+  ['Using resources',['Potable water is made by filtering and sterilising; desalination is expensive.','Life cycle assessments judge a product\'s environmental impact from start to finish.']]]},
+ {s:'Physics: Energy',t:[
+  ['Energy stores & equations',['Kinetic energy = ½mv²; gravitational PE = mgh; elastic PE = ½ke².','Specific heat capacity: ΔE = mcΔθ.']],
+  ['Power & efficiency',['Power = energy ÷ time. Efficiency = useful output ÷ total input.','Reduce wasted energy with lubrication and insulation.']],
+  ['Energy resources',['Renewable: solar, wind, hydro, tidal, geothermal, biofuel. Non-renewable: coal, oil, gas, nuclear.','Each has pros and cons for reliability, cost and environmental impact.']]]},
+ {s:'Physics: Electricity',t:[
+  ['Circuits',['V = IR; Q = It. Series: current is the same, voltages add up. Parallel: voltage is the same, currents add up.','Know the I–V graphs for a resistor, filament lamp and diode. LDR resistance falls with light; thermistor resistance falls with heat.']],
+  ['Mains electricity & power',['UK mains: 230 V AC, 50 Hz. Live = brown, neutral = blue, earth = green/yellow.','P = IV = I²R; E = Pt = QV. The National Grid uses step-up and step-down transformers.']]]},
+ {s:'Physics: Particles & atoms',t:[
+  ['Particle model',['Density = mass ÷ volume. Specific latent heat: E = mL.','Gas pressure rises with temperature because particles move faster and hit the walls more.']],
+  ['Radioactivity',['Alpha (stopped by paper), beta (stopped by aluminium), gamma (reduced by lead).','Half-life: the time for half the nuclei to decay. Irradiation vs contamination.']]]},
+ {s:'Physics: Forces',t:[
+  ['Forces & motion',['W = mg; F = ma; work done = force × distance.','Newton\'s laws: 1) no resultant force → constant velocity; 2) F = ma; 3) equal and opposite forces.']],
+  ['Motion graphs & stopping',['Distance-time gradient = speed; velocity-time gradient = acceleration, area = distance.','Stopping distance = thinking + braking distance. Affected by speed, tiredness, road conditions.']],
+  ['Momentum',['Momentum = mass × velocity. Momentum is conserved in collisions.']]]},
+ {s:'Physics: Waves & magnetism',t:[
+  ['Waves',['v = fλ. Transverse (light) vs longitudinal (sound).','EM spectrum: radio, microwave, infrared, visible, UV, X-ray, gamma (increasing frequency).']],
+  ['Magnetism & electromagnetism',['Like poles repel; a current in a wire makes a magnetic field.','Motor effect: F = BIl. Fleming\'s left-hand rule gives the direction.']]]},
+ {s:'Triple only: Biology',t:[
+  ['Monoclonal antibodies & plant disease',['Monoclonal antibodies are identical antibodies made from hybridoma cells; used in pregnancy tests and to target cancer cells.','Plant diseases are detected by symptoms; plants defend themselves physically and chemically.']],
+  ['The brain & the eye',['The cerebrum, cerebellum and medulla control different functions.','Accommodation: the lens changes shape to focus. Myopia and hyperopia are corrected with lenses.']],
+  ['Further homeostasis',['The kidneys filter blood and control water balance using ADH.','Thermoregulation: sweating and vasodilation cool you; shivering and vasoconstriction warm you.']],
+  ['Food security & biotechnology',['Decomposition is affected by temperature, water and oxygen.','Food security is threatened by population growth, pests and climate change; solutions include sustainable fishing and GM crops.']]]},
+ {s:'Triple only: Chemistry',t:[
+  ['Transition metals & nanoparticles',['Transition metals have high melting points, form coloured compounds and act as catalysts.','Nanoparticles have a huge surface area to volume ratio; useful but their risks aren\'t fully known.']],
+  ['Titrations & gas volumes',['Titration finds the exact volume of acid needed to neutralise an alkali.','One mole of any gas takes up 24 dm³ at room temperature and pressure.']],
+  ['Further organic chemistry',['Alcohols (–OH) and carboxylic acids (–COOH) react to form esters.','Addition polymers form from alkenes; condensation polymers release a small molecule such as water.']],
+  ['Further analysis & resources',['Flame tests: lithium crimson, sodium yellow, potassium lilac, calcium orange-red, copper green.','The Haber process makes ammonia for fertilisers; alloys and corrosion prevention extend the use of metals.']]]},
+ {s:'Triple only: Physics',t:[
+  ['Space physics',['The Sun formed from a nebula; stars end as white dwarfs, or as neutron stars/black holes if massive.','Red-shift shows galaxies moving away, which is evidence for the Big Bang.']],
+  ['Static & pressure',['Rubbing insulators transfers electrons, causing static charge.','Pressure in a fluid = height × density × g. Upthrust makes objects float.']],
+  ['Lenses, light & sound',['Convex lenses make real or virtual images; concave lenses make virtual images.','Ultrasound and seismic waves are used to detect things we can\'t see.']],
+  ['Further electromagnetism',['Generators use the generator effect; transformers: Vp/Vs = np/ns.','Microphones and loudspeakers turn sound into current and back.']]]}]},
+
+{id:'englang',name:'English Language',board:'AQA 8700',icon:'📖',color:'#8a2b4f',
+ links:[['Mr Everything English','https://www.everythingeducation.co.uk/','Videos and exam walkthroughs'],['Mr Everything English (YouTube)',YT('mr everything english aqa english language'),'His free lessons'],['Mr Bruff (YouTube)','https://www.youtube.com/@mrbruff','Exam paper guides'],['Mr Salles (YouTube)','https://www.youtube.com/@MrSallesTeachesEnglish','Higher-grade technique'],['BBC Bitesize',BITE('aqa english language'),'Revision guides']],
+ vids:t=>[['Mr Everything English',YT('mr everything english '+t)],['Mr Bruff',YT('mr bruff '+t)],['Mr Salles',YT('mr salles '+t)]],
+ sections:[
+ {s:'Paper 1: Explorations in creative reading & writing',t:[
+  ['Q1: List four things (4 marks)',['Only use the lines given. Write four short, true facts in your own words or short quotes.','Spend about 5 minutes.']],
+  ['Q2: Language (8 marks)',['Pick 2–3 short quotes and zoom in on individual words and techniques.','Explain the effect on the reader. Use subject terminology, but only where it helps.']],
+  ['Q3: Structure (8 marks)',['Comment on the whole text: the opening, shifts in focus, and the ending.','Ask why the writer moves from one thing to another and what effect that has.']],
+  ['Q4: Evaluation (20 marks)',['Agree or disagree with the statement, with evidence.','Analyse methods (language and structure) and explain how they create the effect mentioned.']],
+  ['Q5: Creative writing (40 marks)',['Plan for 5 minutes. Use a clear structure, such as a cyclical ending or a narrow focus.','Vary sentences and punctuation; aim for ambitious vocabulary, accurate spelling and paragraphing.']]]},
+ {s:'Paper 2: Writers\' viewpoints & perspectives',t:[
+  ['Q1: True or false (4 marks)',['Shade four true statements from a set lines.']],
+  ['Q2: Summary of differences (8 marks)',['Compare the two sources and infer what\'s different, using evidence from both.']],
+  ['Q3: Language (12 marks)',['As Paper 1 Q2, but for one source only, in more depth.']],
+  ['Q4: Compare perspectives (16 marks)',['Compare the writers\' attitudes and the methods they use to show them.','Use comparative connectives: similarly, whereas, in contrast.']],
+  ['Q5: Viewpoint writing (40 marks)',['Write a letter, article, speech or essay for a given purpose and audience.','Use persuasive devices: direct address, rhetorical questions, facts, anecdotes, a counter-argument and a strong ending.']]]},
+ {s:'Skills',t:[
+  ['Language techniques',['Simile, metaphor, personification, alliteration, sibilance, onomatopoeia, hyperbole, pathetic fallacy.','Always explain the effect, not just name the technique.']],
+  ['SPaG',['their/there/they\'re; your/you\'re; its/it\'s. Avoid comma splices.','Use semicolons, colons, dashes and brackets accurately.']],
+  ['Spoken language (endorsement)',['A separate presentation graded Pass, Merit or Distinction. It doesn\'t count towards the GCSE grade.']]]}]},
+
+{id:'englit',name:'English Literature',board:'AQA 8702',icon:'🎭',color:'#7a2b8a',
+ links:[['Mr Everything English','https://www.everythingeducation.co.uk/','Set-text videos'],['Mr Bruff (YouTube)','https://www.youtube.com/@mrbruff','Set-text guides'],['Mr Salles (YouTube)','https://www.youtube.com/@MrSallesTeachesEnglish','Grade 9 analysis'],['BBC Bitesize',BITE('aqa english literature'),'Revision guides']],
+ vids:t=>[['Mr Everything English',YT('mr everything english '+t)],['Mr Bruff',YT('mr bruff '+t)],['Mr Salles',YT('mr salles '+t)]],
+ sections:[
+ {s:'Shakespeare: Macbeth',t:[
+  ['Plot & structure',['Witches\' prophecy → Duncan\'s murder → Banquo\'s murder → Macduff\'s family killed → Macbeth killed by Macduff.','A tragedy: Macbeth\'s ambition is his fatal flaw.']],
+  ['Characters',['Macbeth: brave soldier → paranoid tyrant. Lady Macbeth: manipulative, then consumed by guilt.','Banquo is a foil to Macbeth; Macduff represents justice and loyalty.']],
+  ['Themes & context',['Ambition, guilt, the supernatural, kingship and the natural order.','Written for King James I, who believed in witchcraft and the divine right of kings.']]]},
+ {s:'19th-century novel: A Christmas Carol',t:[
+  ['Plot & structure',['Five staves: Marley\'s ghost, then the Ghosts of Christmas Past, Present and Yet to Come. Scrooge is redeemed.','A novella with a clear moral message.']],
+  ['Characters & themes',['Scrooge: miserly → generous. Bob Cratchit and Tiny Tim show the effect of poverty.','Themes: social responsibility, redemption, family, poverty.']],
+  ['Context',['Dickens criticised the Poor Law and workhouses and wanted the rich to help the poor.']]]},
+ {s:'Modern text: An Inspector Calls',t:[
+  ['Plot & structure',['The Birlings\' celebration is interrupted by Inspector Goole, who reveals each person\'s link to Eva Smith\'s death.','Set in 1912, written in 1945. A well-made play with a cliffhanger ending.']],
+  ['Characters & themes',['Mr Birling (capitalist), Mrs Birling (snobbish), Sheila and Eric (change), Gerald (doesn\'t change).','Themes: social responsibility, class, age vs youth, gender.']],
+  ['Context',['Priestley was a socialist. The 1945 audience knew the two world wars proved Mr Birling wrong.']]]},
+ {s:'Poetry',t:[
+  ['Power & Conflict anthology',['15 poems. Group them by theme: power of nature, power of humans, effects of conflict, memory, identity.','Compare: what each poet says, how (language, form, structure), and why (context).']],
+  ['Unseen poetry',['Q1: analyse one poem. Q2: compare it with a second poem, focusing on methods.','Look at the title, speaker, tone, imagery, structure and the ending.']]]},
+ {s:'Note',t:[
+  ['Set texts vary by school',['Your school may study different set texts. Add your own notes and flashcards to the topics here, or use the general skills above.']]]}]},
+
+{id:'rs',name:'Religious Studies',board:'Eduqas Route A',icon:'🕊️',color:'#5a6b8a',
+ links:[['BBC Bitesize',BITE('eduqas religious studies'),'Revision guides'],['RE:ONLINE / Eduqas resources','https://www.eduqas.co.uk/qualifications/religious-studies-gcse/','Specification and past papers'],['YouTube revision',YT('eduqas gcse religious studies route a revision'),'Video lessons']],
+ vids:t=>[['YouTube',YT('eduqas gcse RS '+t)],['BBC Bitesize',BITE(t+' religious studies')]],
+ sections:[
+ {s:'Component 1: Themes (Christian, Muslim & non-religious views)',t:[
+  ['Issues of Relationships',['Marriage, cohabitation, divorce, same-sex relationships, contraception and gender roles.','Know Christian and Muslim teachings and non-religious (humanist) views.']],
+  ['Issues of Life and Death',['Origins of the universe and life (Big Bang, evolution, creation), sanctity vs quality of life.','Abortion, euthanasia and beliefs about life after death.']],
+  ['Issues of Good and Evil',['Crime and punishment: aims of punishment (retribution, deterrence, reformation), the death penalty.','Forgiveness, and the problem of evil and suffering.']],
+  ['Issues of Human Rights',['Human rights, social justice, censorship and freedom of religious expression.','Prejudice and discrimination; wealth and poverty.']]]},
+ {s:'Component 2: Christianity',t:[
+  ['Christian beliefs',['The Trinity, creation, the incarnation, crucifixion, resurrection and ascension.','Salvation, the afterlife, and the problem of evil.']],
+  ['Christian practices',['Worship (liturgical and non-liturgical), sacraments (baptism, Eucharist), prayer and pilgrimage.','The role of the Church in the community and worldwide, including mission and charity.']]]},
+ {s:'Component 3: Islam',t:[
+  ['Muslim beliefs',['Tawhid (oneness of God), prophethood (risalah), angels, the afterlife (akhirah), predestination.','The Qur\'an as the final revelation; Sunni and Shi\'a differences.']],
+  ['Muslim practices',['The Five Pillars: Shahadah, Salah, Zakah, Sawm, Hajj.','Festivals (Id-ul-Fitr, Id-ul-Adha) and jihad (greater and lesser).']],
+  ['Other religions',['If your school studies Judaism or another faith instead, add your own notes and flashcards here.']]]}]},
+
+{id:'bus',name:'Business',board:'AQA 8132 (CGP guide)',icon:'💼',color:'#8a5a2b',
+ links:[['BBC Bitesize',BITE('gcse business'),'Revision guides'],['Tutor2u',YT('tutor2u gcse business'),'Video explanations'],['YouTube revision',YT('aqa gcse business revision'),'Video lessons']],
+ vids:t=>[['YouTube',YT('gcse business '+t)],['BBC Bitesize',BITE(t+' business')]],
+ sections:[
+ {s:'Business in the real world',t:[
+  ['Purpose & enterprise',['Businesses provide goods and services. Entrepreneurs take risks to make a profit.','Aims: survival, profit, growth, market share, social/ethical goals.']],
+  ['Ownership & location',['Sole trader and partnership: unlimited liability. Ltd and PLC: limited liability.','Location depends on costs, the market, labour, raw materials and competitors.']],
+  ['Business plans & stakeholders',['A business plan sets out aims, the market, finances and strategy.','Stakeholders (owners, staff, customers, suppliers, community) have different, sometimes conflicting, objectives.']]]},
+ {s:'Influences on business',t:[
+  ['Technology, ethics & environment',['E-commerce and digital communication change how businesses operate.','Ethical and environmental choices can raise costs but improve reputation.']],
+  ['Economy & legislation',['Interest rates, unemployment, exchange rates and consumer income affect demand and costs.','Employment and consumer law protect workers and customers.']],
+  ['Globalisation & competition',['Globalisation creates bigger markets but more competition.','Businesses manage risk and uncertainty by planning and diversifying.']]]},
+ {s:'Business operations',t:[
+  ['Production',['Job, batch and flow production. Automation increases efficiency.','Quality control (checking) vs quality assurance (built into every stage).']],
+  ['Supply chain & procurement',['Just-in-time reduces stock costs but risks running out; just-in-case holds buffer stock.','Choose suppliers on price, quality, reliability and payment terms.']],
+  ['Sales & customer service',['Good customer service builds loyalty and repeat business.','Consumer law requires goods to be as described and fit for purpose.']]]},
+ {s:'Human resources',t:[
+  ['Organisational structure',['Tall structures have many layers and narrow spans of control; flat structures are the opposite.','Centralised vs decentralised decision-making.']],
+  ['Recruitment & training',['Internal recruitment is cheaper; external brings new ideas.','On-the-job vs off-the-job training.']],
+  ['Motivation',['Financial: pay, bonus, commission, profit sharing. Non-financial: praise, promotion, job enrichment.','Motivated staff are more productive and less likely to leave.']]]},
+ {s:'Marketing',t:[
+  ['Market research & segmentation',['Primary research (surveys, interviews) vs secondary (existing data). Qualitative vs quantitative.','Segment the market by age, income, gender, location or lifestyle.']],
+  ['The marketing mix (4Ps)',['Product, Price, Place, Promotion. They must work together.','Product life cycle: development, introduction, growth, maturity, decline (extension strategies help).']]]},
+ {s:'Finance',t:[
+  ['Sources of finance',['Internal: retained profit, selling assets. External: loans, overdrafts, share capital, crowdfunding.']],
+  ['Revenue, costs & break-even',['Revenue = price × quantity. Total costs = fixed + variable. Profit = revenue − costs.','Break-even = fixed costs ÷ (price − variable cost per unit).']],
+  ['Cash flow & profitability',['Cash flow forecasts predict money in and out; net cash flow = inflows − outflows.','Gross profit margin = gross profit ÷ revenue × 100. Average rate of return (ARR) judges investments.']]]}]},
+
+{id:'geo',name:'Geography',board:'AQA 8035',icon:'🌍',color:'#2b6a5a',
+ links:[['BBC Bitesize',BITE('aqa geography'),'Revision guides'],['Cognito','https://cognitoedu.org/','Geography videos'],['YouTube revision',YT('aqa gcse geography revision'),'Video lessons'],['Internet Geography','https://www.internetgeography.net/','Case studies and notes']],
+ vids:t=>[['YouTube',YT('aqa gcse geography '+t)],['BBC Bitesize',BITE(t+' geography')]],
+ sections:[
+ {s:'Paper 1: Living with the physical environment',t:[
+  ['Tectonic hazards',['Constructive, destructive and conservative plate margins.','Compare the effects and responses of earthquakes in a richer and a poorer country.','Reduce risk with monitoring, prediction, protection and planning.']],
+  ['Weather hazards',['Global atmospheric circulation creates high- and low-pressure belts.','Tropical storms form over warm oceans (27°C+). Learn a named tropical storm and a UK weather event.']],
+  ['Climate change',['Evidence: ice cores, tree rings, temperature records. Natural causes vs human (greenhouse gases).','Mitigation (reduce causes) vs adaptation (live with the effects).']],
+  ['Ecosystems & tropical rainforests',['Ecosystems link biotic and abiotic parts through food webs and nutrient cycles.','Rainforest deforestation causes and impacts; sustainable management.']],
+  ['Hot deserts or cold environments',['Plants and animals are adapted to extreme conditions.','Opportunities and challenges of development; managing desertification or protecting wilderness.']],
+  ['Coasts',['Erosion (hydraulic action, abrasion, attrition, solution) and deposition landforms such as spits.','Hard engineering (sea walls, groynes) vs soft engineering (beach nourishment).']],
+  ['Rivers',['Upper course: waterfalls and gorges. Lower course: meanders, oxbow lakes, levees.','Flood hydrographs; flood management schemes.']],
+  ['Glacial landscapes',['Erosion landforms: corries, arêtes, pyramidal peaks. Deposition: moraines, drumlins.','Land use conflicts in glaciated areas, e.g. tourism.']]]},
+ {s:'Paper 2: Challenges in the human environment',t:[
+  ['Urban issues & challenges',['Urbanisation is fastest in poorer countries. Know a city in an LIC/NEE and a UK city case study.','Sustainable urban living: water and energy conservation, green space, transport.']],
+  ['The changing economic world',['Measuring development: GNI per head, HDI, birth/death rates. The Demographic Transition Model.','Strategies to close the development gap: aid, trade, tourism, investment.']],
+  ['Resource management',['Unequal supply of food, water and energy in the UK and the world.','Optional focus: food, water or energy, with a large-scale and a local scheme example.']]]},
+ {s:'Paper 3: Geographical applications',t:[
+  ['Issue evaluation',['Based on a pre-release booklet issued 12 weeks before the exam.','Weigh up options and justify a decision using evidence.']],
+  ['Fieldwork',['Two enquiries (one physical, one human): question, method, data, analysis, conclusion, evaluation.','Know the strengths and limitations of your methods.']],
+  ['Geographical skills',['Map reading (grid references, scale, contours), graphs and statistics.']]]}]},
+
+{id:'hist',name:'History',board:'Edexcel 1HI0',icon:'🏰',color:'#6b4a2b',
+ links:[['BBC Bitesize',BITE('edexcel gcse history'),'Revision guides'],['Cognito','https://cognitoedu.org/','History videos'],['YouTube revision',YT('edexcel gcse history revision'),'Video lessons']],
+ vids:t=>[['YouTube',YT('edexcel gcse history '+t)],['BBC Bitesize',BITE(t)]],
+ sections:[
+ {s:'Paper 1: Medicine in Britain c1250–present',t:[
+  ['Medieval medicine c1250–1500',['Ideas: the Four Humours (Hippocrates, Galen) and religious and supernatural causes.','Black Death 1348: blamed on God, bad air (miasma) and the planets.']],
+  ['Renaissance c1500–1700',['Vesalius corrected Galen\'s anatomy; Harvey discovered blood circulation.','Great Plague 1665: still a limited understanding of causes.']],
+  ['18th & 19th centuries',['Jenner\'s smallpox vaccine (1796); Pasteur\'s germ theory (1861); Koch identified specific bacteria.','Anaesthetics (chloroform) and antiseptics (Lister) improved surgery; the 1875 Public Health Act.']],
+  ['Modern medicine c1900–present',['Fleming discovered penicillin (1928); Florey and Chain mass-produced it.','The NHS (1948), DNA and genetic medicine, and the fight against lung cancer.']],
+  ['The Western Front 1914–18',['Trench conditions caused trench foot, gas injuries and shrapnel wounds.','Chain of evacuation: aid posts → dressing stations → casualty clearing stations → base hospitals. X-rays and blood transfusions developed.']]]},
+ {s:'Paper 2: Early Elizabethan England 1558–88',t:[
+  ['Queen, government & religion 1558–69',['Elizabeth\'s problems: legitimacy, gender, marriage, finance and religion.','The Religious Settlement of 1559 created a "middle way" Church of England.']],
+  ['Challenges at home & abroad 1569–88',['Revolt of the Northern Earls (1569) and plots: Ridolfi, Throckmorton, Babington.','Mary, Queen of Scots executed in 1587; the Spanish Armada defeated in 1588.']],
+  ['Elizabethan society',['Education, leisure and the theatre; the problem of the poor and vagabonds.','Exploration: Drake\'s circumnavigation (1577–80) and Raleigh\'s attempt to colonise Virginia.']]]},
+ {s:'Paper 2: Superpower relations & the Cold War 1941–91',t:[
+  ['Origins 1941–58',['Conferences at Tehran, Yalta and Potsdam; the iron curtain.','Truman Doctrine and Marshall Plan; the Berlin Blockade 1948–49; NATO and the Warsaw Pact.']],
+  ['Crises 1958–70',['Berlin Wall (1961), Cuban Missile Crisis (1962), Prague Spring (1968).']],
+  ['The end of the Cold War 1970–91',['Détente and SALT; the Soviet invasion of Afghanistan (1979).','Reagan, Gorbachev and the fall of the Berlin Wall (1989); the USSR collapsed in 1991.']]]},
+ {s:'Paper 3: Weimar & Nazi Germany 1918–39',t:[
+  ['The Weimar Republic 1918–29',['The Treaty of Versailles was deeply resented; Article 48 was a weakness of the constitution.','Crises: Spartacists, Kapp Putsch, hyperinflation in 1923. Stresemann\'s recovery and the Dawes and Young Plans.']],
+  ['Hitler\'s rise to power 1919–33',['Munich Putsch (1923) and Mein Kampf. The Depression boosted Nazi support.','Hitler became Chancellor in January 1933.']],
+  ['Nazi control & dictatorship 1933–39',['Reichstag Fire, Enabling Act, Night of the Long Knives; Hitler became Führer in 1934.','Control through the SS, Gestapo and propaganda (Goebbels); the Church was controlled.']],
+  ['Life in Nazi Germany 1933–39',['Women: Kinder, Küche, Kirche. Youth: Hitler Youth and Nazi education.','Persecution of Jews: boycotts, the Nuremberg Laws (1935), Kristallnacht (1938).']]]},
+ {s:'Exam skills',t:[
+  ['Source & interpretation questions',['Judge usefulness by content, provenance (nature, origin, purpose) and your own knowledge.','For interpretations, explain how and why they differ, then judge how far you agree.']]]}]}
+];
+
+// ================= SUBJECTS (by spec) =================
+const TD={}; // topic data cache: key -> {notes,hl,rag,cards}
+const tkey=(s,si,ti)=>`${s.id}__${si}_${ti}`;
+async function loadTD(){ try{ for(const d of await Store.list('topic')) TD[d.id]=d; }catch(e){} }
+function tdOf(k){ return TD[k]=TD[k]||{notes:'',hl:[],rag:'',cards:[]}; }
+function saveTD(k){ const d=tdOf(k); return Store.save('topic',k,{notes:d.notes||'',hl:d.hl||[],rag:d.rag||'',cards:d.cards||[]}); }
+function subjPct(s){ let n=0,p=0; s.sections.forEach((sec,si)=>sec.t.forEach((_,ti)=>{ n++; const r=(TD[tkey(s,si,ti)]||{}).rag; p+=r==='g'?2:r==='a'?1:0; })); return n?Math.round(p/(n*2)*100):0; }
+async function renderSubjTiles(){
+  await loadTD();
+  const box=$('subjtiles'); box.innerHTML='';
+  for(const s of SPEC){
+    const b=document.createElement('button'); b.className='tile'; const c=subjPct(s);
+    b.innerHTML=`<div class="ic" style="background:${s.color};font-size:2rem"></div><b></b><span></span><div class="pbarx" style="width:100%;margin-top:4px"><div style="height:100%;width:${c}%;background:var(--accent)"></div></div><div class="go">View</div>`;
+    b.querySelector('.ic').textContent=s.icon; b.querySelector('b').textContent=s.name; b.querySelector('span').textContent=`${s.board} · ${c}% confident`;
+    b.onclick=()=>openSubject(s); box.appendChild(b);
+  }
+}
+function openSubject(s){ SUB=s; showScreen('subject'); $('subname').textContent=s.icon+' '+s.name; setSubView('topics'); }
+function setSubView(v){ subView=v; for(const b of document.querySelectorAll('#subseg button')) b.classList.toggle('on',b.dataset.v===v); (v==='res'?renderResources:renderTopics)(); }
+function renderResources(){
+  const box=$('subbody'); box.innerHTML='<div class="muted" style="margin-bottom:10px">Free, trusted sites for '+SUB.name+' ('+SUB.board+'). They open in a new tab.</div>';
+  const list=document.createElement('div'); list.className='flist';
+  for(const [n,u,d] of SUB.links){ const a=document.createElement('a'); a.className='fitem card'; a.href=u; a.target='_blank'; a.rel='noopener noreferrer'; a.style.cssText='text-decoration:none;color:inherit;margin:0';
+    const b=document.createElement('span'); b.className='nm'; b.textContent='🔗 '+n; const t=document.createElement('span'); t.className='st'; t.textContent=d; t.style.flexBasis='100%'; a.append(b,t); list.appendChild(a); }
+  box.appendChild(list);
+}
+const RAGDOT={r:'🔴',a:'🟠',g:'🟢'};
+function renderTopics(){
+  const box=$('subbody'); box.innerHTML='';
+  const inp=document.createElement('input'); inp.placeholder='Search topics…'; inp.style.cssText='width:100%;margin-bottom:12px';
+  const list=document.createElement('div'); box.append(inp,list);
+  const draw=()=>{
+    const q=inp.value.trim().toLowerCase(); list.innerHTML='';
+    SUB.sections.forEach((sec,si)=>{
+      const ts=sec.t.map((t,ti)=>[t,ti]).filter(([t])=>!q||(t[0]+' '+t[1].join(' ')+' '+sec.s).toLowerCase().includes(q));
+      if(!ts.length) return;
+      const d=document.createElement('details'); d.className='card topic'; d.open=!!q||sec.s.startsWith('Triple')===false&&SUB.sections.length<=3;
+      const sm=document.createElement('summary'); const done=ts.filter(([,ti])=>(TD[tkey(SUB,si,ti)]||{}).rag==='g').length;
+      sm.textContent=`${sec.s}  ·  ${done}/${ts.length} 🟢`; d.appendChild(sm);
+      for(const [t,ti] of ts){
+        const k=tkey(SUB,si,ti), td=TD[k]||{};
+        const row=document.createElement('button'); row.className='fitem'; row.style.cssText='width:100%;margin-top:8px;text-align:left';
+        const n=document.createElement('span'); n.className='nm'; n.textContent=(td.rag?RAGDOT[td.rag]+' ':'⚪ ')+t[0];
+        const st=document.createElement('span'); st.className='st'; st.textContent=[(td.notes||'').trim()?'📝':'',(td.cards||[]).length?`🗂️ ${td.cards.length}`:''].join(' ');
+        row.append(n,st); row.onclick=()=>openTopic(si,ti); d.appendChild(row);
+      }
+      list.appendChild(d);
+    });
+    if(!list.children.length) list.innerHTML='<div class="muted">Nothing found.</div>';
+  };
+  inp.oninput=draw; draw();
+}
+let TP=null;
+function openTopic(si,ti){
+  const t=SUB.sections[si].t[ti], k=tkey(SUB,si,ti), d=tdOf(k);
+  TP={si,ti,k,t}; showScreen('topic');
+  $('tpname').textContent=t[0]; $('tpsub').textContent=`${SUB.name} · ${SUB.board} · ${SUB.sections[si].s}`;
+  const ul=$('tpkeys'); ul.innerHTML='';
+  t[1].forEach((p,i)=>{ const li=document.createElement('li'); li.textContent=p; li.style.cursor='pointer'; li.style.borderRadius='4px';
+    const paint=()=>{ li.style.background=(d.hl||[]).includes(i)?'rgba(247,198,49,.28)':''; }; paint();
+    li.onclick=()=>{ d.hl=d.hl||[]; d.hl=d.hl.includes(i)?d.hl.filter(x=>x!==i):[...d.hl,i]; paint(); saveTD(k).catch(()=>{}); }; ul.appendChild(li); });
+  const rg=$('tprag'); rg.innerHTML='';
+  for(const [r,e] of [['r','🔴'],['a','🟠'],['g','🟢']]){ const b=document.createElement('button'); b.textContent=e; b.classList.toggle('on',d.rag===r);
+    b.onclick=()=>{ d.rag=d.rag===r?'':r; saveTD(k).catch(()=>{}); for(const x of rg.children) x.classList.toggle('on',x===b&&d.rag===r); }; rg.appendChild(b); }
+  const ln=$('tplinks'); ln.innerHTML='';
+  for(const [n,u] of SUB.vids(t[0])){ const a=document.createElement('a'); a.href=u; a.target='_blank'; a.rel='noopener noreferrer'; a.textContent='▶ '+n; a.className='flag'; a.style.cssText='text-decoration:none;background:rgba(129,182,76,.18);color:var(--text);padding:8px 12px'; ln.appendChild(a); }
+  $('tpnotes').value=d.notes||''; $('tpsaved').textContent='';
+  renderTpCards();
+}
+const saveTpSoon=debounce(()=>{ if(!TP) return; $('tpsaved').textContent='Saving…'; saveTD(TP.k).then(()=>$('tpsaved').textContent='Saved ✓').catch(()=>$('tpsaved').textContent='⚠ Not saved'); },700);
+$('tpnotes').oninput=()=>{ if(!TP) return; tdOf(TP.k).notes=$('tpnotes').value; $('tpsaved').textContent='Editing…'; saveTpSoon(); };
+function renderTpCards(){
+  const d=tdOf(TP.k), box=$('tpcards'); box.innerHTML='';
+  if(!d.cards.length){ box.innerHTML='<div class="muted">No cards yet. Click <b>+ Card</b> to make one.</div>'; return; }
+  d.cards.forEach((c,i)=>{
+    const row=document.createElement('div'); row.className='cardrow';
+    const n=document.createElement('span'); n.className='n'; n.textContent=(i+1)+'.';
+    const f=document.createElement('textarea'); f.className='f'; f.placeholder='Question'; f.value=c.f||''; f.rows=2;
+    const b=document.createElement('textarea'); b.className='b'; b.placeholder='Answer'; b.value=c.b||''; b.rows=2;
+    const x=document.createElement('button'); x.className='x'; x.textContent='✕';
+    f.oninput=()=>{ c.f=f.value; $('tpsaved').textContent='Editing…'; saveTpSoon(); }; b.oninput=()=>{ c.b=b.value; $('tpsaved').textContent='Editing…'; saveTpSoon(); };
+    x.onclick=()=>{ d.cards.splice(i,1); saveTpSoon(); renderTpCards(); };
+    row.append(n,f,b,x); box.appendChild(row);
+  });
+}
+$('tpaddc').onclick=()=>{ if(!TP) return; tdOf(TP.k).cards.push({f:'',b:''}); renderTpCards(); const r=$('tpcards').querySelectorAll('.f'); r[r.length-1].focus(); };
+// Study: turn this topic's cards into a deck (also usable in Flashcards and Study together)
+$('tpstudy').onclick=async()=>{
+  const d=tdOf(TP.k), cards=d.cards.filter(c=>(c.f||'').trim());
+  if(!cards.length){ $('tpsaved').textContent='Add a card first!'; return; }
+  await saveTD(TP.k).catch(()=>{});
+  const deck={id:'t_'+TP.k,name:`${SUB.name}: ${TP.t[0]}`,cards};
+  await Store.save('decks',deck.id,{name:deck.name,cards}).catch(()=>{});
+  showScreen('cards'); C.cur=deck; startStudy();
+};
+$('tpback').onclick=()=>{ showScreen('subject'); renderTopics(); };
+$('subback').onclick=()=>{ showScreen('hub'); setHubTab('subjects'); };
+
+// ================= BUGS & IDEAS =================
+let fbType='bug';
+for(const b of document.querySelectorAll('#fbtype button')) b.onclick=()=>{ fbType=b.dataset.t; for(const x of document.querySelectorAll('#fbtype button')) x.classList.toggle('on',x===b); };
+$('openfb').onclick=async()=>{
+  showScreen('fb'); $('fbmsg').textContent='';
+  const admin=!!(window.Acct&&Acct.isAdmin); $('fbinbox').classList.toggle('hidden',!admin);
+  if(admin){ const box=$('fblist'); box.innerHTML='<div class="muted">Loading…</div>';
+    try{ const list=await Acct.feedback.list(); box.innerHTML=list.length?'':'<div class="muted">Nothing yet.</div>';
+      for(const x of list){ const it=document.createElement('div'); it.className='fitem';
+        const n=document.createElement('span'); n.className='nm'; n.textContent=`${x.type==='idea'?'💡':'🐞'} ${x.name||'?'}`;
+        const st=document.createElement('span'); st.className='st'; st.textContent=x.at?fmtTime(x.at):'';
+        const tx=document.createElement('div'); tx.style.cssText='flex-basis:100%;white-space:pre-wrap'; tx.textContent=SAFETY.clean(x.text||'');
+        const del=fbtn('Done ✓','',()=>Acct.feedback.remove(x.id).then(()=>it.remove()).catch(()=>{}));
+        it.append(n,st,del,tx); box.appendChild(it); } }
+    catch(e){ box.innerHTML='<div class="muted">Couldn\'t load. Update the Firestore rules.</div>'; } }
+};
+$('fbsend').onclick=async()=>{
+  const t=$('fbtext').value.trim(); if(t.length<3) return;
+  const bad=SAFETY.check(t); if(bad){ $('fbmsg').textContent=bad; return; }
+  try{ await Acct.feedback.send(fbType,t.slice(0,1000)); $('fbtext').value=''; $('fbmsg').textContent='Sent, thank you! ✓'; }
+  catch(e){ $('fbmsg').textContent='Couldn\'t send. Try again later.'; }
+};
+</script>
 
 <script type="module">
 // ======== PASTE YOUR FIREBASE CONFIG HERE (see setup steps) ========
@@ -2656,6 +3123,12 @@ if(!FIREBASE_CONFIG){
       listen(sid,cb,err){ return onSnapshot(doc(db,'sessions',sid),d=>cb(d.exists()?d.data():null),e=>{ console.warn(e); err&&err(e); }); },
       update(sid,patch){ return updateDoc(doc(db,'sessions',sid),patch); },
       point(sid,uid,pos){ return updateDoc(doc(db,'sessions',sid),{['score.'+uid]:increment(1),['knew.'+uid]:pos}); }
+    };
+    // bugs & suggestions: anyone signed in can send; only the admin can read
+    Acct.feedback={
+      send(type,text){ return addDoc(collection(db,'feedback'),{type,text,from:Acct.user.uid,name:Acct.name,at:Date.now()}); },
+      async list(){ const qs=await getDocs(query(collection(db,'feedback'),orderBy('at','desc'),limit(200))); const out=[]; qs.forEach(d=>out.push({...d.data(),id:d.id})); return out; },
+      remove(id){ return deleteDoc(doc(db,'feedback',id)); }
     };
     Acct.friends={
       async send(name){
