@@ -331,6 +331,18 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 .dropping .dmwrap::after{content:"Drop photo to send";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;background:rgba(0,0,0,.45);border-radius:12px;pointer-events:none}
 .dmwrap{position:relative}
 .revwarn{background:#5a1f1f;border:1px solid #a33;color:#ffd6d6;font-weight:800;border-radius:10px;padding:10px 14px;margin:10px 0;text-align:center;font-size:.9rem;letter-spacing:.01em}
+
+/* Google search: force results inline and dark, even if the engine is set to "overlay" layout */
+.gsc-results-wrapper-overlay{position:static!important;width:auto!important;height:auto!important;max-height:none!important;box-shadow:none!important;padding:0!important;background:transparent!important;top:auto!important;left:auto!important}
+.gsc-modal-background-image{display:none!important}
+.gsc-results-close-btn{display:none!important}
+.gsc-control-wrapper-cse,.gsc-results-wrapper-nooverlay,.gsc-results-wrapper-visible,.gsc-resultsbox-visible,.gsc-wrapper,.gsc-results,.gsc-webResult,.gsc-result,.gsc-table-result,.gsc-above-wrapper-area,.gsc-orderby-container{background:transparent!important;color:#e8e6e1!important;border-color:rgba(255,255,255,.08)!important}
+.gs-snippet,.gsc-result-info,.gsc-orderby-label,.gs-fileFormat,.gs-spelling{color:#cfcdc7!important}
+.gs-title,.gs-title *,a.gs-title{color:#a8d4ff!important}
+.gs-visibleUrl,.gs-visibleUrl-breadcrumb,.gsc-url-top *{color:#8fc75a!important}
+.gsc-cursor-page{color:#e8e6e1!important;background:transparent!important}
+.gsc-cursor-current-page{color:#8fc75a!important}
+.gs-image-box img{border-radius:6px}
 </style>
 </head>
 <body>
@@ -2123,7 +2135,8 @@ function loadCSE(){
   if(cseReady) return cseReady;
   cseReady=new Promise((res,rej)=>{
     window.__gcse={parsetags:'explicit',callback:()=>{
-      google.search.cse.element.render({div:'sres',tag:'searchresults-only',gname:'csq',
+      $('sres').innerHTML='<div id="sresbox"></div>';
+      google.search.cse.element.render({div:'sresbox',tag:'searchresults-only',gname:'csq',
         attributes:{enableHistory:false,linkTarget:'_blank',safeSearch:'active',noResultsString:'No results found.'}});
       res();
     }};
