@@ -233,6 +233,7 @@ button.primary:hover{filter:brightness(1.08)}
 .fitem{display:flex;align-items:center;gap:10px;background:#2f2d2a;border-radius:10px;padding:10px 12px;flex-wrap:wrap}
 .fitem .nm{font-weight:700;flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis}
 .fitem .st{color:var(--muted);font-size:.85rem}
+.flag{background:#5a4512;color:#f3dfa6;border-radius:6px;padding:2px 8px;font-size:.78rem;font-weight:700}
 #toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;background:#2d3a22;border:1px solid #4b6b33;border-radius:12px;padding:12px 14px;display:none;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:calc(100vw - 24px)}
 </style>
 </head>
@@ -269,6 +270,7 @@ button.primary:hover{filter:brightness(1.08)}
       <button class="tile" id="opennotes"><div class="ic" style="background:#3b5f8a;font-size:2rem">📝</div><b>Notes</b><span>Write and search your notes. Saves as you type.</span><div class="go">View</div></button>
       <button class="tile" id="opencards"><div class="ic" style="background:#7a4d8f;font-size:2rem">🗂️</div><b>Flashcards</b><span>Make decks and test yourself with flip cards.</span><div class="go">View</div></button>
       <button class="tile" id="openfriends"><div class="ic" style="background:#8a6a2b;font-size:2rem">👥</div><b>Friends<span id="fbadge" class="badge2 hidden"></span></b><span>Add friends by username and challenge them.</span><div class="go">View</div></button>
+      <button class="tile hidden" id="openadmin"><div class="ic" style="background:#8a2b2b;font-size:2rem">👑</div><b>Admin</b><span>Manage players: stats and bans.</span><div class="go">View</div></button>
       <div class="tile soon"><div class="ic">＋</div><b>More coming soon</b><span>New apps will show up here.</span></div>
     </div>
   </div>
@@ -392,6 +394,16 @@ button.primary:hover{filter:brightness(1.08)}
       </div>
       <div class="card" id="freqcard"><h3>Friend requests</h3><div class="flist" id="freqs"></div></div>
       <div class="card"><h3>Your friends</h3><div class="flist" id="flist"><div class="muted">Loading…</div></div></div>
+    </div>
+  </div>
+
+  <div id="admin" class="screen hidden">
+    <div class="apphead"><button class="back js-tohub">← Home</button><h2>👑 Admin</h2><span class="sp"></span><span class="muted" id="acount"></span><button id="arefresh">↻ Refresh</button></div>
+    <div class="card">
+      <input id="asearch" placeholder="Search players…" style="width:100%;margin-bottom:10px">
+      <label class="row" style="margin-bottom:10px;gap:6px"><input type="checkbox" id="aflagged"> Show flagged only (possible real names)</label>
+      <div id="amsg" class="muted" style="margin-bottom:8px"></div>
+      <div class="flist" id="alist"></div>
     </div>
   </div>
   <div id="game" class="hidden">
@@ -1256,7 +1268,7 @@ function banner(text,btns){
 
 
 // ---------- screens, accounts glue, saving ----------
-const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends'];
+const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin'];
 const all=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
 function showScreen(id){
   for(const s of SCREENS) $(s).classList.toggle('hidden',s!==id);
@@ -1289,6 +1301,7 @@ window.App={
   showScreen,
   signedIn(name){
     isGuest=false; all('.js-me',e=>e.textContent=name);
+    $('openadmin').classList.toggle('hidden',!(window.Acct&&Acct.isAdmin));
     for(const el of document.querySelectorAll('.acctonly')) el.classList.remove('hidden');
     all('.js-logout',e=>e.classList.remove('hidden')); all('.js-signin',e=>e.classList.add('hidden'));
     if(!G) showScreen('hub');
@@ -1337,7 +1350,7 @@ $('resumebtn').onclick=()=>{
 };
 $('discard').onclick=()=>{ if(window.Acct&&Acct.user) Acct.clearCurrent(); };
 $('guest').onclick=()=>{
-  isGuest=true; all('.js-me',e=>e.textContent='Guest');
+  isGuest=true; all('.js-me',e=>e.textContent='Guest'); $('openadmin').classList.add('hidden');
   for(const el of document.querySelectorAll('.acctonly')) el.classList.add('hidden');
   all('.js-logout',e=>e.classList.add('hidden')); all('.js-signin',e=>e.classList.remove('hidden'));
   $('resume').style.display='none';
@@ -1675,6 +1688,63 @@ function showInviteToast(){
   t.style.display='flex'; sound('check');
 }
 
+
+// ================= ADMIN =================
+// Heuristic "looks like a real name" check for usernames (common UK first names + surnames).
+const FIRST_NAMES=new Set(('oliver george harry jack noah leo arthur oscar charlie muhammad mohammed freddie alfie theo thomas archie henry william james joshua jacob alexander isaac ethan max lucas samuel sam daniel dan joseph joe benjamin ben adam dylan logan harrison sebastian liam mason ryan lewis tyler kai luke callum matthew matt aaron reece nathan connor jake michael mike david dave chris christopher andrew andy john jon peter paul mark tom tommy jamie josh alex owen elliot finley rory toby zac zach jayden '+
+'olivia amelia isla ava mia ivy lily isabella rosie sophia sophie grace freya willow florence emily ella poppy evie elsie charlotte evelyn sienna daisy phoebe sofia alice ruby matilda millie chloe jessica jess emma hannah lucy holly megan katie amy lauren ellie abigail molly scarlett harper maisie layla zara aisha fatima maya leah erin niamh caitlin eva anna laura rachel sarah emma kate')
+  .split(' '));
+const SURNAMES=new Set(('smith jones williams taylor brown davies evans wilson thomas johnson roberts robinson thompson wright walker white edwards hughes green hall lewis harris clarke clark patel jackson wood turner martin cooper hill ward morris moore king watson baker harrison morgan young allen mitchell anderson lee bell parker davis kelly khan ali hussain ahmed singh shah murphy campbell stewart scott murray macdonald reid kaur cook bailey carter phillips richardson cox howard collins hughes price bennett gray grey russell palmer mills rose fox lloyd hunt ellis owen').split(' '));
+function realNameFlag(name){
+  const raw=(name||'').replace(/([a-z])([A-Z])/g,'$1 $2').toLowerCase();
+  const toks=raw.split(/[^a-z]+/).filter(t=>t.length>=3);
+  if(!toks.length) return null;
+  const hits=[];
+  for(const t of toks){ if(FIRST_NAMES.has(t)) hits.push(t); else if(SURNAMES.has(t)) hits.push(t); }
+  if(!hits.length){ // joined like "jamessmith": try splitting each token in two
+    for(const t of toks) for(let i=3;i<=t.length-3;i++){ const x=t.slice(0,i), y=t.slice(i); if(FIRST_NAMES.has(x)&&(SURNAMES.has(y)||FIRST_NAMES.has(y))) hits.push(x,y); }
+  }
+  return hits.length?[...new Set(hits)].join(' + '):null;
+}
+
+const A={users:[]};
+async function openAdmin(){
+  if(!(window.Acct&&Acct.isAdmin)) return;
+  showScreen('admin'); $('alist').innerHTML='<div class="muted">Loading…</div>'; $('amsg').textContent='';
+  try{ A.users=await Acct.admin.list(); }catch(e){ $('alist').innerHTML='<div class="muted">Couldn\'t load players. Check the Firestore rules.</div>'; return; }
+  $('acount').textContent=`${A.users.length} player${A.users.length===1?'':'s'}`;
+  renderAdmin();
+}
+function renderAdmin(){
+  const q=$('asearch').value.trim().toLowerCase(), box=$('alist'); box.innerHTML='';
+  const onlyFlag=$('aflagged').checked;
+  const list=A.users.filter(u=>(!q||(u.name||'').toLowerCase().includes(q))&&(!onlyFlag||realNameFlag(u.name)));
+  const nflag=A.users.filter(u=>realNameFlag(u.name)).length;
+  $('aflagged').parentElement.lastChild.textContent=` Show flagged only (${nflag} possible real name${nflag===1?'':'s'})`;
+  if(!list.length){ box.innerHTML='<div class="muted">No players found.</div>'; return; }
+  for(const u of list){
+    const it=document.createElement('div'); it.className='fitem';
+    const nm=document.createElement('span'); nm.className='nm'; nm.textContent=(u.banned?'🚫 ':'')+(u.name||'(no name)');
+    const bot=u.bot||{}, bw=['easy','medium','hard'].reduce((s,k)=>s+((bot[k]&&bot[k].wins)||0),0);
+    const st=document.createElement('span'); st.className='st';
+    const made=u.created&&u.created.toDate?u.created.toDate().toLocaleDateString():'';
+    st.textContent=`Online ${u.wins||0}W ${u.losses||0}L ${u.draws||0}D · ${bw} bot wins${made?' · joined '+made:''}`;
+    it.append(nm);
+    const fl=realNameFlag(u.name); if(fl){ const tg=document.createElement('span'); tg.className='flag'; tg.textContent='⚠ Possible real name: '+fl; it.append(tg); }
+    it.append(st);
+    if(u.id!==Acct.user.uid){
+      const rs=fbtn('Reset stats','',()=>confirmBtn(rs,'Reset stats',async()=>{ try{ await Acct.admin.resetStats(u.id); Object.assign(u,{wins:0,losses:0,draws:0,bot:{}}); $('amsg').textContent=`Reset ${u.name}'s stats.`; renderAdmin(); }catch(e){ $('amsg').textContent='Failed: '+e.message; } }));
+      const bn=fbtn(u.banned?'Unban':'Ban',u.banned?'primary':'',()=>confirmBtn(bn,u.banned?'Unban':'Ban',async()=>{ try{ await Acct.admin.setBanned(u.id,!u.banned); u.banned=!u.banned; $('amsg').textContent=`${u.name} is now ${u.banned?'banned':'unbanned'}.`; renderAdmin(); }catch(e){ $('amsg').textContent='Failed: '+e.message; } }));
+      if(u.banned) bn.style.background='var(--accent)';
+      it.append(rs,bn);
+    } else { const me=document.createElement('span'); me.className='st'; me.textContent='(you)'; it.append(me); }
+    box.appendChild(it);
+  }
+}
+$('asearch').oninput=renderAdmin; $('aflagged').onchange=renderAdmin;
+$('arefresh').onclick=openAdmin;
+$('openadmin').onclick=openAdmin;
+
 // shared: back to home from apps (save anything pending first)
 all('.js-tohub',e=>e.onclick=()=>{ flushNote(); flushDeck(); showScreen('hub'); });
 window.addEventListener('beforeunload',()=>{ flushNote(); flushDeck(); });
@@ -1713,13 +1783,14 @@ if(!FIREBASE_CONFIG){
     const V='10.12.2', base=`https://www.gstatic.com/firebasejs/${V}/`;
     const {initializeApp}=await import(base+'firebase-app.js');
     const {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,updateProfile,setPersistence,browserLocalPersistence}=await import(base+'firebase-auth.js');
-    const {getFirestore,doc,getDoc,setDoc,deleteDoc,onSnapshot,addDoc,collection,query,orderBy,limit,getDocs,increment,serverTimestamp}=await import(base+'firebase-firestore.js');
+    const {getFirestore,doc,getDoc,setDoc,updateDoc,deleteField,deleteDoc,onSnapshot,addDoc,collection,query,orderBy,limit,getDocs,increment,serverTimestamp}=await import(base+'firebase-firestore.js');
     const app=initializeApp(FIREBASE_CONFIG), auth=getAuth(app), db=getFirestore(app);
     await setPersistence(auth,browserLocalPersistence); // stay signed in
 
     // Usernames become a hidden email so Firebase can store them. Nobody needs a real email.
     // Don't change this line once people have accounts, or they won't be able to sign in.
     const toEmail=u=>u.toLowerCase()+'@players.peerchess.app';
+    const ADMINS=['lol']; // admin usernames. Must match the list in the Firestore rules.
     const wm=t=>{ $('wmsg').textContent=t; };
     const valid=u=>/^[A-Za-z0-9_]{3,20}$/.test(u);
     const ERR={'auth/invalid-credential':'Wrong username or password.','auth/wrong-password':'Wrong username or password.','auth/user-not-found':'No account with that username.',
@@ -1765,6 +1836,11 @@ if(!FIREBASE_CONFIG){
       const live=(sub,cb)=>unsubs.push(onSnapshot(collection(db,'users',me,sub),qs=>{ const out=[]; qs.forEach(d=>out.push({...d.data(),id:d.id})); cb(out); },e=>console.warn(sub,e)));
       live('requests',App.setRequests); live('friends',App.setFriends); live('invites',App.setInvites);
     }
+    Acct.admin={
+      async list(){ const qs=await getDocs(query(collection(db,'users'),limit(1000))); const out=[]; qs.forEach(d=>out.push({...d.data(),id:d.id})); return out.sort((a,b)=>(a.name||'').localeCompare(b.name||'')); },
+      resetStats(uid){ return updateDoc(doc(db,'users',uid),{wins:0,losses:0,draws:0,bot:deleteField()}); },
+      setBanned(uid,b){ return setDoc(doc(db,'users',uid),{banned:b},{merge:true}); }
+    };
     Acct.friends={
       async send(name){
         const me=Acct.user.uid; name=(name||'').trim();
@@ -1799,6 +1875,7 @@ if(!FIREBASE_CONFIG){
       const u=Acct.user; if(!u) return;
       try{
         const snap=await getDoc(userDoc()); const d=snap.exists()?snap.data():{};
+        if(d.banned){ await signOut(auth); $('wmsg').textContent='This account has been banned.'; return; }
         $('sw').textContent=d.wins||0; $('sl').textContent=d.losses||0; $('sd').textContent=d.draws||0;
         const bs=$('botstats'); bs.innerHTML='';
         for(const [lv,nm] of [['easy','Pixel'],['medium','Byte'],['hard','Kernel']]){
@@ -1817,9 +1894,9 @@ if(!FIREBASE_CONFIG){
         const qs=await getDocs(query(collection(db,'users'),orderBy('wins','desc'),limit(10)));
         t.innerHTML='<tr><th>#</th><th>Player</th><th class="n">W</th><th class="n">L</th><th class="n">D</th></tr>';
         let i=0;
-        qs.forEach(d=>{ const x=d.data(), tr=document.createElement('tr'); i++;
+        qs.forEach(d=>{ const x=d.data(); if(x.banned) return; const tr=document.createElement('tr'); i++;
           if(d.id===Acct.user.uid) tr.className='me';
-          for(const [v,c] of [[i,''],[x.name||'?',''],[x.wins||0,'n'],[x.losses||0,'n'],[x.draws||0,'n']]){ const td=document.createElement('td'); td.textContent=v; if(c) td.className=c; tr.appendChild(td); }
+          for(const [v,c] of [[i,''],[(ADMINS.includes((x.name||'').toLowerCase())?'👑 ':'')+(x.name||'?'),''],[x.wins||0,'n'],[x.losses||0,'n'],[x.draws||0,'n']]){ const td=document.createElement('td'); td.textContent=v; if(c) td.className=c; tr.appendChild(td); }
           t.appendChild(tr); });
         if(!i) t.innerHTML='<tr><td class="muted">No ranked games yet.</td></tr>';
       }catch(e){ t.innerHTML='<tr><td class="muted">Couldn\'t load the leaderboard. Check the Firestore rules (see setup).</td></tr>'; }
@@ -1855,9 +1932,10 @@ if(!FIREBASE_CONFIG){
       Acct.user=u;
       if(!u){ Acct.name=null; stopFriends(); App.signedOut(); return; }
       Acct.name=creating||u.displayName||u.email.split('@')[0];
+      Acct.isAdmin=ADMINS.includes((u.email||'').split('@')[0]);
       if(creating) return; // sign-up finishes the rest
       wm('');
-      try{ const s=await getDoc(userDoc()); if(s.exists()) App.applyPrefs(s.data().prefs); }catch(e){}
+      try{ const s=await getDoc(userDoc()); if(s.exists()){ if(s.data().banned){ await signOut(auth); wm('This account has been banned.'); return; } App.applyPrefs(s.data().prefs); } }catch(e){}
       App.signedIn(Acct.name); loadHome();
       ensureUsername(u.uid,Acct.name); startFriends();
     });
