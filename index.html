@@ -300,6 +300,18 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 #sres .gsc-cursor-page{color:var(--text)!important;background:transparent!important}
 #sres .gsc-above-wrapper-area,#sres .gsc-adBlock{border-color:var(--edge)!important}
 @media (prefers-reduced-motion:reduce){body::before,.screen:not(.hidden),#game:not(.hidden),.tiles>*,.bub{animation:none!important}}
+
+.htabs{display:flex;gap:6px;margin:16px 0 4px;background:rgba(0,0,0,.25);padding:5px;border-radius:12px;width:fit-content;max-width:100%;border:1px solid var(--edge)}
+.htabs button{border:0;background:none!important;padding:8px 16px;font-weight:800;letter-spacing:.04em;color:var(--muted);border-radius:9px}
+.htabs button.on{background:linear-gradient(180deg,#8fc75a,#6fa63e)!important;color:#fff}
+.rag{display:flex;gap:4px}.rag button{padding:4px 10px;font-size:.85rem}.rag button.on{outline:2px solid #fff}
+.topic{margin-bottom:10px}.topic summary{cursor:pointer;font-weight:700;font-size:1.05rem;list-style:none;display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.topic ul{margin:10px 0 4px;padding-left:20px;line-height:1.55}
+.seg{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}.seg button.on{border-color:var(--accent)!important;background:rgba(129,182,76,.2)!important}
+.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:12px 14px}
+.opt.right{background:rgba(129,182,76,.35)!important;border-color:var(--accent)!important}.opt.wrong{background:rgba(224,40,40,.3)!important}
+.pbarx.big{height:8px;margin:6px 0 12px}
+.scorebox{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:8px 0}
 </style>
 </head>
 <body>
@@ -329,15 +341,26 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
     </div>
     <div class="hello"><span id="greet">Hi</span>, <span class="js-me">Guest</span></div>
     <div class="muted" style="font-size:1rem">What are we doing today?</div>
+    <div class="htabs"><button data-tab="home" class="on">Home</button><button data-tab="subjects">SUBJECTS</button><button data-tab="gg">GGCSE</button></div>
+    <div id="tab-subjects" class="hidden">
+      <div class="card" id="timer"><div class="row" style="justify-content:space-between"><div><h3 style="margin:0">⏱ Focus timer</h3><div class="muted" id="tmode">25 min study, then a 5 min break</div></div><div id="tclock" style="font-size:2.4rem;font-weight:800;font-variant-numeric:tabular-nums">25:00</div></div>
+        <div class="row" style="margin-top:10px"><button class="primary" id="tstart">Start</button><button id="treset">Reset</button></div></div>
+      <div class="tiles" id="subjtiles"></div>
+    </div>
+    <div id="tab-gg" class="hidden"><div class="tiles">
+      <button class="tile" id="openchess"><div class="ic"><img data-piece="wN" alt=""></div><b><span class="logo" data-logo style="font-size:1.15rem"></span></b><span>GCSE Maths revision</span><div class="go">View</div></button>
+      <div class="tile soon"><div class="ic">＋</div><b>More coming soon</b><span>Coming soon</span></div>
+    </div></div>
+    <div id="tab-home">
     <div class="tiles">
-      <button class="tile" id="openchess"><div class="ic"><img data-piece="wN" alt=""></div><b><span class="logo" data-logo style="font-size:1.15rem"></span></b><span>GCSE Maths revision: practise topics, test yourself and track your progress.</span><div class="go">View</div></button>
-      <button class="tile" id="opennotes"><div class="ic" style="background:#3b5f8a;font-size:2rem">📝</div><b>Notes</b><span>Write and search your notes. Saves as you type.</span><div class="go">View</div></button>
-      <button class="tile" id="opencards"><div class="ic" style="background:#7a4d8f;font-size:2rem">🗂️</div><b>Flashcards</b><span>Make decks and test yourself with flip cards.</span><div class="go">View</div></button>
-      <button class="tile" id="openfriends"><div class="ic" style="background:#8a6a2b;font-size:2rem">👥</div><b>Friends<span id="fbadge" class="badge2 hidden"></span></b><span>Add friends by username, message them and challenge them.</span><div class="go">View</div></button>
-      <button class="tile" id="openchat"><div class="ic" style="background:linear-gradient(135deg,#2b7a8a,#1f4f6b);font-size:2rem">💬</div><b>Chat</b><span>Talk with everyone. Kept clean automatically.</span><div class="go">View</div></button>
-      <button class="tile" id="opensearch"><div class="ic" style="background:linear-gradient(135deg,#4a5bd6,#2c3a99);font-size:2rem">🔎</div><b>Search</b><span>Search the web right here, without it going in your history.</span><div class="go">View</div></button>
-      <button class="tile hidden" id="openadmin"><div class="ic" style="background:#8a2b2b;font-size:2rem">👑</div><b>Admin</b><span>Manage players: stats and bans.</span><div class="go">View</div></button>
-      <div class="tile soon"><div class="ic">＋</div><b>More coming soon</b><span>New apps will show up here.</span></div>
+      <button class="tile" id="opennotes"><div class="ic" style="background:#3b5f8a;font-size:2rem">📝</div><b>Notes</b><span>Your notes</span><div class="go">View</div></button>
+      <button class="tile" id="opencards"><div class="ic" style="background:#7a4d8f;font-size:2rem">🗂️</div><b>Flashcards</b><span>Make flashcards</span><div class="go">View</div></button>
+      <button class="tile" id="openfriends"><div class="ic" style="background:#8a6a2b;font-size:2rem">👥</div><b>Friends<span id="fbadge" class="badge2 hidden"></span></b><span>Add friends and study with them</span><div class="go">View</div></button>
+      <button class="tile" id="openchat"><div class="ic" style="background:linear-gradient(135deg,#2b7a8a,#1f4f6b);font-size:2rem">💬</div><b>Chat</b><span>Chat here</span><div class="go">View</div></button>
+      <button class="tile" id="opensearch"><div class="ic" style="background:linear-gradient(135deg,#4a5bd6,#2c3a99);font-size:2rem">🔎</div><b>Search</b><span>Search the web</span><div class="go">View</div></button>
+      <button class="tile hidden" id="openadmin"><div class="ic" style="background:#8a2b2b;font-size:2rem">👑</div><b>Admin</b><span>Manage players</span><div class="go">View</div></button>
+      <div class="tile soon"><div class="ic">＋</div><b>More coming soon</b><span>Coming soon</span></div>
+    </div>
     </div>
   </div>
 
@@ -476,7 +499,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
   </div>
 
   <div id="dm" class="screen hidden">
-    <div class="apphead"><button class="back" id="dmback">← Friends</button><h2 id="dmname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1"></h2><button class="primary" id="dmchal">♟ Challenge</button></div>
+    <div class="apphead"><button class="back" id="dmback">← Friends</button><h2 id="dmname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1"></h2><button class="primary" id="dmstudy">📚 Study</button><button id="dmchal">♟ Challenge</button></div>
     <div class="dmwrap">
       <div id="dmlog"></div>
       <div class="chatin"><input id="dmin" maxlength="500" placeholder="Message…" autocomplete="off"><button class="primary" id="dmsend">Send</button></div>
@@ -495,6 +518,31 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
     <form class="card row" id="sform" style="margin-top:0"><input id="sq" placeholder="Search the web…" style="flex:1;min-width:0;font-size:1.05rem;padding:12px 14px" autocomplete="off"><button class="primary" style="padding:12px 18px">Search</button></form>
     <div class="muted" style="font-size:.82rem;margin:0 0 10px">Searches here don't go into your browser history. Pages you open from the results will.</div>
     <div class="card" id="sres"><div class="muted">Results will show here.</div></div>
+  </div>
+
+  <div id="subject" class="screen hidden">
+    <div class="apphead"><button class="back" id="subback">← Subjects</button><h2 id="subname"></h2></div>
+    <div class="seg" id="subseg"><button data-v="topics" class="on">Topics</button><button data-v="quiz">Quiz</button><button data-v="practice" id="segprac">Practice</button></div>
+    <div id="subbody"></div>
+  </div>
+
+  <div id="together" class="screen hidden">
+    <div class="apphead"><button class="back" id="togback">← Leave</button><h2 id="togname" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></h2><span id="togclock" class="muted" style="font-variant-numeric:tabular-nums;font-weight:800"></span><button id="togtimer">⏱ 25 min</button></div>
+    <div class="study">
+      <div id="togstatus" class="muted"></div>
+      <div class="scorebox" id="togscore"></div>
+      <div class="pbarx"><div id="togfill" style="height:100%;width:0;background:var(--accent);transition:width .3s"></div></div>
+      <div class="flip" id="togflip"><div class="in"><div class="face front"><span class="lbl">QUESTION</span><div id="togf"></div></div><div class="face back"><span class="lbl">ANSWER</span><div id="togb"></div></div></div></div>
+      <div class="row" style="justify-content:center;gap:10px"><button id="togknew">✓ I knew it</button><button class="primary" id="tognext">Next card →</button></div>
+    </div>
+  </div>
+
+  <div id="picker" class="hidden" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:14px">
+    <div class="card" style="width:min(440px,100%);max-height:80vh;overflow:auto;margin:0">
+      <h3 id="pickttl">Study together</h3><div class="muted" style="margin-bottom:10px">Pick what to study:</div>
+      <div class="flist" id="picklist"></div>
+      <button style="margin-top:12px;width:100%" id="pickcancel">Cancel</button>
+    </div>
   </div>
   <div id="game" class="hidden">
     <div id="boardcol">
@@ -1361,10 +1409,11 @@ function banner(text,btns){
 
 
 // ---------- screens, accounts glue, saving ----------
-const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin','dm','search','chat'];
+const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin','dm','search','chat','subject','together'];
 const all=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
 function showScreen(id){
   if(id!=='chat'&&window.closeRoom) closeRoom();
+  if(id!=='together'&&window.closeTogether&&id!=='hub') closeTogether();
   for(const s of SCREENS) $(s).classList.toggle('hidden',s!==id);
   document.body.classList.toggle('playing',id==='game');
   window.scrollTo(0,0);
@@ -1799,9 +1848,10 @@ async function renderFriends(){
     const st=document.createElement('span'); st.className='st'; const s=F.stats[f.id]; st.textContent=s?`${s.wins||0}W · ${s.losses||0}L · ${s.draws||0}D`:'';
     const ib=D.inboxMap[f.id], msgb=fbtn('💬 Message','',()=>openDM(f));
     if(ib&&ib.unread){ const dot=document.createElement('span'); dot.className='udot'; msgb.appendChild(dot); }
-    const ch=fbtn('♟ Challenge','primary',()=>challenge(f));
+    const stb=fbtn('📚 Study','primary',()=>pickStudy(f));
+    const ch=fbtn('♟ Challenge','',()=>challenge(f));
     const rm=fbtn('Remove','',()=>confirmBtn(rm,'Remove',()=>Acct.friends.remove(f).catch(()=>{})));
-    it.append(nm,st,msgb,ch,rm); box.appendChild(it);
+    it.append(nm,st,stb,msgb,ch,rm); box.appendChild(it);
     if(!s&&hasAcct()) Acct.friends.stats(f.id).then(d=>{ F.stats[f.id]=d; st.textContent=`${d.wins||0}W · ${d.losses||0}L · ${d.draws||0}D`; }).catch(()=>{});
   }
 }
@@ -1841,11 +1891,12 @@ App.setInvites=list=>{
 function showInviteToast(){
   const t=$('toast'), inv=F.invites[0];
   if(!inv||(G&&!G.over&&G.mode==='online')){ t.style.display='none'; shownInvite=null; return; }
-  if(shownInvite===inv.id+inv.code) return;
-  shownInvite=inv.id+inv.code; t.innerHTML='';
-  const tx=document.createElement('span'); tx.textContent=`♟ ${inv.name||'A friend'} challenged you to a game!`;
+  if(shownInvite===inv.id+(inv.code||inv.sid)) return;
+  shownInvite=inv.id+(inv.code||inv.sid); t.innerHTML='';
+  const study=inv.type==='study';
+  const tx=document.createElement('span'); tx.textContent=study?`📚 ${inv.name||'A friend'} wants to study ${inv.title||''} together!`:`♟ ${inv.name||'A friend'} challenged you to a game!`;
   t.append(tx,
-    fbtn('Join','primary',()=>{ t.style.display='none'; Acct.friends.dismiss(inv.id); resetNet(); G=null; showScreen('home'); joinGame(inv.code); }),
+    fbtn('Join','primary',()=>{ t.style.display='none'; Acct.friends.dismiss(inv.id); if(study){ openTogether(inv.sid,true); return; } resetNet(); G=null; showScreen('home'); joinGame(inv.code); }),
     fbtn('Not now','',()=>{ t.style.display='none'; Acct.friends.dismiss(inv.id); }));
   t.style.display='flex'; sound('check');
 }
@@ -1885,6 +1936,7 @@ function sendDM(){
   Acct.dm.send(D.cur,text).catch(e=>{ const s=document.createElement('div'); s.className='sys'; s.textContent=e.code==='permission-denied'?'Couldn\'t send. You can only message friends (and the site rules must be up to date).':'Couldn\'t send. Check your connection.'; $('dmlog').appendChild(s); $('dmin').value=text; });
 }
 $('dmsend').onclick=sendDM;
+$('dmstudy').onclick=()=>{ if(D.cur) pickStudy(D.cur); };
 $('dmchal').onclick=()=>{ if(D.cur){ const f=D.cur; closeDM(); challenge(f); } };
 $('dmin').onkeydown=e=>{ if(e.key==='Enter') sendDM(); };
 $('dmback').onclick=()=>{ closeDM(); openFriends(); };
@@ -2039,6 +2091,352 @@ all('.js-tohub',e=>e.onclick=()=>{ flushNote(); flushDeck(); showScreen('hub'); 
 window.addEventListener('beforeunload',()=>{ flushNote(); flushDeck(); });
 document.addEventListener('visibilitychange',()=>{ if(document.hidden){ flushNote(); flushDeck(); } });
 </script>
+<script>
+// ---------- GCSE subject content (original revision notes + quiz questions) ----------
+// quiz: [topicIndex, question, [correct, wrong, wrong, wrong], explanation]
+const SUBJECTS=[
+{id:'maths',name:'Maths',icon:'📐',color:'#3b5f8a',
+ topics:[
+  {t:'Number',n:['Prime factorisation writes a number as a product of primes, e.g. 60 = 2² × 3 × 5.','HCF uses the prime factors both numbers share (lowest powers); LCM uses all of them (highest powers).','Standard form is A × 10ⁿ where 1 ≤ A < 10, e.g. 45 000 = 4.5 × 10⁴ and 0.003 = 3 × 10⁻³.','Index laws: aᵐ × aⁿ = aᵐ⁺ⁿ, aᵐ ÷ aⁿ = aᵐ⁻ⁿ, (aᵐ)ⁿ = aᵐⁿ, a⁰ = 1, a⁻ⁿ = 1/aⁿ.','Significant figures are counted from the first non-zero digit.']},
+  {t:'Algebra',n:['Expand brackets by multiplying every term inside by the term outside.','Factorise by taking out the highest common factor. For x² + bx + c, find two numbers that add to b and multiply to c.','Solve equations by doing the same thing to both sides until x is on its own.','Quadratic formula: x = (−b ± √(b² − 4ac)) ÷ 2a.','Straight lines: y = mx + c, where m is the gradient (change in y ÷ change in x) and c is the y-intercept.']},
+  {t:'Ratio & proportion',n:['To share in a ratio: add the parts, divide the total by that, then multiply by each part.','Percentage change = (change ÷ original) × 100.','Compound interest: final amount = P × (1 + r/100)ⁿ.','Direct proportion: y = kx. Inverse proportion: y = k/x.','Speed = distance ÷ time, density = mass ÷ volume, pressure = force ÷ area.']},
+  {t:'Geometry & measures',n:['Pythagoras: a² + b² = c², where c is the hypotenuse (longest side).','SOH CAH TOA: sin = opp/hyp, cos = adj/hyp, tan = opp/adj.','Angles: triangle 180°, straight line 180°, around a point 360°. Interior angles of an n-sided polygon add to (n − 2) × 180°.','Circle: area = πr², circumference = 2πr (or πd).','Volume of a prism = area of cross-section × length.']},
+  {t:'Probability',n:['Probabilities go from 0 (impossible) to 1 (certain).','P(not A) = 1 − P(A).','Independent events: P(A and B) = P(A) × P(B).','Mutually exclusive events: P(A or B) = P(A) + P(B).','Expected frequency = probability × number of trials.']},
+  {t:'Statistics',n:['Mean = total ÷ number of values. Median = middle value when in order. Mode = most common. Range = biggest − smallest.','For grouped data, estimate the mean using the midpoint of each group.','Scatter graphs show positive, negative or no correlation. Correlation doesn\'t prove one thing causes the other.','Cumulative frequency: the median is at n/2. Interquartile range = upper quartile − lower quartile.']}],
+ quiz:[
+  [0,'What is 60 as a product of prime factors?',['2² × 3 × 5','2 × 3 × 10','2² × 15','4 × 3 × 5'],'60 = 2 × 2 × 3 × 5. Only primes are allowed, so 10, 15 and 4 don\'t count.'],
+  [0,'What is 45 000 in standard form?',['4.5 × 10⁴','45 × 10³','4.5 × 10³','0.45 × 10⁵'],'A must be between 1 and 10, so 4.5, and the decimal point moves 4 places.'],
+  [0,'Simplify a⁵ × a³',['a⁸','a¹⁵','a²','2a⁸'],'When multiplying powers of the same base, add the indices: 5 + 3 = 8.'],
+  [1,'Solve 3x + 7 = 22',['x = 5','x = 15','x = 9.7','x = 3'],'Subtract 7: 3x = 15. Divide by 3: x = 5.'],
+  [1,'Factorise x² + 5x + 6',['(x + 2)(x + 3)','(x + 1)(x + 6)','(x + 5)(x + 1)','(x − 2)(x − 3)'],'You need two numbers that add to 5 and multiply to 6: 2 and 3.'],
+  [1,'What is the gradient of y = 4x − 3?',['4','−3','3','−4'],'In y = mx + c the gradient is m, the number in front of x.'],
+  [2,'Share £60 in the ratio 2 : 3',['£24 and £36','£20 and £40','£30 and £30','£12 and £48'],'2 + 3 = 5 parts. £60 ÷ 5 = £12 per part. 2 × 12 = 24 and 3 × 12 = 36.'],
+  [2,'An £80 coat is reduced by 25%. What is the new price?',['£60','£55','£20','£75'],'25% of £80 is £20, and £80 − £20 = £60.'],
+  [3,'A right-angled triangle has shorter sides 6 cm and 8 cm. How long is the hypotenuse?',['10 cm','14 cm','48 cm','7 cm'],'6² + 8² = 36 + 64 = 100, and √100 = 10.'],
+  [3,'What do the interior angles of a hexagon add up to?',['720°','540°','1080°','360°'],'(6 − 2) × 180° = 720°.'],
+  [3,'What is the area of a circle with radius 3 cm (to 1 d.p.)?',['28.3 cm²','18.8 cm²','9.4 cm²','113.1 cm²'],'Area = πr² = π × 9 ≈ 28.3 cm². (18.8 is the circumference.)'],
+  [4,'The probability it rains is 0.3. What is the probability it doesn\'t?',['0.7','0.3','1.3','0'],'P(not A) = 1 − 0.3 = 0.7.'],
+  [4,'Two fair coins are flipped. What is the probability of two heads?',['1/4','1/2','1/3','3/4'],'They\'re independent: ½ × ½ = ¼.'],
+  [5,'What is the mean of 2, 4, 6 and 8?',['5','4','6','20'],'Total 20 ÷ 4 values = 5.'],
+  [5,'What is the median of 3, 9, 1, 7, 5?',['5','7','9','1'],'In order: 1, 3, 5, 7, 9. The middle value is 5.']]},
+
+{id:'bio',name:'Biology',icon:'🧬',color:'#2b7a4b',
+ topics:[
+  {t:'Cells',n:['Animal and plant cells are eukaryotic (they have a nucleus). Bacteria are prokaryotic: no nucleus, DNA loose in the cytoplasm, sometimes in plasmids.','Animal cell parts: nucleus, cytoplasm, cell membrane, mitochondria (respiration), ribosomes (make proteins).','Plant cells also have a cellulose cell wall, chloroplasts (photosynthesis) and a permanent vacuole.','Diffusion: net movement of particles from high to low concentration. Osmosis: diffusion of water through a partially permeable membrane. Active transport: moves substances against a concentration gradient using energy from respiration.','Mitosis makes two genetically identical cells for growth and repair.']},
+  {t:'Organisation',n:['Cells → tissues → organs → organ systems → organism.','Enzymes are biological catalysts. Each has an active site that fits its substrate. High temperatures or the wrong pH denature them.','Arteries carry blood away from the heart, veins carry it back, and capillaries exchange substances with cells.','In plants, xylem carries water and minerals up from the roots; phloem carries dissolved sugars around the plant (translocation).']},
+  {t:'Infection & response',n:['Pathogens are microorganisms that cause disease: bacteria, viruses, fungi and protists.','White blood cells engulf pathogens (phagocytosis) and make antibodies and antitoxins.','Vaccines contain dead or inactive pathogens, so your body makes antibodies and can respond quickly if you\'re infected later.','Antibiotics kill bacteria but don\'t work on viruses.']},
+  {t:'Bioenergetics',n:['Photosynthesis: carbon dioxide + water → glucose + oxygen. It needs light and happens in chloroplasts. It\'s endothermic.','Aerobic respiration: glucose + oxygen → carbon dioxide + water. It releases energy and happens in mitochondria.','Anaerobic respiration in muscles: glucose → lactic acid. This causes an oxygen debt.','Limiting factors for photosynthesis: light intensity, carbon dioxide concentration and temperature.']},
+  {t:'Homeostasis',n:['Homeostasis keeps internal conditions (temperature, blood glucose, water) steady.','Insulin from the pancreas lowers blood glucose; glucagon raises it.','Reflex arc: receptor → sensory neurone → relay neurone → motor neurone → effector.','Hormones travel in the blood and act slowly but for longer; nerves are fast but short-lived.']},
+  {t:'Inheritance & evolution',n:['DNA is a double helix. A gene is a section of DNA that codes for a protein.','Human body cells have 23 pairs of chromosomes (46 in total).','Meiosis makes four genetically different gametes, each with half the number of chromosomes.','Dominant alleles are shown with a capital letter. Genotype = the alleles you have; phenotype = the characteristic you show.','Natural selection: there\'s variation, the best adapted survive and reproduce, and pass on their alleles.']}],
+ quiz:[
+  [0,'Which part of a cell is the site of aerobic respiration?',['Mitochondria','Ribosome','Nucleus','Chloroplast'],'Mitochondria release energy from glucose in aerobic respiration.'],
+  [0,'Which is found in plant cells but NOT animal cells?',['Cell wall','Cell membrane','Mitochondria','Ribosomes'],'Plant cells have a cellulose cell wall; animal cells only have a membrane.'],
+  [0,'What is osmosis?',['Diffusion of water through a partially permeable membrane','Movement of glucose using energy','Any particle moving against a gradient','Cell division for growth'],'Osmosis is specifically about water moving through a partially permeable membrane.'],
+  [0,'Which type of cell division is used for growth and repair?',['Mitosis','Meiosis','Fertilisation','Osmosis'],'Mitosis makes genetically identical cells.'],
+  [1,'What do enzymes do?',['Speed up reactions without being used up','Carry oxygen in the blood','Fight pathogens','Store energy as fat'],'Enzymes are biological catalysts.'],
+  [1,'Which blood vessels carry blood away from the heart?',['Arteries','Veins','Capillaries','Xylem'],'A for Arteries, A for Away.'],
+  [1,'What does xylem transport?',['Water and mineral ions','Dissolved sugars','Blood','Hormones'],'Phloem carries sugars; xylem carries water and minerals.'],
+  [2,'Antibiotics are used to treat infections caused by…',['Bacteria','Viruses','Colds and flu','Any pathogen'],'Antibiotics don\'t work on viruses, which is why they don\'t cure colds.'],
+  [3,'What are the products of photosynthesis?',['Glucose and oxygen','Carbon dioxide and water','Lactic acid','Glucose and carbon dioxide'],'Carbon dioxide + water → glucose + oxygen.'],
+  [3,'Anaerobic respiration in human muscles produces…',['Lactic acid','Ethanol','Oxygen','Glucose'],'Ethanol is made by anaerobic respiration in yeast, not muscles.'],
+  [4,'Which hormone lowers blood glucose?',['Insulin','Glucagon','Adrenaline','Oestrogen'],'Insulin makes cells take in glucose; glucagon does the opposite.'],
+  [5,'How many chromosomes are in a normal human body cell?',['46','23','44','48'],'23 pairs = 46. Gametes have 23.'],
+  [5,'Which cell division makes gametes (sex cells)?',['Meiosis','Mitosis','Binary fission','Cloning'],'Meiosis halves the chromosome number and makes variation.']]},
+
+{id:'chem',name:'Chemistry',icon:'⚗️',color:'#7a4d8f',
+ topics:[
+  {t:'Atomic structure',n:['Protons (+1, mass 1) and neutrons (0, mass 1) are in the nucleus. Electrons (−1, almost no mass) are in shells.','Atomic number = number of protons. Mass number = protons + neutrons.','Isotopes are atoms of the same element with different numbers of neutrons.','Electron shells fill up 2, 8, 8 (e.g. sodium, 11 electrons, is 2, 8, 1).']},
+  {t:'Periodic table',n:['Elements are ordered by atomic number. Groups (columns) have the same number of outer electrons; periods are rows.','Group 1 (alkali metals) get MORE reactive going down.','Group 7 (halogens) get LESS reactive going down.','Group 0 (noble gases) are unreactive because their outer shells are full.']},
+  {t:'Bonding',n:['Ionic bonding: metal + non-metal, electrons are transferred. Forms a giant lattice with high melting points; conducts when molten or dissolved.','Covalent bonding: non-metals share pairs of electrons.','Metallic bonding: positive ions in a sea of delocalised electrons, so metals conduct electricity.','Diamond: each carbon makes 4 bonds, very hard. Graphite: layers that slide, and it conducts.']},
+  {t:'Quantities',n:['Relative formula mass (Mr) = add up the relative atomic masses (Ar).','Moles = mass ÷ Mr.','Conservation of mass: total mass of reactants = total mass of products.','One mole contains 6.02 × 10²³ particles (Avogadro\'s constant).']},
+  {t:'Chemical changes',n:['Acid + alkali → salt + water (neutralisation). pH 7 is neutral, below 7 acidic, above 7 alkaline.','Acid + metal → salt + hydrogen. Acid + carbonate → salt + water + carbon dioxide.','OIL RIG: Oxidation Is Loss (of electrons), Reduction Is Gain.','In electrolysis, positive ions go to the negative electrode (cathode).']},
+  {t:'Rates & energy',n:['Rate increases with higher temperature, concentration (or pressure), surface area, or a catalyst.','Particles must collide with at least the activation energy to react.','Exothermic reactions give out energy (temperature rises); endothermic reactions take it in.','Gas tests: hydrogen = squeaky pop; oxygen relights a glowing splint; carbon dioxide turns limewater cloudy; chlorine bleaches damp litmus paper.']}],
+ quiz:[
+  [0,'What is the charge of a proton?',['+1','−1','0','+2'],'Protons are positive, electrons negative, neutrons neutral.'],
+  [0,'What does the atomic number tell you?',['The number of protons','The number of neutrons','Protons + neutrons','The number of shells'],'Mass number is protons + neutrons.'],
+  [0,'Isotopes of an element have different numbers of…',['Neutrons','Protons','Electrons','Shells'],'Same protons (same element), different neutrons.'],
+  [0,'What is the electron arrangement of sodium (11 electrons)?',['2, 8, 1','2, 9','8, 2, 1','2, 8, 8'],'Fill 2, then 8, then the last 1.'],
+  [1,'How does reactivity change going down Group 1?',['It increases','It decreases','It stays the same','It goes up then down'],'The outer electron is further from the nucleus, so it\'s lost more easily.'],
+  [2,'What type of bond forms between a metal and a non-metal?',['Ionic','Covalent','Metallic','Hydrogen'],'Electrons are transferred from the metal to the non-metal.'],
+  [3,'What is the Mr of CO₂? (C = 12, O = 16)',['44','28','32','40'],'12 + 16 + 16 = 44.'],
+  [4,'Acid + alkali makes…',['Salt + water','Salt + hydrogen','Salt + carbon dioxide','Just water'],'That\'s neutralisation.'],
+  [4,'Which gas is made when an acid reacts with a carbonate?',['Carbon dioxide','Hydrogen','Oxygen','Chlorine'],'Acid + carbonate → salt + water + carbon dioxide.'],
+  [4,'What is the pH of a neutral solution?',['7','0','14','1'],'Below 7 is acidic, above 7 alkaline.'],
+  [4,'In OIL RIG, oxidation is…',['Loss of electrons','Gain of electrons','Gain of protons','Loss of neutrons'],'Oxidation Is Loss, Reduction Is Gain.'],
+  [5,'What is the test for hydrogen?',['A lit splint gives a squeaky pop','It relights a glowing splint','It turns limewater cloudy','It bleaches litmus paper'],'Relighting a glowing splint is the test for oxygen.'],
+  [5,'What does a catalyst do?',['Speeds up a reaction without being used up','Slows a reaction down','Becomes part of the product','Raises the temperature'],'It gives an alternative route with lower activation energy.']]},
+
+{id:'phys',name:'Physics',icon:'⚡',color:'#8a6a2b',
+ topics:[
+  {t:'Energy',n:['Energy stores include kinetic, gravitational potential, elastic, thermal, chemical and nuclear.','Kinetic energy = ½mv². Gravitational potential energy = mgh (g ≈ 9.8 N/kg).','Efficiency = useful output ÷ total input.','Power = energy ÷ time (1 watt = 1 joule per second).','Renewables: wind, solar, hydro, tidal, geothermal, biofuel. Non-renewables: fossil fuels and nuclear.']},
+  {t:'Electricity',n:['V = IR (voltage = current × resistance). Charge Q = It.','Power P = IV = I²R. Energy E = Pt = QV.','Series circuits: same current everywhere, voltages add up. Parallel: same voltage on each branch, currents add up.','UK mains is 230 V AC at 50 Hz. Plug wires: live = brown, neutral = blue, earth = green and yellow.']},
+  {t:'Particle model',n:['Density ρ = m ÷ V.','Specific heat capacity: ΔE = mcΔθ (energy to raise 1 kg by 1 °C).','Specific latent heat: E = mL (energy to change state with no temperature change).','Solids, liquids and gases differ in how close the particles are and how they move.']},
+  {t:'Radioactivity',n:['Alpha = helium nucleus, most ionising, stopped by paper.','Beta = fast electron, stopped by a few mm of aluminium.','Gamma = electromagnetic wave, least ionising, reduced by thick lead.','Half-life is the time for half the radioactive nuclei to decay.','Fission splits big nuclei; fusion joins small ones (as in the Sun).']},
+  {t:'Forces',n:['Weight W = mg. Resultant force F = ma.','Speed = distance ÷ time. Acceleration = change in velocity ÷ time.','Newton 1: no resultant force means an object stays still or keeps a constant velocity. Newton 3: forces come in equal and opposite pairs.','Stopping distance = thinking distance + braking distance.','Work done = force × distance moved.']},
+  {t:'Waves',n:['Wave speed = frequency × wavelength (v = fλ).','Transverse waves (light, water) vibrate at right angles to travel; longitudinal waves (sound) vibrate along it.','EM spectrum in order of increasing frequency: radio, microwave, infrared, visible, ultraviolet, X-ray, gamma.','All EM waves travel at the same speed in a vacuum: 3 × 10⁸ m/s.']}],
+ quiz:[
+  [1,'A current of 2 A flows through a 6 Ω resistor. What is the voltage?',['12 V','3 V','8 V','0.33 V'],'V = IR = 2 × 6 = 12 V.'],
+  [0,'What is the unit of power?',['Watt','Joule','Newton','Volt'],'Power is energy per second, measured in watts.'],
+  [0,'What is the kinetic energy of a 2 kg object moving at 3 m/s?',['9 J','6 J','18 J','12 J'],'½ × 2 × 3² = 9 J.'],
+  [3,'Which radiation is the most ionising?',['Alpha','Beta','Gamma','Radio waves'],'Alpha particles are big and highly charged.'],
+  [3,'Which radiation is an electromagnetic wave?',['Gamma','Alpha','Beta','Neutron'],'Gamma rays are part of the EM spectrum.'],
+  [5,'A wave has frequency 50 Hz and wavelength 2 m. What is its speed?',['100 m/s','25 m/s','52 m/s','0.04 m/s'],'v = fλ = 50 × 2 = 100 m/s.'],
+  [5,'Sound waves are…',['Longitudinal','Transverse','Electromagnetic','Stationary'],'The air vibrates in the same direction the wave travels.'],
+  [5,'Which EM wave has the highest frequency?',['Gamma rays','Radio waves','Visible light','Microwaves'],'Order: radio → microwave → IR → visible → UV → X-ray → gamma.'],
+  [1,'What is the UK mains voltage?',['230 V','110 V','12 V','50 V'],'It\'s 230 V AC at 50 Hz.'],
+  [1,'What colour is the earth wire in a UK plug?',['Green and yellow','Brown','Blue','Red'],'Live is brown, neutral blue.'],
+  [2,'An object has mass 200 g and volume 50 cm³. What is its density?',['4 g/cm³','250 g/cm³','0.25 g/cm³','150 g/cm³'],'Density = 200 ÷ 50 = 4 g/cm³.'],
+  [4,'What resultant force accelerates a 1000 kg car at 2 m/s²?',['2000 N','500 N','1002 N','200 N'],'F = ma = 1000 × 2.'],
+  [3,'What is half-life?',['The time for half the radioactive nuclei to decay','Half the time an object stays radioactive','The time for radiation to travel half a metre','Half the energy of a nucleus'],'After one half-life, half the original nuclei are left.']]},
+
+{id:'cs',name:'Computer Science',icon:'💻',color:'#2b7a8a',
+ topics:[
+  {t:'Data representation',n:['Binary is base 2. 8 bits = 1 byte, 1000 bytes = 1 KB.','Hexadecimal is base 16: A = 10 … F = 15. One hex digit = 4 bits.','Characters are stored using ASCII or Unicode.','Image file size = width × height × colour depth. Sound = sample rate × bit depth × seconds.']},
+  {t:'Systems architecture',n:['The CPU runs the fetch–decode–execute cycle.','ALU does calculations and logic; the control unit coordinates; registers and cache are tiny, fast memory.','Clock speed, number of cores and cache size all affect performance.','RAM is volatile (loses data when off); ROM is non-volatile and holds the boot-up instructions.','Secondary storage types: magnetic, optical and solid state.']},
+  {t:'Networks',n:['A LAN covers a small area (one site); a WAN covers a large geographical area.','Star topology: all devices connect to a central switch. Mesh: devices connect to each other.','Protocols: HTTP/HTTPS (web), FTP (files), SMTP (send email), IMAP/POP (receive email), TCP/IP (the internet).','An IP address identifies a device on a network; a MAC address is the unique ID of its network card.']},
+  {t:'Security',n:['Threats: malware, phishing, brute-force attacks, denial of service, SQL injection, social engineering.','Protection: firewalls, anti-malware, strong passwords, encryption, user access levels, penetration testing.','Phishing uses fake emails or sites to trick people into giving away details.']},
+  {t:'Algorithms',n:['Computational thinking: decomposition (break it down), abstraction (remove detail), algorithmic thinking.','Linear search checks each item in turn and works on any list. Binary search needs a sorted list and halves it each time.','Sorts: bubble sort (swap neighbours), merge sort (split then merge), insertion sort (insert each item in place).','Algorithms can be written as flowcharts or pseudocode.']},
+  {t:'Programming',n:['The three constructs: sequence, selection (if) and iteration (loops).','Data types: integer, real/float, Boolean, character, string.','A function returns a value; a procedure doesn\'t.','Arrays store many values of the same type under one name.','SQL: SELECT fields FROM table WHERE condition.']}],
+ quiz:[
+  [0,'What is binary 1011 in denary?',['11','13','9','1011'],'8 + 0 + 2 + 1 = 11.'],
+  [0,'How many bits are in a byte?',['8','4','16','1000'],'1 byte = 8 bits.'],
+  [0,'What is hex F in denary?',['15','16','14','10'],'A = 10, B = 11 … F = 15.'],
+  [0,'What is the largest number you can store in 8 bits (unsigned)?',['255','256','128','8'],'11111111 in binary = 255.'],
+  [1,'Which type of memory is volatile?',['RAM','ROM','SSD','Hard disk'],'RAM loses its contents when the power goes off.'],
+  [1,'Which part of the CPU does calculations?',['ALU','Control unit','Cache','Register'],'Arithmetic Logic Unit.'],
+  [2,'Which protocol is used for secure web pages?',['HTTPS','FTP','SMTP','IMAP'],'The S stands for secure: it\'s encrypted.'],
+  [2,'A network covering a large geographical area is a…',['WAN','LAN','PAN','Star'],'Wide Area Network.'],
+  [3,'A fake email tricking you into entering your password is…',['Phishing','Brute force','SQL injection','Denial of service'],'Phishing pretends to be someone trustworthy.'],
+  [4,'Binary search only works if the list is…',['Sorted','Short','Made of numbers','Unsorted'],'It compares with the middle and throws away half each time.'],
+  [5,'What is the difference between a function and a procedure?',['A function returns a value','A procedure returns a value','A function can\'t take parameters','There\'s no difference'],'Both are subroutines; only functions return a value.'],
+  [5,'Which data type stores True or False?',['Boolean','Integer','String','Real'],'Named after George Boole.']]},
+
+{id:'eng',name:'English',icon:'📖',color:'#8a2b4f',
+ topics:[
+  {t:'Language techniques',n:['Simile: comparison using "like" or "as".','Metaphor: says something IS something else.','Personification: gives human qualities to non-human things.','Alliteration: repeated starting consonant sounds. Sibilance: repeated "s" sounds.','Onomatopoeia: words that sound like what they describe. Hyperbole: deliberate exaggeration.']},
+  {t:'Structure',n:['Look at how the opening hooks the reader and how the ending resolves (or doesn\'t).','Shifts in focus: zooming in or out, changes of time, place or perspective.','Short sentences and paragraphs can build tension or emphasis.','Cyclical structure: the ending echoes the opening.']},
+  {t:'Analysing a text',n:['Use a clear point, a short embedded quotation, name the technique, then explain its effect.','Zoom in on single words and their connotations.','Always link back to the question and to the writer\'s intention.','"This suggests…", "The writer uses… to show…" are useful sentence starters.']},
+  {t:'Creative writing',n:['Plan before writing: beginning, middle, end, and the effect you want.','Vary sentence lengths and openers (adverbs, -ing words, prepositions).','Use a range of punctuation: ; : — ? !','Show, don\'t tell: describe actions and senses instead of naming emotions.']},
+  {t:'Persuasive writing',n:['AFOREST: Anecdote, Facts, Opinions, Rhetorical questions, Emotive language, Statistics, Triples (rule of three).','Use direct address ("you") to involve the reader.','Acknowledge and knock down the counter-argument.','Finish with a strong call to action.']},
+  {t:'SPaG',n:['their = belonging to them; there = a place; they\'re = they are.','your = belonging to you; you\'re = you are.','its = belonging to it; it\'s = it is / it has.','Apostrophes show possession (the dog\'s bone) or a missing letter (don\'t).','Don\'t join two full sentences with just a comma (a comma splice). Use a full stop, semicolon or connective.']}],
+ quiz:[
+  [0,'"The wind howled through the trees" is an example of…',['Personification','Simile','Alliteration','Hyperbole'],'Howling is something people or animals do.'],
+  [0,'"As brave as a lion" is a…',['Simile','Metaphor','Personification','Onomatopoeia'],'It compares using "as".'],
+  [0,'"Her heart was a stone" is a…',['Metaphor','Simile','Hyperbole','Alliteration'],'It says her heart IS a stone, with no "like" or "as".'],
+  [0,'Words like "buzz" and "crash" are examples of…',['Onomatopoeia','Sibilance','Alliteration','Personification'],'They sound like the noise they describe.'],
+  [0,'"I\'ve told you a million times" is an example of…',['Hyperbole','Simile','Onomatopoeia','Rhetorical question'],'It\'s a deliberate exaggeration.'],
+  [1,'What effect do short sentences often have in a tense scene?',['They build tension and pace','They slow the story right down','They add humour','They introduce new characters'],'Short sentences feel abrupt and fast.'],
+  [1,'A cyclical structure means…',['The ending echoes the opening','The story is told backwards','There are lots of flashbacks','Each paragraph is the same length'],'The text comes "full circle".'],
+  [4,'Which of these is a rhetorical question?',['"Do we really want a future like that?"','"What time is it?"','"Where is the station?"','"Can you pass the salt?"'],'It\'s asked for effect, not for an answer.'],
+  [5,'Which is correct?',['It\'s raining again.','Its raining again.','Its\' raining again.','It\'s\' raining again.'],'It\'s = it is.'],
+  [5,'Which word means "belonging to them"?',['their','there','they\'re','thier'],'There is a place; they\'re = they are.'],
+  [5,'What is a comma splice?',['Joining two full sentences with only a comma','Using too many commas in a list','Putting a comma before "and"','Missing out a full stop at the end'],'Use a full stop, semicolon or connective instead.'],
+  [4,'What does the "T" in AFOREST stand for?',['Triples (rule of three)','Tone','Tension','Topic sentences'],'Groups of three are memorable and persuasive.']]}
+];
+
+// ---------- Maths practice question generators ----------
+const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+const normAns=s=>String(s).toLowerCase().replace(/\s+/g,'').replace(/²/g,'^2').replace(/³/g,'^3').replace(/×|\*/g,'x').replace(/−/g,'-').replace(/£|cm\^?2|cm|m\/s|°/g,'');
+const numClose=(s,v,tol)=>{ const x=parseFloat(String(s).replace(/[^0-9.\-]/g,'')); return Number.isFinite(x)&&Math.abs(x-v)<=tol; };
+const MATHS_PRACTICE=[
+ {id:'neg',name:'Negative numbers',gen(){ const a=rint(-12,12),b=rint(-12,12),op=pick(['+','−','×']); const v=op==='+'?a+b:op==='−'?a-b:a*b;
+   const sb=b<0?`(${b})`:b; return {q:`Work out ${a} ${op} ${sb}`,check:s=>numClose(s,v,0),ans:String(v),work:op==='×'?'Same signs give a positive answer; different signs give a negative.':'Subtracting a negative is the same as adding.'}; }},
+ {id:'pct',name:'Percentages',gen(){ const p=pick([5,10,15,20,25,30,40,50,60,75]),n=rint(2,40)*10; const v=p*n/100;
+   return {q:`Find ${p}% of ${n}`,check:s=>numClose(s,v,0.001),ans:String(v),work:`${p}% = ${p}/100, so ${p} ÷ 100 × ${n} = ${v}.`}; }},
+ {id:'lin',name:'Solving equations',gen(){ const x=rint(-6,12),a=rint(2,9),b=rint(-15,20),c=a*x+b; const bs=b<0?`− ${-b}`:`+ ${b}`;
+   return {q:`Solve ${a}x ${bs} = ${c}`,check:s=>numClose(s.replace(/^x=/i,''),x,0),ans:`x = ${x}`,work:`${b<0?'Add '+(-b):'Subtract '+b} on both sides: ${a}x = ${c-b}. Divide by ${a}: x = ${x}.`}; }},
+ {id:'exp',name:'Expanding brackets',gen(){ const p=rint(-7,7)||1,q=rint(-7,7)||2; const b=p+q,c=p*q;
+   const t=(k,s)=>k===0?'':(k>0?'+':'−')+(Math.abs(k)===1&&s?'':Math.abs(k))+s; const ans='x²'+t(b,'x')+t(c,'');
+   const fmt=k=>k<0?`− ${-k}`:`+ ${k}`;
+   return {q:`Expand and simplify (x ${fmt(p)})(x ${fmt(q)})`,check:s=>normAns(s).replace(/x2/g,'x^2')===normAns(ans.replace(/−/g,'-')),ans,work:`x × x = x², the x terms give ${p} + ${q} = ${b}, and ${p} × ${q} = ${c}.`}; }},
+ {id:'pyth',name:'Pythagoras',gen(){ const [a,b,c]=pick([[3,4,5],[5,12,13],[8,15,17],[7,24,25],[6,8,10],[9,12,15]]),k=pick([1,1,2,3]);
+   return {q:`A right-angled triangle has shorter sides ${a*k} cm and ${b*k} cm. Find the hypotenuse.`,check:s=>numClose(s,c*k,0.05),ans:`${c*k} cm`,work:`${a*k}² + ${b*k}² = ${(a*k)**2} + ${(b*k)**2} = ${(c*k)**2}, and √${(c*k)**2} = ${c*k}.`}; }},
+ {id:'circ',name:'Circles',gen(){ const r=rint(2,12),area=pick([true,false]); const v=area?Math.PI*r*r:2*Math.PI*r;
+   return {q:`Find the ${area?'area':'circumference'} of a circle with radius ${r} cm. Give your answer to 1 d.p.`,check:s=>numClose(s,Math.round(v*10)/10,0.051),ans:(Math.round(v*10)/10).toFixed(1)+(area?' cm²':' cm'),work:area?`Area = πr² = π × ${r*r} = ${v.toFixed(3)}…`:`Circumference = 2πr = 2 × π × ${r} = ${v.toFixed(3)}…`}; }},
+ {id:'frac',name:'Simplifying fractions',gen(){ let a=rint(1,9),b=rint(a+1,12); const g0=gcd(a,b); a/=g0; b/=g0; const k=rint(2,8);
+   return {q:`Simplify ${a*k}/${b*k} fully`,check:s=>normAns(s)===`${a}/${b}`,ans:`${a}/${b}`,work:`Divide top and bottom by the highest common factor, ${k}.`}; }},
+ {id:'ratio',name:'Sharing in a ratio',gen(){ const a=rint(1,5),b=rint(1,6),u=rint(2,15)*(a===b?1:1),tot=(a+b)*u;
+   return {q:`Share £${tot} in the ratio ${a} : ${b}. What is the bigger share? (If equal, give one share.)`,check:s=>numClose(s,Math.max(a,b)*u,0.001),ans:`£${Math.max(a,b)*u}`,work:`${a} + ${b} = ${a+b} parts. £${tot} ÷ ${a+b} = £${u} per part. ${Math.max(a,b)} × £${u} = £${Math.max(a,b)*u}.`}; }},
+ {id:'mean',name:'Mean',gen(){ const n=rint(4,6),xs=Array.from({length:n},()=>rint(1,20)); const s=xs.reduce((a,b)=>a+b,0),v=s/n;
+   return {q:`Find the mean of ${xs.join(', ')}. Give your answer to 1 d.p. if needed.`,check:t=>numClose(t,Math.round(v*10)/10,0.051),ans:String(Math.round(v*10)/10),work:`Total = ${s}. ${s} ÷ ${n} = ${v.toFixed(2).replace(/\.?0+$/,'')}.`}; }},
+ {id:'idx',name:'Index laws',gen(){ const m=rint(2,9),n=rint(2,7),op=pick(['×','÷']); const p=op==='×'?m+n:m-n;
+   return {q:`Simplify a^${m} ${op} a^${n}. (Type your answer like a^5)`,check:s=>normAns(s)===normAns(`a^${p}`)||(p===1&&normAns(s)==='a')||(p===0&&normAns(s)==='1'),ans:`a^${p}`,work:op==='×'?`Add the powers: ${m} + ${n} = ${m+n}.`:`Subtract the powers: ${m} − ${n} = ${m-n}.`}; }},
+];
+
+// ---------- hub tabs ----------
+function setHubTab(t){
+  for(const b of document.querySelectorAll('.htabs button')) b.classList.toggle('on',b.dataset.tab===t);
+  for(const [id,k] of [['tab-home','home'],['tab-subjects','subjects'],['tab-gg','gg']]) $(id).classList.toggle('hidden',k!==t);
+  try{ localStorage.setItem('cs_tab',t); }catch(e){}
+  if(t==='subjects') renderSubjTiles();
+}
+for(const b of document.querySelectorAll('.htabs button')) b.onclick=()=>setHubTab(b.dataset.tab);
+try{ const t=localStorage.getItem('cs_tab'); if(t) setHubTab(t); }catch(e){}
+
+// ---------- progress (red/amber/green + best quiz) saved per subject ----------
+const PROG={};
+async function loadProg(){ try{ for(const p of await Store.list('progress')) PROG[p.id]=p; }catch(e){} }
+function saveProg(id){ const p=PROG[id]||{}; Store.save('progress',id,{rag:p.rag||{},best:p.best||0}).catch(()=>{}); }
+function confidence(s){ const r=(PROG[s.id]&&PROG[s.id].rag)||{}; let pts=0; s.topics.forEach((_,i)=>pts+=r[i]==='g'?2:r[i]==='a'?1:0); return Math.round(pts/(s.topics.length*2)*100); }
+async function renderSubjTiles(){
+  await loadProg();
+  const box=$('subjtiles'); box.innerHTML='';
+  for(const s of SUBJECTS){
+    const b=document.createElement('button'); b.className='tile';
+    const c=confidence(s);
+    b.innerHTML=`<div class="ic" style="background:${s.color};font-size:2rem"></div><b></b><span></span><div class="pbarx" style="width:100%;margin-top:4px"><div style="height:100%;width:${c}%;background:var(--accent)"></div></div><div class="go">View</div>`;
+    b.querySelector('.ic').textContent=s.icon; b.querySelector('b').textContent=s.name;
+    b.querySelector('span').textContent=`${s.topics.length} topics · ${c}% confident`;
+    b.onclick=()=>openSubject(s); box.appendChild(b);
+  }
+}
+
+// ---------- subject screen ----------
+let SUB=null, subView='topics';
+function openSubject(s){ SUB=s; showScreen('subject'); $('subname').textContent=s.icon+' '+s.name; $('segprac').classList.toggle('hidden',s.id!=='maths'); setSubView('topics'); }
+function setSubView(v){ subView=v; for(const b of document.querySelectorAll('#subseg button')) b.classList.toggle('on',b.dataset.v===v); ({topics:renderTopics,quiz:startQuiz,practice:startPractice})[v](); }
+for(const b of document.querySelectorAll('#subseg button')) b.onclick=()=>setSubView(b.dataset.v);
+$('subback').onclick=()=>{ showScreen('hub'); setHubTab('subjects'); };
+
+function renderTopics(){
+  const box=$('subbody'); box.innerHTML='<div class="muted" style="margin-bottom:10px">Rate each topic: 🔴 don\'t get it, 🟠 sort of, 🟢 confident.</div>';
+  const p=PROG[SUB.id]=PROG[SUB.id]||{rag:{},best:0};
+  SUB.topics.forEach((tp,i)=>{
+    const d=document.createElement('details'); d.className='card topic';
+    const sm=document.createElement('summary'); const tt=document.createElement('span'); tt.textContent=tp.t;
+    const rag=document.createElement('span'); rag.className='rag';
+    for(const [k,e] of [['r','🔴'],['a','🟠'],['g','🟢']]){ const b=document.createElement('button'); b.textContent=e; if(p.rag[i]===k) b.classList.add('on');
+      b.onclick=ev=>{ ev.preventDefault(); p.rag[i]=p.rag[i]===k?undefined:k; if(!p.rag[i]) delete p.rag[i]; saveProg(SUB.id); renderTopics(); }; rag.appendChild(b); }
+    sm.append(tt,rag); d.appendChild(sm);
+    const ul=document.createElement('ul'); for(const n of tp.n){ const li=document.createElement('li'); li.textContent=n; ul.appendChild(li); } d.appendChild(ul);
+    const qs=SUB.quiz.filter(q=>q[0]===i);
+    const mk=document.createElement('button'); mk.textContent='🗂️ Make flashcards from this topic';
+    mk.onclick=async()=>{ const cards=[...tp.n.map(n=>({f:`${tp.t}: fill in the key fact`,b:n})).slice(0,0),...qs.map(q=>({f:q[1],b:q[2][0]+' — '+q[3]})),...tp.n.map((n,j)=>({f:`${SUB.name} · ${tp.t} — key point ${j+1}`,b:n}))];
+      await Store.save('decks',newId(),{name:`${SUB.name}: ${tp.t}`,cards}); mk.textContent='✓ Added to Flashcards'; mk.disabled=true; };
+    d.appendChild(mk); box.appendChild(d);
+  });
+}
+
+// quiz: 10 random questions, shuffled options
+let QZ=null;
+function startQuiz(){
+  const qs=shuffle([...SUB.quiz]).slice(0,10);
+  QZ={qs,i:0,score:0}; showQ();
+}
+function showQ(){
+  const box=$('subbody'); box.innerHTML='';
+  if(QZ.i>=QZ.qs.length){
+    const p=PROG[SUB.id]=PROG[SUB.id]||{rag:{},best:0}; const pct=Math.round(QZ.score/QZ.qs.length*100);
+    const best=pct>(p.best||0); if(best){ p.best=pct; saveProg(SUB.id); }
+    box.innerHTML=`<div class="card" style="text-align:center"><div style="font-size:2.4rem">${pct>=80?'🎉':pct>=50?'👍':'📚'}</div><h3>${QZ.score} / ${QZ.qs.length} (${pct}%)</h3><div class="muted">${best?'New best score!':'Best: '+(p.best||0)+'%'}</div><div class="row" style="justify-content:center;margin-top:12px"><button class="primary" id="qagain">Try again</button></div></div>`;
+    $('qagain').onclick=startQuiz; return;
+  }
+  const [ti,q,opts,ex]=QZ.qs[QZ.i];
+  const c=document.createElement('div'); c.className='card';
+  c.innerHTML=`<div class="muted">Question ${QZ.i+1} of ${QZ.qs.length} · ${SUB.topics[ti].t}</div><div class="pbarx big"><div style="height:100%;width:${QZ.i/QZ.qs.length*100}%;background:var(--accent)"></div></div><h3 style="line-height:1.4"></h3><div class="opts"></div><div class="exp muted" style="margin-top:8px"></div>`;
+  c.querySelector('h3').textContent=q;
+  const ob=c.querySelector('.opts'); let done=false;
+  for(const o of shuffle([...opts])){
+    const b=document.createElement('button'); b.className='opt'; b.textContent=o;
+    b.onclick=()=>{ if(done) return; done=true; const right=o===opts[0]; if(right) QZ.score++;
+      for(const x of ob.children){ if(x.textContent===opts[0]) x.classList.add('right'); else if(x===b) x.classList.add('wrong'); }
+      c.querySelector('.exp').textContent=(right?'✓ Correct! ':'✗ Not quite. ')+ex;
+      const n=document.createElement('button'); n.className='primary'; n.style.marginTop='10px'; n.textContent=QZ.i+1<QZ.qs.length?'Next question →':'See score';
+      n.onclick=()=>{ QZ.i++; showQ(); }; c.appendChild(n); };
+    ob.appendChild(b);
+  }
+  box.appendChild(c);
+}
+
+// maths practice
+let PR={type:null,q:null,streak:0};
+function startPractice(){
+  const box=$('subbody'); box.innerHTML='';
+  const sel=document.createElement('div'); sel.className='seg';
+  for(const g of MATHS_PRACTICE){ const b=document.createElement('button'); b.textContent=g.name; if(PR.type===g) b.classList.add('on'); b.onclick=()=>{ PR.type=g; startPractice(); }; sel.appendChild(b); }
+  box.appendChild(sel);
+  if(!PR.type) PR.type=MATHS_PRACTICE[0];
+  for(const b of sel.children) b.classList.toggle('on',b.textContent===PR.type.name);
+  const c=document.createElement('div'); c.className='card'; box.appendChild(c);
+  const next=()=>{
+    PR.q=PR.type.gen();
+    c.innerHTML=`<div class="muted">${PR.type.name} · streak 🔥 ${PR.streak}</div><h3 style="margin:10px 0;line-height:1.4"></h3><div class="row"><input id="pin" placeholder="Your answer" style="flex:1;min-width:0" autocomplete="off"><button class="primary" id="pchk">Check</button></div><div id="pfb" style="margin-top:10px"></div>`;
+    c.querySelector('h3').textContent=PR.q.q;
+    const chk=()=>{ const v=$('pin').value; if(!v.trim()) return; const ok=PR.q.check(v); PR.streak=ok?PR.streak+1:0;
+      $('pfb').innerHTML=''; const p=document.createElement('div'); p.textContent=(ok?'✓ Correct! ':'✗ The answer is '+PR.q.ans+'. ')+PR.q.work; p.style.color=ok?'#9fd36b':'#ff9b8f'; $('pfb').appendChild(p);
+      const n=document.createElement('button'); n.className='primary'; n.style.marginTop='8px'; n.textContent='Next question →'; n.onclick=next; $('pfb').appendChild(n); $('pchk').disabled=true; };
+    $('pchk').onclick=chk; $('pin').onkeydown=e=>{ if(e.key==='Enter'){ if($('pchk').disabled) next(); else chk(); } };
+    $('pin').focus();
+  };
+  next();
+}
+
+// ---------- focus timer (25/5) ----------
+const TM={left:25*60,mode:'study',run:false,iv:null};
+function drawTimer(){ $('tclock').textContent=`${Math.floor(TM.left/60)}:${String(TM.left%60).padStart(2,'0')}`; $('tmode').textContent=TM.mode==='study'?'Study time — focus!':'Break — rest your eyes'; $('tstart').textContent=TM.run?'Pause':'Start'; }
+$('tstart').onclick=()=>{ TM.run=!TM.run; clearInterval(TM.iv);
+  if(TM.run) TM.iv=setInterval(()=>{ if(--TM.left<=0){ sound('end'); TM.mode=TM.mode==='study'?'break':'study'; TM.left=(TM.mode==='study'?25:5)*60; } drawTimer(); },1000); drawTimer(); };
+$('treset').onclick=()=>{ TM.run=false; clearInterval(TM.iv); TM.mode='study'; TM.left=25*60; drawTimer(); $('tmode').textContent='25 min study, then a 5 min break'; };
+
+// ---------- study together (live, synced through Firebase) ----------
+const T={sid:null,s:null,unsub:null,me:null};
+function pickStudy(f){
+  $('pickttl').textContent=`📚 Study with ${f.name}`;
+  const box=$('picklist'); box.innerHTML='<div class="muted">Loading…</div>'; $('picker').classList.remove('hidden');
+  Store.list('decks').catch(()=>[]).then(decks=>{
+    box.innerHTML='';
+    const add=(label,sub,cards)=>{ const it=document.createElement('button'); it.className='fitem'; it.style.textAlign='left';
+      const n=document.createElement('span'); n.className='nm'; n.textContent=label; const s=document.createElement('span'); s.className='st'; s.textContent=sub; it.append(n,s);
+      it.onclick=()=>{ $('picker').classList.add('hidden'); startTogether(f,label,cards); }; box.appendChild(it); };
+    for(const s of SUBJECTS) add(`${s.icon} ${s.name}`,`${s.quiz.length} cards`,s.quiz.map(q=>({f:q[1],b:q[2][0]})));
+    for(const d of decks){ const cards=(d.cards||[]).filter(c=>(c.f||'').trim()); if(cards.length) add(`🗂️ ${d.name||'Deck'}`,`${cards.length} cards`,cards); }
+  });
+}
+$('pickcancel').onclick=()=>$('picker').classList.add('hidden');
+async function startTogether(f,title,cards){
+  try{
+    const sid=await Acct.study.create(f,title,cards.slice(0,80));
+    await Acct.study.invite(f.id,sid,title);
+    openTogether(sid);
+  }catch(e){ alertMsg(e.code==='permission-denied'?'Couldn\'t start. The site owner needs to update the Firestore rules.':'Couldn\'t start the session.'); }
+}
+function alertMsg(t){ const s=$('mtoast'); s.innerHTML=''; const x=document.createElement('span'); x.textContent=t; s.appendChild(x); s.style.display='flex'; setTimeout(()=>s.style.display='none',5000); }
+function openTogether(sid,join){
+  closeTogether(); T.sid=sid; T.me=Acct.user.uid; showScreen('together');
+  $('togstatus').textContent='Connecting…';
+  if(join) Acct.study.update(sid,{joined:true}).catch(()=>{});
+  T.unsub=Acct.study.listen(sid,renderTogether,()=>{ $('togstatus').textContent='Couldn\'t load the session.'; });
+}
+function closeTogether(){ if(T.unsub){ T.unsub(); T.unsub=null; } T.sid=null; T.s=null; }
+function renderTogether(s){
+  if(!s){ $('togstatus').textContent='This session has ended.'; return; }
+  T.s=s; const other=T.me===s.host?s.guestName:s.hostName;
+  $('togname').textContent='📚 '+s.title;
+  $('togstatus').textContent=s.ended?`${other} left the session.`:s.joined?`Studying with ${other}`:`Waiting for ${other} to join…`;
+  const sc=$('togscore'); sc.innerHTML='';
+  for(const [u,n] of [[s.host,s.hostName],[s.guest,s.guestName]]){ const d=document.createElement('div'); d.className='flag'; d.style.background='rgba(255,255,255,.08)'; d.style.color='var(--text)'; d.textContent=`${u===T.me?'You':n}: ${(s.score&&s.score[u])||0}`; sc.appendChild(d); }
+  const done=s.pos>=s.order.length;
+  $('togfill').style.width=Math.min(100,s.pos/s.order.length*100)+'%';
+  if(done){ $('togf').textContent='🎉 All done!'; $('togb').textContent=''; setFlipEl($('togflip'),false); $('tognext').textContent='Start again'; $('togknew').disabled=true; }
+  else{
+    const c=s.cards[s.order[s.pos]];
+    if($('togf').textContent!==c.f) setFlipEl($('togflip'),false,true);
+    $('togf').textContent=c.f; $('togb').textContent=c.b;
+    setFlipEl($('togflip'),!!s.flipped);
+    $('tognext').textContent='Next card →';
+    $('togknew').disabled=!!(s.knew&&s.knew[T.me]===s.pos);
+  }
+}
+function setFlipEl(el,on,instant){ const inner=el.querySelector('.in'); if(instant){ inner.style.transition='none'; el.classList.toggle('show',on); inner.getBoundingClientRect(); inner.style.transition=''; } else el.classList.toggle('show',on); }
+$('togflip').onclick=()=>{ if(T.s&&T.s.pos<T.s.order.length) Acct.study.update(T.sid,{flipped:!T.s.flipped}); };
+$('tognext').onclick=()=>{ if(!T.s) return; if(T.s.pos>=T.s.order.length) Acct.study.update(T.sid,{pos:0,flipped:false,order:shuffle(T.s.cards.map((_,i)=>i))}); else Acct.study.update(T.sid,{pos:T.s.pos+1,flipped:false}); };
+$('togknew').onclick=()=>{ if(!T.s) return; Acct.study.point(T.sid,T.me,T.s.pos); };
+$('togtimer').onclick=()=>{ if(!T.s) return; Acct.study.update(T.sid,{timerEnd:T.s.timerEnd&&T.s.timerEnd>Date.now()?null:Date.now()+25*60*1000}); };
+$('togback').onclick=()=>{ if(T.sid) Acct.study.update(T.sid,{ended:true}).catch(()=>{}); closeTogether(); openFriends(); };
+setInterval(()=>{ const e=T.s&&T.s.timerEnd; if(!e||$('together').classList.contains('hidden')){ $('togclock').textContent=''; return; }
+  const left=Math.max(0,Math.round((e-Date.now())/1000)); $('togclock').textContent=left?`⏱ ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`:'⏱ Break time!'; },500);
+</script>
 
 <script type="module">
 // ======== PASTE YOUR FIREBASE CONFIG HERE (see setup steps) ========
@@ -2164,6 +2562,18 @@ if(!FIREBASE_CONFIG){
       },
       send(text){ return addDoc(collection(db,'rooms','global','messages'),{from:Acct.user.uid,name:Acct.name,text,at:Date.now()}); },
       remove(id){ return deleteDoc(doc(db,'rooms','global','messages',id)); }
+    };
+    // study together: sessions/{id} readable/writable only by the two friends
+    Acct.study={
+      async create(f,title,cards){
+        const me=Acct.user.uid, order=cards.map((_,i)=>i).sort(()=>Math.random()-.5);
+        const r=await addDoc(collection(db,'sessions'),{host:me,hostName:Acct.name,guest:f.id,guestName:f.name||'',title,cards,order,pos:0,flipped:false,score:{},knew:{},joined:false,ended:false,timerEnd:null,at:Date.now()});
+        return r.id;
+      },
+      invite(fid,sid,title){ return setDoc(doc(db,'users',fid,'invites',Acct.user.uid),{type:'study',sid,title,name:Acct.name,at:Date.now()}); },
+      listen(sid,cb,err){ return onSnapshot(doc(db,'sessions',sid),d=>cb(d.exists()?d.data():null),e=>{ console.warn(e); err&&err(e); }); },
+      update(sid,patch){ return updateDoc(doc(db,'sessions',sid),patch); },
+      point(sid,uid,pos){ return updateDoc(doc(db,'sessions',sid),{['score.'+uid]:increment(1),['knew.'+uid]:pos}); }
     };
     Acct.friends={
       async send(name){
