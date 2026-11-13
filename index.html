@@ -254,7 +254,6 @@ button.primary:hover{filter:brightness(1.08)}
         <div class="muted" style="margin-top:8px;font-size:.82rem">No email needed. Usernames are 3–20 letters/numbers, passwords 6+ characters. There's no password reset, so don't forget it!</div>
       </div>
       <div id="wmsg" class="muted"></div>
-      <button class="link" id="guest">Play as guest (no account)</button>
     </div>
   </div>
 
@@ -1349,7 +1348,7 @@ $('resumebtn').onclick=()=>{
   newGame({mode:c.mode,mine:c.mine==='b'?'b':'w',level:BOTS[c.level]?c.level:'easy',tc:validTc(c.tc||null)?c.tc:null,oppName:null,moves:c.mv?c.mv.split(' '):[],clock:c.clock});
 };
 $('discard').onclick=()=>{ if(window.Acct&&Acct.user) Acct.clearCurrent(); };
-$('guest').onclick=()=>{
+function guestMode(){
   isGuest=true; all('.js-me',e=>e.textContent='Guest'); $('openadmin').classList.add('hidden');
   for(const el of document.querySelectorAll('.acctonly')) el.classList.add('hidden');
   all('.js-logout',e=>e.classList.add('hidden')); all('.js-signin',e=>e.classList.remove('hidden'));
@@ -1404,8 +1403,8 @@ $('send').onclick=()=>{ sendChat($('chatin').value); $('chatin').value=''; };
 $('chatin').onkeydown=e=>{ if(e.key==='Enter'){ sendChat($('chatin').value); $('chatin').value=''; } };
 
 let pendingJoin=location.hash.length>1?location.hash.slice(1).toUpperCase():null;
-if(pendingJoin){ $('joincode').value=pendingJoin; $('wsub').textContent='Sign in (or play as guest) to join your friend\'s game.'; }
-setTimeout(()=>{ if(!$('splash').classList.contains('hidden')) App.noAccounts("Couldn't reach the account server. You can still play as a guest."); },9000);
+if(pendingJoin){ $('joincode').value=pendingJoin; $('wsub').textContent='Sign in to join your friend\'s game.'; }
+setTimeout(()=>{ if(!$('splash').classList.contains('hidden')) App.noAccounts("Couldn't reach the account server. Check your connection and refresh."); },9000);
 </script>
 
 <script>
@@ -1777,7 +1776,7 @@ const FIREBASE_CONFIG = {
 const $=id=>document.getElementById(id);
 const App=window.App;
 if(!FIREBASE_CONFIG){
-  App.noAccounts("Accounts aren't switched on yet (the site owner needs to add the Firebase settings). You can still play as a guest.");
+  App.noAccounts("Accounts aren't switched on yet.");
 } else {
   try{
     const V='10.12.2', base=`https://www.gstatic.com/firebasejs/${V}/`;
@@ -1941,7 +1940,7 @@ if(!FIREBASE_CONFIG){
     });
   }catch(e){
     console.error(e);
-    App.noAccounts("Couldn't load the account system. You can still play as a guest.");
+    App.noAccounts("Couldn't load the account system. Check your connection and refresh.");
   }
 }
 </script>
