@@ -330,6 +330,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 .dropping .dmwrap{outline:3px dashed var(--accent);outline-offset:-6px}
 .dropping .dmwrap::after{content:"Drop photo to send";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;background:rgba(0,0,0,.45);border-radius:12px;pointer-events:none}
 .dmwrap{position:relative}
+.revwarn{background:#5a1f1f;border:1px solid #a33;color:#ffd6d6;font-weight:800;border-radius:10px;padding:10px 14px;margin:10px 0;text-align:center;font-size:.9rem;letter-spacing:.01em}
 </style>
 </head>
 <body>
@@ -361,6 +362,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
     <div class="muted" style="font-size:1rem">What are we doing today?</div>
     <div class="htabs"><button data-tab="home" class="on">Home</button><button data-tab="subjects">SUBJECTS</button><button data-tab="gg">GGCSE</button></div>
     <div id="tab-subjects" class="hidden">
+<div class="revwarn">⚠️ NOT ALL INFORMATION MAY BE INCLUDED OR ACCURATE, PLEASE DO NOT USE THIS AS A MAIN SOURCE OF REVISION!!</div>
       <div class="card" id="timer"><div class="row" style="justify-content:space-between"><div><h3 style="margin:0">⏱ Focus timer</h3><div class="muted" id="tmode">25 min study, then a 5 min break</div></div><div id="tclock" style="font-size:2.4rem;font-weight:800;font-variant-numeric:tabular-nums">25:00</div></div>
         <div class="row" style="margin-top:10px"><button class="primary" id="tstart">Start</button><button id="treset">Reset</button></div></div>
       <div class="tiles" id="subjtiles"></div>
@@ -544,6 +546,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
   <div id="subject" class="screen hidden">
     <div class="apphead"><button class="back" id="subback">← Subjects</button><h2 id="subname"></h2></div>
     <div class="row" id="sublevel" style="gap:10px;margin-bottom:10px"></div>
+    <div class="revwarn">⚠️ NOT ALL INFORMATION MAY BE INCLUDED OR ACCURATE, PLEASE DO NOT USE THIS AS A MAIN SOURCE OF REVISION!!</div>
     <div class="seg" id="subseg"><button data-v="topics" class="on">Topics</button><button data-v="pp">📄 Past papers</button><button data-v="res">Resources</button></div>
     <div id="subbody"></div>
   </div>
@@ -570,6 +573,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
   <div id="topic" class="screen hidden">
     <div class="apphead"><button class="back" id="tpback">← Topics</button><h2 id="tpname" style="flex:1;min-width:0"></h2></div>
     <div class="muted" id="tpsub" style="margin:-6px 0 10px"></div>
+<div class="revwarn">⚠️ NOT ALL INFORMATION MAY BE INCLUDED OR ACCURATE, PLEASE DO NOT USE THIS AS A MAIN SOURCE OF REVISION!!</div>
     <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">Key points</h3><span class="rag" id="tprag"></span></div>
       <div class="muted" style="font-size:.8rem;margin:4px 0">Tap a point to highlight it.</div><ul id="tpkeys" style="line-height:1.6;padding-left:20px"></ul></div>
     <div class="card"><h3>▶ Watch & practise</h3><div class="row" id="tplinks"></div></div>
