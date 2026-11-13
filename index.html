@@ -292,19 +292,19 @@ button.primary:hover{filter:brightness(1.08)}
 
     <div class="grid" style="margin-top:12px">
       <div class="card">
-        <h3>🤖 Vs computer</h3>
+        <h3>🤖 Play the computer</h3>
         <div class="bots" id="bots">
           <button data-l="easy" class="on"><span class="bi">🐣</span><b>Pixel</b><span>Easy</span></button>
           <button data-l="medium"><span class="bi">🧠</span><b>Byte</b><span>Medium</span></button>
           <button data-l="hard"><span class="bi">🔥</span><b>Kernel</b><span>Hard</span></button>
         </div>
-        <div class="row"><label>Colour <select id="botcol"><option value="w">White</option><option value="b">Black</option><option value="r">Random</option></select></label><button class="primary" id="playbot">Start</button></div>
+        <div class="row"><label>I play <select id="botcol"><option value="w">White</option><option value="b">Black</option><option value="r">Random</option></select></label><button class="primary" id="playbot">Play</button></div>
       </div>
 
       <div class="card">
-        <h3>🌐 Online with a friend</h3>
+        <h3>🌐 Play a friend online</h3>
         <div class="row">
-          <label>Colour <select id="pref"><option value="r">Random</option><option value="w">White</option><option value="b">Black</option></select></label>
+          <label>I play <select id="pref"><option value="r">Random</option><option value="w">White</option><option value="b">Black</option></select></label>
           <label>Clock <select id="tc"></select></label>
         </div>
         <div class="row" style="margin-top:10px"><button class="primary" id="create">Create game</button></div>
@@ -318,7 +318,7 @@ button.primary:hover{filter:brightness(1.08)}
 
       <div class="card">
         <h3>👥 Same device</h3>
-        <div class="row"><label>Clock <select id="tclocal"></select></label><button id="local">Start</button></div>
+        <div class="row"><label>Clock <select id="tclocal"></select></label><button id="local">Pass &amp; play</button></div>
       </div>
     </div>
     <div id="lobbymsg" class="muted" style="margin-top:10px"></div>
@@ -727,7 +727,7 @@ const BOTS={
   easy:{name:'Pixel',icon:'🐣',label:'Easy',opts:{maxDepth:1,ms:250},rand:.3},
   medium:{name:'Byte',icon:'🧠',label:'Medium',opts:{maxDepth:3,ms:900},rand:0},
   hard:{name:'Kernel',icon:'🔥',label:'Hard',opts:{maxDepth:9,ms:2200},rand:0}};
-const LINES={hi:['Good luck! 🙂',"Let's go! ♟️",'Ready when you are.'],
+const LINES={hi:['Good luck! 🙂',"Let's play! ♟️",'Ready when you are.'],
   taunt:['Ooh, thanks! 😏','Are you sure about that? 👀',"I'll take that!",'Hmm, interesting choice…'],
   worried:['Nice move! 😬',"Okay, you're good.",'Uh oh…'],
   reply:['🙂','beep boop 🤖','Focus on the board! 😄','Haha','I\'m thinking…']};
@@ -1337,12 +1337,12 @@ window.App={
     $('resume').style.display=resumeData?'flex':'none';
     if(resumeData){
       const n=resumeData.mv?resumeData.mv.split(' ').length:0;
-      $('resumeinfo').textContent=(resumeData.mode==='bot'&&BOTS[resumeData.level]?`vs ${BOTS[resumeData.level].name} (${BOTS[resumeData.level].label})`:'Same device')+` · ${Math.ceil(n/2)} moves played`;
+      $('resumeinfo').textContent=(resumeData.mode==='bot'&&BOTS[resumeData.level]?`vs ${BOTS[resumeData.level].name} (${BOTS[resumeData.level].label})`:'Pass & play')+` · ${Math.ceil(n/2)} moves played`;
     }
   },
   setRecent(list){
     const r=$('recent'); r.innerHTML='';
-    if(!list.length){ r.textContent='No games yet.'; return; }
+    if(!list.length){ r.textContent='No games yet — go play one!'; return; }
     for(const x of list){
       const el=document.createElement('div'); el.className='gm';
       const icon=x.result==='win'?'🟢 Won':x.result==='loss'?'🔴 Lost':'⚪ Draw';
