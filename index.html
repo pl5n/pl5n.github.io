@@ -308,6 +308,7 @@ button.primary:hover{filter:brightness(1.08)}
           <label>Clock <select id="tc"></select></label>
         </div>
         <div class="row" style="margin-top:10px"><button class="primary" id="create">Create game</button></div>
+        <div class="row hidden" id="finvrow" style="margin-top:10px"><select id="finvsel" style="flex:1;min-width:120px"></select><button id="finvbtn">♟ Invite friend</button></div>
         <div id="linkbox">
           <div class="muted">Send this link to your friend. The game starts when they open it.</div>
           <input id="link" readonly onclick="this.select()">
@@ -326,6 +327,7 @@ button.primary:hover{filter:brightness(1.08)}
     <div class="grid acctonly" style="margin-top:12px">
       <div class="card">
         <h3>📊 Your stats</h3>
+        <div class="stat" style="margin-bottom:12px"><div style="background:#3d4a2e"><b id="selo">1200</b><span>Rating</span></div><div><b id="speak">1200</b><span>Best</span></div></div>
         <div class="muted" style="margin-bottom:6px">Online (vs people)</div>
         <div class="stat"><div><b id="sw">0</b><span>Wins</span></div><div><b id="sl">0</b><span>Losses</span></div><div><b id="sd">0</b><span>Draws</span></div></div>
         <div class="muted" style="margin:12px 0 6px">Vs computer (wins / losses / draws)</div>
@@ -339,7 +341,7 @@ button.primary:hover{filter:brightness(1.08)}
       <div class="card">
         <h3>🏆 Leaderboard</h3>
         <table id="lb"></table>
-        <div class="muted" style="margin-top:6px;font-size:.82rem">Online games against people only.</div>
+        <div class="muted" style="margin-top:6px;font-size:.82rem">Ranked by rating. Only online games against people change your rating.</div>
       </div>
     </div>
   </div>
@@ -415,7 +417,7 @@ button.primary:hover{filter:brightness(1.08)}
   </div>
 
   <div id="dm" class="screen hidden">
-    <div class="apphead"><button class="back" id="dmback">← Friends</button><h2 id="dmname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0"></h2></div>
+    <div class="apphead"><button class="back" id="dmback">← Friends</button><h2 id="dmname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1"></h2><button class="primary" id="dmchal">♟ Challenge</button></div>
     <div class="dmwrap">
       <div id="dmlog"></div>
       <div class="chatin"><input id="dmin" maxlength="500" placeholder="Message…" autocomplete="off"><button class="primary" id="dmsend">Send</button></div>
@@ -819,7 +821,8 @@ function finish(text,winner){
     if(G.mode!=='local'){
       const res=winner==='d'?'draw':winner===G.mine?'win':'loss';
       const opp=G.mode==='bot'?`${BOTS[G.level].name} (${BOTS[G.level].label})`:(G.oppName||'Guest');
-      Acct.record({result:res,opp,how:text,moves:Math.ceil(G.sans.length/2),ranked:G.mode==='online',mode:G.mode,level:G.level||null,mine:G.mine,winner,mv:G.moves.map(uci).join(' ')});
+      const delta=Acct.record({result:res,opp,how:text,moves:Math.ceil(G.sans.length/2),ranked:G.mode==='online',mode:G.mode,level:G.level||null,mine:G.mine,winner,mv:G.moves.map(uci).join(' '),oppElo:G.oppElo||1200});
+      if(typeof delta==='number'){ G.eloDelta=delta; const my=G; setTimeout(()=>{ if(G===my) sys(`Your rating: ${Acct.elo} (${delta>=0?'+':''}${delta})`); },50); if(conn&&conn.open) conn.send({t:'hello',name:Acct.name,elo:Acct.elo}); }
     } else Acct.clearCurrent();
   }
   if(G.mode==='bot') { const my=G; setTimeout(()=>{ if(G===my) botSay(winner==='d'?'Draw! Good game 🤝':winner===G.mine?'Well played, you got me! 👏':'Good game! Fancy a rematch? 🙂'); },600); }
@@ -1036,10 +1039,10 @@ function renderBoard(){
 
 function nameFor(c){
   if(G.mode==='local') return {n:cname(c),i:c==='w'?'⚪':'⚫'};
-  if(c===G.mine) return {n:myName(),i:'👤'};
+  if(c===G.mine) return {n:myName()+(G.mode==='online'&&window.Acct&&Acct.user?` (${Acct.elo||1200})`:''),i:'👤'};
   if(G.mode==='replay') return {n:G.oppName||'Opponent',i:G.level&&BOTS[G.level]?BOTS[G.level].icon:'👤'};
   if(G.mode==='bot'){ const b=BOTS[G.level]; return {n:`${b.name} (${b.label})`,i:b.icon}; }
-  return {n:G.oppName||'Opponent',i:'👤'};
+  return {n:(G.oppName||'Opponent')+(G.oppElo?` (${G.oppElo})`:''),i:'👤'};
 }
 function material(b){
   const cnt={w:{P:0,N:0,B:0,R:0,Q:0},b:{P:0,N:0,B:0,R:0,Q:0}}, INIT={P:8,N:2,B:2,R:2,Q:1}, PV={P:1,N:3,B:3,R:5,Q:9};
@@ -1089,7 +1092,7 @@ setInterval(()=>{
 function renderStatus(){
   let st;
   if(G.review&&!G.review.done) st=`Analysing game… ${G.review.prog}/${G.hist.length}`;
-  else if(G.over) st=G.over;
+  else if(G.over) st=G.over+(typeof G.eloDelta==='number'?` · rating ${G.eloDelta>=0?'+':''}${G.eloDelta}`:'');
   else if(G.mode==='local') st=cname(G.s.turn)+' to move';
   else if(G.mode==='bot') st=G.s.turn===G.mine?'Your move':`${BOTS[G.level].name} is thinking…`;
   else st=G.s.turn===G.mine?'Your move':"Opponent's move";
@@ -1217,7 +1220,7 @@ const rand5=()=>Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Mat
 const msg=t=>{ $('lobbymsg').textContent=t; };
 function needPeer(){ if(typeof Peer==='undefined'){ msg('Could not load the networking library (PeerJS). Check your connection.'); return false; } return true; }
 function resetNet(){ try{conn&&conn.close();}catch(e){} try{peer&&peer.destroy();}catch(e){} conn=null; peer=null; }
-function sayHello(){ if(conn&&conn.open) conn.send({t:'hello',name:(window.Acct&&Acct.user)?Acct.name:'Guest'}); }
+function sayHello(){ if(conn&&conn.open) conn.send({t:'hello',name:(window.Acct&&Acct.user)?Acct.name:'Guest',elo:(window.Acct&&Acct.elo)||1200}); }
 
 function createGame(onCode){
   if(!needPeer()) return;
@@ -1258,7 +1261,7 @@ function wire(c){
       if((d.color!=='w'&&d.color!=='b')||!validTc(d.tc??null)) return;
       msg(''); newGame({mode:'online',mine:d.color,tc:d.tc||null,oppName:null}); sayHello();
     }
-    else if(d.t==='hello'&&on){ const first=!G.oppName; G.oppName=String(d.name||'Guest').slice(0,20); if(first) sys('Playing against '+G.oppName+'.'); render(); }
+    else if(d.t==='hello'&&on){ const first=!G.oppName; G.oppName=String(d.name||'Guest').slice(0,20); if(Number.isFinite(+d.elo)) G.oppElo=Math.round(+d.elo); if(first) sys('Playing against '+G.oppName+'.'); render(); }
     else if(d.t==='move'&&on&&!G.over&&G.s.turn!==G.mine){
       const m=G.lm.find(x=>x.from===d.from&&x.to===d.to&&(x.promo||null)===(d.promo||null));
       if(m) doMove(m,true,d.clock);
@@ -1324,7 +1327,7 @@ window.App={
     if(!G) showScreen('hub');
     runPendingJoin();
   },
-  signedOut(msg){ $('toast').style.display='none'; $('mtoast').style.display='none'; if(window.closeDM) closeDM(); $('fbadge').classList.add('hidden'); if(G&&G.mode==='online') return; G=null; resetNet(); $('pw').value=''; $('wmsg').textContent=msg||''; showScreen('welcome'); },
+  signedOut(msg){ $('finvrow').classList.add('hidden'); $('toast').style.display='none'; $('mtoast').style.display='none'; if(window.closeDM) closeDM(); $('fbadge').classList.add('hidden'); if(G&&G.mode==='online') return; G=null; resetNet(); $('pw').value=''; $('wmsg').textContent=msg||''; showScreen('welcome'); },
   noAccounts(msg){ $('wform').classList.add('hidden'); $('wsub').textContent=msg; showScreen('welcome'); },
   applyPrefs(p){
     if(!p) return;
@@ -1347,7 +1350,7 @@ window.App={
       const el=document.createElement('div'); el.className='gm';
       const icon=x.result==='win'?'🟢 Won':x.result==='loss'?'🔴 Lost':'⚪ Draw';
       const a=document.createElement('span'); a.textContent=`${icon} vs ${x.opp}`;
-      const b=document.createElement('span'); b.textContent=`${x.moves} moves`;
+      const b=document.createElement('span'); b.textContent=(typeof x.eloDelta==='number'?`${x.eloDelta>=0?'+':''}${x.eloDelta} · `:'')+`${x.moves} moves`;
       el.title=x.how||''; el.append(a,b);
       el.onclick=()=>openReplay(x);
       r.appendChild(el);
@@ -1688,7 +1691,15 @@ $('openfriends').onclick=openFriends;
 
 // live updates from the account system
 let shownInvite=null;
-App.setFriends=list=>{ F.friends=list; if(!$('friends').classList.contains('hidden')) renderFriends(); };
+App.setFriends=list=>{ F.friends=list; if(!$('friends').classList.contains('hidden')) renderFriends(); fillInviteList(); };
+function fillInviteList(){
+  const sel=$('finvsel'), keep=sel.value; sel.innerHTML='';
+  const list=[...F.friends].sort((x,y)=>(x.name||'').localeCompare(y.name||''));
+  for(const f of list){ const o=document.createElement('option'); o.value=f.id; o.textContent=f.name||'Friend'; sel.appendChild(o); }
+  if(keep&&list.some(f=>f.id===keep)) sel.value=keep;
+  $('finvrow').classList.toggle('hidden',!list.length||!hasAcct());
+}
+$('finvbtn').onclick=()=>{ const f=F.friends.find(x=>x.id===$('finvsel').value); if(f) challenge(f); };
 App.setRequests=list=>{ F.requests=list; renderRequests(); };
 App.setInvites=list=>{
   const fresh=list.filter(x=>Date.now()-(x.at||0)<10*60*1000).sort((a,b)=>b.at-a.at);
@@ -1741,6 +1752,7 @@ function sendDM(){
   Acct.dm.send(D.cur,text).catch(e=>{ const s=document.createElement('div'); s.className='sys'; s.textContent=e.code==='permission-denied'?'Couldn\'t send. You can only message friends (and the site rules must be up to date).':'Couldn\'t send. Check your connection.'; $('dmlog').appendChild(s); $('dmin').value=text; });
 }
 $('dmsend').onclick=sendDM;
+$('dmchal').onclick=()=>{ if(D.cur){ const f=D.cur; closeDM(); challenge(f); } };
 $('dmin').onkeydown=e=>{ if(e.key==='Enter') sendDM(); };
 $('dmback').onclick=()=>{ closeDM(); openFriends(); };
 App.setInbox=list=>{
@@ -1879,10 +1891,20 @@ if(!FIREBASE_CONFIG){
       record(x){
         if(!this.user) return;
         const key=x.result==='win'?'wins':x.result==='loss'?'losses':'draws', upd={name:this.name};
-        if(x.ranked){ upd[key]=increment(1); }
+        let delta=null;
+        if(x.ranked){
+          upd[key]=increment(1);
+          // Elo: expected score from the rating gap; K is bigger for your first 20 rated games so new players settle faster
+          const R=Acct.elo||1200, O=Math.max(100,Math.min(3500,+x.oppElo||1200)), S=x.result==='win'?1:x.result==='loss'?0:.5;
+          const K=(Acct.rated||0)<20?40:24, E=1/(1+Math.pow(10,(O-R)/400));
+          delta=Math.round(K*(S-E)); Acct.elo=Math.max(100,R+delta); Acct.rated=(Acct.rated||0)+1;
+          upd.elo=Acct.elo; upd.peak=Math.max(Acct.peak||1200,Acct.elo); Acct.peak=upd.peak;
+          x.eloAfter=Acct.elo; x.eloDelta=delta;
+        }
         if(x.mode==='bot'&&x.level){ upd.bot={[x.level]:{[key]:increment(1)}}; upd.current=null; }
         safe(setDoc(userDoc(),upd,{merge:true}));
         safe(addDoc(collection(db,'users',this.user.uid,'games'),{...x,at:serverTimestamp()}).then(()=>loadHome()));
+        return delta;
       },
       saveCurrent(cur){ if(this.user) safe(setDoc(userDoc(),{current:cur},{merge:true})); },
       clearCurrent(){ if(this.user){ App.setResume(null); safe(setDoc(userDoc(),{current:null},{merge:true})); } },
@@ -1913,7 +1935,7 @@ if(!FIREBASE_CONFIG){
     }
     Acct.admin={
       async list(){ const qs=await getDocs(query(collection(db,'users'),limit(1000))); const out=[]; qs.forEach(d=>out.push({...d.data(),id:d.id})); return out.sort((a,b)=>(a.name||'').localeCompare(b.name||'')); },
-      resetStats(uid){ return updateDoc(doc(db,'users',uid),{wins:0,losses:0,draws:0,bot:deleteField()}); },
+      resetStats(uid){ return updateDoc(doc(db,'users',uid),{wins:0,losses:0,draws:0,elo:1200,peak:1200,bot:deleteField()}); },
       setBanned(uid,b){ return setDoc(doc(db,'users',uid),{banned:b},{merge:true}); }
     };
     // messages: chats/{uidA_uidB}/messages/{id} (only the two friends can read),
@@ -1968,6 +1990,9 @@ if(!FIREBASE_CONFIG){
         const snap=await getDoc(userDoc()); const d=snap.exists()?snap.data():{};
         if(d.banned){ await signOut(auth); $('wmsg').textContent='This account has been banned.'; return; }
         $('sw').textContent=d.wins||0; $('sl').textContent=d.losses||0; $('sd').textContent=d.draws||0;
+        if(typeof d.elo!=='number'){ d.elo=1200; safe(setDoc(userDoc(),{elo:1200},{merge:true})); }
+        Acct.elo=d.elo; Acct.peak=d.peak||Math.max(1200,d.elo); Acct.rated=(d.wins||0)+(d.losses||0)+(d.draws||0);
+        $('selo').textContent=d.elo; $('speak').textContent=Acct.peak;
         const bs=$('botstats'); bs.innerHTML='';
         for(const [lv,nm] of [['easy','Pixel'],['medium','Byte'],['hard','Kernel']]){
           const s=(d.bot&&d.bot[lv])||{}, el=document.createElement('div'), b=document.createElement('b'), sp=document.createElement('span');
@@ -1982,12 +2007,12 @@ if(!FIREBASE_CONFIG){
     async function loadLeaderboard(){
       const t=$('lb');
       try{
-        const qs=await getDocs(query(collection(db,'users'),orderBy('wins','desc'),limit(10)));
-        t.innerHTML='<tr><th>#</th><th>Player</th><th class="n">W</th><th class="n">L</th><th class="n">D</th></tr>';
+        const qs=await getDocs(query(collection(db,'users'),orderBy('elo','desc'),limit(15)));
+        t.innerHTML='<tr><th>#</th><th>Player</th><th class="n">Rating</th><th class="n">W</th><th class="n">L</th><th class="n">D</th></tr>';
         let i=0;
-        qs.forEach(d=>{ const x=d.data(); if(x.banned) return; const tr=document.createElement('tr'); i++;
+        qs.forEach(d=>{ const x=d.data(); if(x.banned||i>=10) return; const tr=document.createElement('tr'); i++;
           if(d.id===Acct.user.uid) tr.className='me';
-          for(const [v,c] of [[i,''],[(ADMINS.includes((x.name||'').toLowerCase())?'👑 ':'')+(x.name||'?'),''],[x.wins||0,'n'],[x.losses||0,'n'],[x.draws||0,'n']]){ const td=document.createElement('td'); td.textContent=v; if(c) td.className=c; tr.appendChild(td); }
+          for(const [v,c] of [[i,''],[(ADMINS.includes((x.name||'').toLowerCase())?'👑 ':'')+(x.name||'?'),''],[x.elo||1200,'n'],[x.wins||0,'n'],[x.losses||0,'n'],[x.draws||0,'n']]){ const td=document.createElement('td'); td.textContent=v; if(c) td.className=c; tr.appendChild(td); }
           t.appendChild(tr); });
         if(!i) t.innerHTML='<tr><td class="muted">No ranked games yet.</td></tr>';
       }catch(e){ t.innerHTML='<tr><td class="muted">Couldn\'t load the leaderboard. Check the Firestore rules (see setup).</td></tr>'; }
@@ -2009,7 +2034,7 @@ if(!FIREBASE_CONFIG){
         creating=u;
         const c=await createUserWithEmailAndPassword(auth,toEmail(u),p);
         await updateProfile(c.user,{displayName:u});
-        await setDoc(doc(db,'users',c.user.uid),{name:u,wins:0,losses:0,draws:0,created:serverTimestamp()},{merge:true});
+        await setDoc(doc(db,'users',c.user.uid),{name:u,wins:0,losses:0,draws:0,elo:1200,peak:1200,created:serverTimestamp()},{merge:true});
         await ensureUsername(c.user.uid,u);
         creating=null; Acct.name=u; App.signedIn(u); loadHome(); startFriends();
       }catch(e){ creating=null; fail(e); }
