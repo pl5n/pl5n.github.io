@@ -537,7 +537,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 
   <div id="subject" class="screen hidden">
     <div class="apphead"><button class="back" id="subback">← Subjects</button><h2 id="subname"></h2></div>
-    <div class="seg" id="subseg"><button data-v="topics" class="on">Topics</button><button data-v="quiz">Quiz</button><button data-v="practice" id="segprac">Practice</button></div>
+    <div class="seg" id="subseg"><button data-v="topics" class="on">Topics</button><button data-v="quiz">Quiz</button><button data-v="practice" id="segprac">Practice</button><button data-v="res">Resources</button></div>
     <div id="subbody"></div>
   </div>
 
@@ -2319,10 +2319,40 @@ async function renderSubjTiles(){
   }
 }
 
+
+// ---------- trusted free revision resources per subject ----------
+const RES={
+  sci:[['Free Science Lessons','Video lessons for every AQA Biology, Chemistry and Physics topic','https://www.freesciencelessons.co.uk/'],
+       ['Free Science Lessons (YouTube)','The same lessons on YouTube','https://www.youtube.com/@Freesciencelessons'],
+       ['Cognito','Free videos, quizzes and past-paper questions','https://cognitoedu.org/'],
+       ['Physics & Maths Tutor','Past papers, mark schemes and revision notes','https://www.physicsandmathstutor.com/'],
+       ['BBC Bitesize','Short revision guides and tests','https://www.bbc.co.uk/bitesize/levels/z98jmp3']],
+  maths:[['Corbettmaths','Videos, worksheets and the famous 5-a-day','https://corbettmaths.com/'],
+         ['Maths Genie','Topic-by-topic exam questions with video solutions, sorted by grade','https://www.mathsgenie.co.uk/'],
+         ['Physics & Maths Tutor','Past papers and mark schemes','https://www.physicsandmathstutor.com/'],
+         ['BBC Bitesize','Short revision guides and tests','https://www.bbc.co.uk/bitesize/levels/z98jmp3']],
+  eng:[['Mr Everything English','Revision videos and exam walkthroughs','https://www.everythingeducation.co.uk/'],
+       ['Mr Everything English (YouTube)','His free video lessons','https://www.youtube.com/results?search_query=mr+everything+english'],
+       ['Mr Bruff (YouTube)','Clear guides to the exam papers and set texts','https://www.youtube.com/@mrbruff'],
+       ['Mr Salles (YouTube)','Detailed analysis for higher grades','https://www.youtube.com/@MrSallesTeachesEnglish'],
+       ['BBC Bitesize','Short revision guides and tests','https://www.bbc.co.uk/bitesize/levels/z98jmp3']],
+  cs:[['BBC Bitesize','Short revision guides and tests','https://www.bbc.co.uk/bitesize/levels/z98jmp3']]
+};
+RES.bio=RES.chem=RES.phys=RES.sci;
+function renderResources(){
+  const box=$('subbody'); box.innerHTML='<div class="muted" style="margin-bottom:10px">Free, trusted sites for '+SUB.name+'. They open in a new tab.</div>';
+  const list=document.createElement('div'); list.className='flist';
+  for(const [n,d,u] of RES[SUB.id]||[]){
+    const a=document.createElement('a'); a.className='fitem card'; a.href=u; a.target='_blank'; a.rel='noopener noreferrer'; a.style.cssText='text-decoration:none;color:inherit;margin:0';
+    const b=document.createElement('span'); b.className='nm'; b.textContent='🔗 '+n; const t=document.createElement('span'); t.className='st'; t.textContent=d; t.style.flexBasis='100%';
+    a.append(b,t); list.appendChild(a);
+  }
+  box.appendChild(list);
+}
 // ---------- subject screen ----------
 let SUB=null, subView='topics';
 function openSubject(s){ SUB=s; showScreen('subject'); $('subname').textContent=s.icon+' '+s.name; $('segprac').classList.toggle('hidden',s.id!=='maths'); setSubView('topics'); }
-function setSubView(v){ subView=v; for(const b of document.querySelectorAll('#subseg button')) b.classList.toggle('on',b.dataset.v===v); ({topics:renderTopics,quiz:startQuiz,practice:startPractice})[v](); }
+function setSubView(v){ subView=v; for(const b of document.querySelectorAll('#subseg button')) b.classList.toggle('on',b.dataset.v===v); ({topics:renderTopics,quiz:startQuiz,practice:startPractice,res:renderResources})[v](); }
 for(const b of document.querySelectorAll('#subseg button')) b.onclick=()=>setSubView(b.dataset.v);
 $('subback').onclick=()=>{ showScreen('hub'); setHubTab('subjects'); };
 
