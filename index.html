@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Computer Science</title>
+<title>Maths GCSE</title>
 <style>
 :root{--bg:#302e2b;--panel:#262522;--panel2:#1f1e1b;--text:#e8e6e1;--muted:#9a978f;--accent:#81b64c;--light:#ebecd0;--dark:#739552;--sz:max(280px,min(calc(100vw - 64px),calc(100vh - 170px)))}
 @media (min-width:900px){:root{--sz:max(320px,min(calc(100vw - 460px),calc(100vh - 150px),800px))}}
@@ -243,6 +243,9 @@ button.primary:hover{filter:brightness(1.08)}
 .udot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#e02828;margin-left:6px}
 #mtoast{position:fixed;right:14px;top:14px;z-index:61;background:#262522;border:1px solid #4b4847;border-radius:12px;padding:10px 12px;display:none;align-items:center;gap:10px;max-width:min(360px,calc(100vw - 28px));box-shadow:0 8px 24px rgba(0,0,0,.4);cursor:pointer}
 #mtoast span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logo .cc{position:relative;display:inline-block}
+.logo .cc img{position:absolute;width:.5em;height:.5em;left:.19em;top:50%;transform:translateY(-48%)}
+.tile b span{color:inherit!important;font-size:inherit!important}
 </style>
 </head>
 <body>
@@ -1296,7 +1299,7 @@ function showScreen(id){
   window.scrollTo(0,0);
 }
 for(const el of document.querySelectorAll('[data-piece]')) el.src=pieceUrl(el.dataset.piece);
-for(const el of document.querySelectorAll('[data-logo]')) el.innerHTML=`C<span class="o"><img src="${pieceUrl('wP')}" alt=""></span>mputer Science`;
+for(const el of document.querySelectorAll('[data-logo]')) el.innerHTML=`Maths G<span class="cc">C<img src="${pieceUrl('wP')}" alt=""></span>SE`;
 
 const uci=m=>sqName(m.from)+sqName(m.to)+(m.promo?m.promo.toLowerCase():'');
 function replayMoves(list){
