@@ -544,7 +544,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
   <div id="subject" class="screen hidden">
     <div class="apphead"><button class="back" id="subback">← Subjects</button><h2 id="subname"></h2></div>
     <div class="row" id="sublevel" style="gap:10px;margin-bottom:10px"></div>
-    <div class="seg" id="subseg"><button data-v="topics" class="on">Topics</button><button data-v="res">Resources</button></div>
+    <div class="seg" id="subseg"><button data-v="topics" class="on">Topics</button><button data-v="pp">📄 Past papers</button><button data-v="res">Resources</button></div>
     <div id="subbody"></div>
   </div>
 
@@ -573,6 +573,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
     <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">Key points</h3><span class="rag" id="tprag"></span></div>
       <div class="muted" style="font-size:.8rem;margin:4px 0">Tap a point to highlight it.</div><ul id="tpkeys" style="line-height:1.6;padding-left:20px"></ul></div>
     <div class="card"><h3>▶ Watch & practise</h3><div class="row" id="tplinks"></div></div>
+    <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">✏️ Drawing notes</h3><span class="muted" id="drsaved"></span></div>
+      <div class="muted" style="font-size:.8rem;margin:4px 0 8px">Draw with a stylus or finger. Lines are smoothed automatically, and nearly-straight lines snap straight.</div>
+      <div class="row" id="drtools" style="gap:6px;margin-bottom:8px"></div>
+      <div><canvas id="drcv" style="display:block;width:100%;background:#15161b;border-radius:10px;border:1px solid var(--edge);touch-action:none;cursor:crosshair"></canvas></div></div>
     <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">📝 My notes</h3><span class="muted" id="tpsaved"></span></div>
       <textarea id="tpnotes" placeholder="Write your own notes for this topic… they save automatically." style="width:100%;min-height:160px;margin-top:8px;resize:vertical;padding:12px;border-radius:8px;color:var(--text);font:inherit;line-height:1.5"></textarea></div>
     <div class="card" id="tpprecard"><div class="row" style="justify-content:space-between"><h3 style="margin:0">⚡ Ready-made flashcards <span class="muted" id="tpprecount" style="font-size:.85rem;font-weight:400"></span></h3><button class="primary" id="tpprestudy">▶ Study these</button></div>
@@ -3446,6 +3450,234 @@ async function studyTopic(includePre,includeOwn){
 }
 $('tpstudy').onclick=()=>studyTopic(true,true);
 $('tpprestudy').onclick=()=>studyTopic(true,false);
+</script>
+<script>
+// ================= EXTRA TOPICS (added after checking each specification) =================
+// [subjectId, sectionName, [topicName, [key points], [[q,a]...], flags]]   flags: 'H' = Higher only
+const EXTRA=[
+// ---------- Maths ----------
+['maths','Number',[
+ ['Place value & the four operations',['Use column methods for adding/subtracting decimals; line up the decimal points.','Long multiplication: grid or column method. Short and long division: bus stop.','BIDMAS: Brackets, Indices, Division/Multiplication, Addition/Subtraction.'],[['What does BIDMAS stand for?','Brackets, Indices, Division, Multiplication, Addition, Subtraction.'],['Work out 3 + 4 × 2.','11'],['Work out 2.4 × 0.3.','0.72']]],
+ ['Negative numbers',['Adding a negative is the same as subtracting; subtracting a negative is the same as adding.','Multiplying or dividing: same signs give positive, different signs give negative.'],[['−3 − (−5)?','2'],['−4 × −6?','24'],['−20 ÷ 4?','−5']]],
+ ['Powers, roots & reciprocals',['Learn square numbers up to 15² = 225 and cubes 1, 8, 27, 64, 125, 1000.','The reciprocal of x is 1/x. The reciprocal of a fraction flips it.'],[['What is 13²?','169'],['Cube root of 125?','5'],['Reciprocal of 2/3?','3/2']]],
+ ['Product rule for counting',['If there are m ways to do one thing and n ways to do another, there are m × n ways to do both.'],[['3 starters and 4 mains: how many meal combinations?','12'],['How many 3-digit codes using digits 0–9?','1000']],'H']]],
+['maths','Algebra',[
+ ['Substitution & formulae',['Replace letters with numbers, then use BIDMAS. Watch negatives: (−3)² = 9.','Expression (no =), equation (can be solved), formula (links quantities), identity (true for all values, ≡).'],[['If a = −3, what is a²?','9'],['What symbol shows an identity?','≡']]],
+ ['Rearranging formulae',['Do the same to both sides to make the new subject. Undo operations in reverse order.','If the subject appears twice (Higher), collect the terms and factorise it out.'],[['Make x the subject of y = 3x + 2.','x = (y − 2)/3'],['Make r the subject of A = πr².','r = √(A/π)']]],
+ ['Algebraic fractions',['Simplify by factorising top and bottom, then cancel common factors.','Add or subtract with a common denominator; multiply across; divide by flipping the second.'],[['Simplify (x² − 4)/(x + 2).','x − 2'],['How do you add algebraic fractions?','Use a common denominator, then combine the numerators.']],'H'],
+ ['Quadratic & graphical inequalities',['Solve x² < 9 by finding the roots, then deciding which region of the graph satisfies it: −3 < x < 3.','Show inequalities as regions on a graph: dashed line for < or >, solid line for ≤ or ≥.'],[['Solve x² > 16.','x < −4 or x > 4'],['Line type for y < 2x + 1?','Dashed.']],'H'],
+ ['Graph transformations',['y = f(x) + a moves the graph up by a. y = f(x + a) moves it left by a.','y = −f(x) reflects in the x-axis; y = f(−x) reflects in the y-axis.'],[['What does f(x + 3) do to the graph?','Translates it 3 left.'],['What does −f(x) do?','Reflects it in the x-axis.']],'H'],
+ ['Equation of a circle & tangents',['A circle centred at the origin with radius r: x² + y² = r².','A tangent is perpendicular to the radius: its gradient is the negative reciprocal of the radius gradient.'],[['Radius of x² + y² = 49?','7'],['Gradient of a radius is 2. Gradient of the tangent?','−½']],'H'],
+ ['Real-life & kinematic graphs',['Distance-time: gradient = speed. Velocity-time: gradient = acceleration, area underneath = distance.','Estimate the area under a curve by splitting it into trapeziums.'],[['How do you find acceleration from a velocity-time graph?','Find the gradient.'],['How do you estimate area under a curve?','Split into trapeziums and add their areas.']]]]],
+['maths','Ratio, proportion & rates of change',[
+ ['Units & conversions',['1 km = 1000 m, 1 m = 100 cm, 1 kg = 1000 g, 1 litre = 1000 ml.','Area units square the conversion (1 m² = 10 000 cm²); volume units cube it.'],[['How many cm² in 1 m²?','10 000'],['Convert 2.5 km to m.','2500 m']]],
+ ['Best buys & simple interest',['Best buy: compare the price per unit (or amount per £1).','Simple interest is the same each year: interest = principal × rate × years.'],[['£2 for 500 g or £3.50 for 1 kg: which is the better buy?','£3.50 for 1 kg (35p per 100 g vs 40p).'],['Simple interest on £200 at 5% for 3 years?','£30']]],
+ ['Growth & decay',['Repeated percentage change: amount = start × multiplierⁿ.','Depreciation uses a multiplier less than 1, e.g. 0.9 for a 10% decrease each year.'],[['Multiplier for 4% growth?','1.04'],['A £10 000 car loses 20% a year. Value after 2 years?','£6400']]]]],
+['maths','Geometry & measures',[
+ ['Properties of shapes',['Know the properties of triangles (isosceles, equilateral, scalene) and quadrilaterals (square, rectangle, rhombus, parallelogram, trapezium, kite).','Plans and elevations show a 3D shape from above, front and side.'],[['How many lines of symmetry does a rhombus have?','2'],['What is a plan view?','The view from directly above.']]],
+ ['3D Pythagoras & trigonometry',['Find the diagonal of a cuboid: d² = a² + b² + c².','Find a right-angled triangle inside the 3D shape and use Pythagoras or SOH CAH TOA.'],[['Longest diagonal of a 3 × 4 × 12 cuboid?','13'],['Strategy for 3D trig problems?','Find a right-angled triangle inside the shape and work in 2D.']],'H'],
+ ['Frustums & composite solids',['Frustum = big cone minus the small cone cut off the top.','Surface area of a sphere = 4πr²; curved surface of a cone = πrl.'],[['Surface area of a sphere?','4πr²'],['What is a frustum?','A cone with its top cut off parallel to the base.']],'H']]],
+['maths','Probability',[
+ ['Two-way tables & sample spaces',['Two-way tables organise data with two categories.','Sample space diagrams list every outcome, e.g. two dice give 36 outcomes.'],[['How many outcomes when rolling two dice?','36'],['P(total of 12 with two dice)?','1/36']]]]],
+['maths','Statistics',[
+ ['Charts & diagrams',['Pie chart angle = frequency ÷ total × 360°.','Frequency polygons plot frequencies at the midpoint of each class. Time series show trends over time.'],[['Pie chart angle for 15 out of 60?','90°'],['Where do you plot points on a frequency polygon?','At the midpoint of each class.']]],
+ ['Comparing distributions',['Compare an average (median or mean) AND a measure of spread (range or IQR).','Always write the comparison in the context of the question.'],[['What two things should you compare?','An average and a measure of spread.'],['What does a smaller IQR show?','More consistent data.']]]]],
+
+// ---------- Computer Science ----------
+['cs','Topic 1: Computational thinking',[
+ ['Flowcharts & pseudocode',['Flowchart symbols: oval = start/stop, parallelogram = input/output, rectangle = process, diamond = decision.','Pseudocode describes an algorithm in structured English without worrying about exact syntax.'],[['Flowchart symbol for a decision?','Diamond.'],['Flowchart symbol for input/output?','Parallelogram.']]],
+ ['Algorithm efficiency',['Efficiency is judged by the number of comparisons, passes through a loop and memory used.','Use test data and logical reasoning to check an algorithm is fit for purpose.'],[['3 ways to measure algorithm efficiency?','Number of comparisons, passes through loops, memory use.']]]]],
+['cs','Topic 3: Computers',[
+ ['Logic gates & circuits',['AND, OR and NOT gates can be combined into logic circuits.','Write a truth table for each intermediate output to work out the final output.'],[['Shape symbol for a NOT gate?','A triangle with a small circle on the tip.'],['A = 1, B = 0. What is NOT(A AND B)?','1']]],
+ ['System vs application software',['System software runs the computer (OS, utilities); application software lets users do tasks (word processors, browsers).'],[['Is an operating system system or application software?','System software.']]],
+ ['Cloud storage & cache',['Cloud storage keeps data on remote servers accessed over the internet: accessible anywhere, but needs a connection and trust in the provider.','Cache is very fast memory near the CPU that stores frequently used instructions.'],[['One advantage and one disadvantage of cloud storage?','Access from anywhere; needs an internet connection (and security/privacy risks).'],['What is cache?','Small, fast memory that stores frequently used data/instructions near the CPU.']]],
+ ['Buses & the clock',['The address bus carries memory addresses; the data bus carries data; the control bus carries control signals.','The clock sends regular pulses that keep the CPU\'s operations in time.'],[['What does the address bus carry?','Memory addresses.'],['What does the clock do?','Synchronises the CPU with regular pulses.']]]]],
+['cs','Topic 6: Programming (Python)',[
+ ['Random numbers & built-in functions',['import random, then random.randint(1, 6) gives a whole number from 1 to 6.','Useful built-ins: len(), int(), str(), float(), round(), input(), print().'],[['What does random.randint(1, 10) return?','A random whole number from 1 to 10 inclusive.'],['What does round(3.567, 1) return?','3.6']]],
+ ['Arithmetic & relational operators',['Arithmetic: +, −, *, / (real division), // (integer division), % (modulus/remainder), ** (power).','Relational: ==, !=, <, >, <=, >=.'],[['What is 17 // 5?','3'],['What is 17 % 5?','2'],['What does != mean?','Not equal to.']]]]],
+
+// ---------- Science: required practicals ----------
+['sci','Required practicals',[
+ ['RP: Microscopy',['Place a thin specimen on a slide, add a stain (e.g. iodine), add a coverslip.','Start on the lowest power objective lens, focus with the coarse then fine focus, draw with a scale.'],[['Why add a stain?','To make cell structures visible.'],['Which objective lens do you start with?','The lowest power.']]],
+ ['RP: Osmosis in potato',['Cut equal potato cylinders, weigh them, put them in different sugar/salt concentrations.','Calculate % change in mass; where the line crosses 0, the concentration equals the potato\'s.'],[['Why calculate percentage change in mass?','The cylinders start with different masses, so it makes results comparable.'],['What does it mean if the potato gains mass?','Water moved in by osmosis: the solution was more dilute.']]],
+ ['RP: Food tests',['Benedict\'s (heat): blue → brick red for reducing sugars. Iodine: orange → blue-black for starch.','Biuret: blue → purple for protein. Ethanol (or Sudan III) test for lipids.'],[['Test for starch and positive result?','Iodine turns blue-black.'],['Test for protein?','Biuret reagent turns purple.'],['Which food test needs heating?','Benedict\'s.']]],
+ ['RP: Enzymes & pH',['Mix amylase, starch and buffer at a set pH; test drops with iodine every 30 seconds on a spotting tile.','Time until the iodine stays orange = starch fully broken down. Repeat at different pHs.'],[['How do you know the starch has gone?','The iodine stays orange-brown.'],['Why use a water bath?','To keep the temperature constant.']]],
+ ['RP: Photosynthesis & light',['Count bubbles of oxygen (or collect gas) from pondweed at different distances from a lamp.','Light intensity ∝ 1/distance² (inverse square law).'],[['Independent variable?','Distance from the lamp (light intensity).'],['Why put a beaker of water between the lamp and plant?','To stop the lamp heating the plant (control temperature).']]],
+ ['RP: Reaction time',['Ruler drop test: measure the distance the ruler falls before being caught, then convert to a time.','Investigate a factor such as caffeine, keeping other variables the same.'],[['What does a shorter catch distance show?','A faster reaction time.']]],
+ ['RP: Field investigations',['Use random quadrats to estimate population size; use a transect to study how distribution changes across an area.','Population estimate = mean per quadrat × (total area ÷ quadrat area).'],[['How do you place quadrats randomly?','Use random number coordinates on a grid.'],['What does a transect show?','How species distribution changes across an area.']]],
+ ['RP: Making salts',['Add excess insoluble base or carbonate to warm acid, filter off the excess, then evaporate and leave to crystallise.'],[['Why add excess base?','To make sure all the acid has reacted.'],['How do you remove the excess?','Filtration.']]],
+ ['RP: Temperature changes',['Measure the temperature change when reacting acids and alkalis (or metals and acids) in an insulated polystyrene cup.'],[['Why use a polystyrene cup with a lid?','To reduce heat loss.']]],
+ ['RP: Electrolysis',['Electrolyse aqueous solutions with inert electrodes; identify the products at each electrode.'],[['Product at the anode in copper chloride solution?','Chlorine.'],['Why use inert electrodes?','So they don\'t react.']]],
+ ['RP: Rates of reaction',['Measure rate by gas volume produced (gas syringe) or by the time for a solution to go cloudy (disappearing cross).','Change the concentration to see its effect on rate.'],[['Name the cloudiness method.','The disappearing cross (sodium thiosulfate + hydrochloric acid).'],['How do you measure gas produced?','A gas syringe or an upturned measuring cylinder.']]],
+ ['RP: Chromatography',['Draw the start line in pencil (it doesn\'t dissolve) above the solvent level.','Calculate Rf values and compare them with known substances.'],[['Why draw the baseline in pencil?','Pencil doesn\'t dissolve in the solvent.'],['Why must the baseline be above the solvent?','So the spots don\'t dissolve into the solvent.']]],
+ ['RP: Water purification',['Test pH, then find the mass of dissolved solids by evaporating a sample.','Distil salty water to make pure water.'],[['How do you find dissolved solids?','Evaporate a known volume and weigh what\'s left.']]],
+ ['RP: Specific heat capacity',['Heat a metal block with an immersion heater; record energy (joulemeter) and temperature rise.','c = ΔE ÷ (m × Δθ). Insulate the block to reduce heat loss.'],[['Why insulate the block?','To reduce energy lost to the surroundings.']]],
+ ['RP: Resistance',['Measure the resistance of a wire at different lengths using V = IR.','Resistance increases with length (directly proportional).'],[['How does wire length affect resistance?','Longer wire = higher resistance.']]],
+ ['RP: I–V characteristics',['Use a variable resistor to change the current; record V and I for a resistor, filament lamp and diode.'],[['Shape of the I–V graph for a filament lamp?','An S-shaped curve: resistance increases as it heats up.']]],
+ ['RP: Density',['Regular solids: measure dimensions to find volume. Irregular: use a eureka (displacement) can.','Density = mass ÷ volume.'],[['How do you find the volume of an irregular object?','Displacement using a eureka can.']]],
+ ['RP: Force & extension',['Hang masses on a spring and measure the extension each time.','Extension is proportional to force up to the limit of proportionality: F = ke.'],[['What does the gradient of a force–extension graph give?','The spring constant, k.']]],
+ ['RP: Acceleration',['Use a trolley pulled by a hanging mass; light gates measure the acceleration.','Investigate how force and mass affect acceleration (F = ma).'],[['What happens to acceleration if the force doubles (same mass)?','It doubles.']]],
+ ['RP: Waves',['Ripple tank: measure the wavelength with a ruler and count waves for frequency.','Strings: use a vibration generator; wavelength from the stationary wave pattern.'],[['How do you calculate wave speed from the practical?','v = f × λ']]],
+ ['RP: Infrared radiation',['Use a Leslie cube with different surfaces and an infrared detector.','Matt black surfaces emit and absorb the most infrared; shiny silver the least.'],[['Which surface emits the most infrared?','Matt black.']]]]],
+['sci','Triple only: Required practicals',[
+ ['RP (triple): Microbiology & antiseptics',['Grow bacteria on agar plates and measure the clear zones around antiseptic discs.','Use aseptic technique; incubate at 25°C in school labs.'],[['Why incubate at 25°C in schools?','To reduce the risk of growing harmful pathogens.']]],
+ ['RP (triple): Plant responses',['Investigate the effect of light or gravity on the growth of seedlings.'],[['What is phototropism?','Growth in response to light.']]],
+ ['RP (triple): Decay',['Investigate how temperature affects the rate of decay of milk, using a pH indicator.'],[['Why does pH fall as milk decays?','Bacteria produce lactic acid.']]],
+ ['RP (triple): Titration',['Use a burette to add acid to a measured volume of alkali with an indicator until it just changes colour.','Repeat until results are concordant (within 0.10 cm³).'],[['What are concordant results?','Titres within 0.10 cm³ of each other.']]],
+ ['RP (triple): Identifying ions',['Use flame tests, sodium hydroxide precipitates, and tests for carbonates, halides and sulfates.'],[['Test for sulfate ions?','Add hydrochloric acid then barium chloride: a white precipitate forms.'],['Test for chloride ions?','Add nitric acid then silver nitrate: a white precipitate forms.']]],
+ ['RP (triple): Thermal insulation',['Compare how well materials insulate a beaker of hot water by measuring the temperature drop.'],[['Control variables in insulation tests?','Starting temperature, volume of water, thickness of insulation.']]],
+ ['RP (triple): Light',['Investigate reflection and refraction with a ray box and glass block.'],[['What happens to light entering glass from air?','It slows down and bends towards the normal.']]]]],
+['sci','Biology: Cell biology',[
+ ['Cell specialisation & microscopy',['Specialised cells: sperm (tail, mitochondria), nerve (long), muscle (contracts), root hair (large surface), xylem and phloem.','Electron microscopes have much higher magnification and resolution than light microscopes.'],[['Why does a root hair cell have a long projection?','Larger surface area to absorb water and minerals.'],['Advantage of an electron microscope?','Higher magnification and resolution.']]]]],
+['sci','Chemistry: Atomic structure & periodic table',[
+ ['Mixtures & separation',['Filtration (insoluble solid from liquid), crystallisation (soluble solid), simple distillation (liquid from solution), fractional distillation (mixture of liquids), chromatography.','A compound is chemically bonded; a mixture isn\'t.'],[['How do you get pure water from salt water?','Simple distillation.'],['Mixture vs compound?','A mixture isn\'t chemically joined; a compound is.']]],
+ ['Development of the periodic table',['Mendeleev left gaps for undiscovered elements and predicted their properties.','The modern table is ordered by atomic number.'],[['Why was Mendeleev\'s table successful?','He left gaps and correctly predicted undiscovered elements.']]]]],
+['sci','Physics: Energy',[
+ ['Energy transfers & insulation',['Energy is transferred by heating, waves, electric current and forces.','Thicker walls and lower thermal conductivity reduce heat loss from buildings.'],[['How can you reduce heat loss from a house?','Loft and cavity wall insulation, double glazing.']]]]],
+['sci','Physics: Waves & magnetism',[
+ ['Uses & dangers of EM waves',['Radio: communication. Microwaves: satellites, cooking. Infrared: heaters, remote controls. Visible: fibre optics. UV: tanning, sterilising. X-rays/gamma: medical imaging, treatment.','UV can cause skin cancer; X-rays and gamma are ionising and can damage cells.'],[['Use of infrared?','Heaters, cooking, remote controls, thermal cameras.'],['Danger of UV?','Skin cancer and eye damage.']]],
+ ['Electromagnets & the motor',['A solenoid is a coil of wire; adding an iron core makes a stronger electromagnet.','An electric motor spins because the forces on each side of the coil act in opposite directions.'],[['How do you make an electromagnet stronger?','More turns, more current, an iron core.']]]]],
+
+// ---------- Business ----------
+['bus','Business in the real world',[
+ ['Not-for-profit & aims',['Not-for-profit organisations (charities, social enterprises) use any surplus for their cause.','SMART objectives: Specific, Measurable, Achievable, Realistic, Time-bound.'],[['What does SMART stand for?','Specific, Measurable, Achievable, Realistic, Time-bound.'],['What does a charity do with surplus money?','Reinvests it in its cause.']]],
+ ['Expanding a business',['Organic growth: opening new stores, new products. Inorganic: mergers and takeovers.','Economies of scale lower unit costs as output grows; diseconomies (e.g. poor communication) raise them.'],[['Organic vs inorganic growth?','Organic grows from within; inorganic is through mergers or takeovers.'],['What are economies of scale?','Lower average costs as a business grows.']]]]],
+['bus','Influences on business',[
+ ['Exchange rates',['A stronger pound makes imports cheaper and exports more expensive (SPICED: Strong Pound, Imports Cheap, Exports Dear).'],[['What does SPICED stand for?','Strong Pound, Imports Cheap, Exports Dear.']]]]],
+['bus','Business operations',[
+ ['Total quality management (TQM)',['TQM makes every employee responsible for quality at every stage.','Benefits: fewer faults, less waste, better reputation.'],[['What is TQM?','A culture where every employee is responsible for quality.']]],
+ ['Logistics & lean production',['Logistics: getting goods to the right place at the right time.','Lean production reduces waste, e.g. using just-in-time.'],[['What is lean production?','Production that minimises waste of time, materials and money.']]]]],
+['bus','Marketing',[
+ ['Product & price',['Product portfolio: Boston Matrix (stars, cash cows, question marks, dogs).','Pricing strategies: penetration (low to start), skimming (high to start), competitive, cost-plus.'],[['What is price skimming?','Starting with a high price for a new product, then lowering it.'],['What is a cash cow?','A product with high market share in a low-growth market.']]],
+ ['Promotion & place',['Promotion: advertising, social media, sponsorship, special offers, PR.','Place: retailers, wholesalers, e-tailers, direct to the consumer.'],[['Give 3 methods of promotion.','Advertising, social media, sponsorship, special offers.'],['What is an e-tailer?','A retailer that sells online.']]]]],
+['bus','Finance',[
+ ['Financial statements & ratios',['The income statement shows revenue, costs and profit; the statement of financial position shows assets and liabilities.','Net profit margin = net profit ÷ revenue × 100. ARR = average annual profit ÷ cost of investment × 100.'],[['Net profit margin formula?','Net profit ÷ revenue × 100.'],['ARR formula?','Average annual profit ÷ cost of investment × 100.']]]]],
+
+// ---------- History ----------
+['hist','Paper 1: Medicine in Britain c1250–present',[
+ ['Factors affecting medicine',['Key factors: individuals, institutions (Church, government), science and technology, attitudes in society.','For each period, judge which factor helped or hindered progress most.'],[['4 factors in the thematic study?','Individuals, institutions, science & technology, attitudes in society.']]]]],
+['hist','Paper 2: Superpower relations & the Cold War 1941–91',[
+ ['Hungarian Uprising & the arms race',['Hungarian Uprising 1956: Nagy tried to leave the Warsaw Pact; Soviet tanks crushed it.','The nuclear arms race and the space race increased tension.'],[['When was the Hungarian Uprising?','1956'],['Who led Hungary in 1956?','Imre Nagy.']]]]],
+['hist','Paper 3: Weimar & Nazi Germany 1918–39',[
+ ['Weimar culture & the Golden Age',['1924–29: economic recovery, new art, film and architecture (e.g. Bauhaus), more freedom for women.','Locarno Pact (1925) and joining the League of Nations (1926) improved Germany\'s standing.'],[['When did Germany join the League of Nations?','1926'],['Who was the key figure of the recovery?','Gustav Stresemann.']]]]],
+
+// ---------- English ----------
+['englang','Skills',[
+ ['Exam timing',['Each paper is 1 hour 45 minutes. Spend about 15 minutes reading first.','Q5 is worth 40 marks, half the paper, so leave about 45 minutes for it.'],[['How long is each English Language paper?','1 hour 45 minutes.'],['How long should you spend on Q5?','About 45 minutes.']]]]],
+['geo','Paper 1: Living with the physical environment',[
+ ['UK physical landscapes overview',['Upland areas (north and west) are made of hard igneous and metamorphic rock; lowland areas (south and east) of softer sedimentary rock.'],[['Where are most UK uplands?','The north and west.']]]]]
+];
+// merge into SPEC, CARDS and the Higher-only list
+for(const [sid,secName,topics] of EXTRA){
+  const subj=SPEC.find(s=>s.id===sid); if(!subj) continue;
+  let sec=subj.sections.find(x=>x.s===secName); if(!sec){ sec={s:secName,t:[]}; subj.sections.push(sec); }
+  for(const [name,points,cards,flag] of topics){
+    if(!sec.t.some(t=>t[0]===name)) sec.t.push([name,points]);
+    CARDS[sid]=CARDS[sid]||{}; CARDS[sid][name]=cards;
+    if(flag==='H'){ HTOPICS[sid]=HTOPICS[sid]||[]; HTOPICS[sid].push(name); }
+  }
+}
+// which paper each practical is on
+const PRAC_P={'RP: Microscopy':0,'RP: Osmosis in potato':0,'RP: Food tests':0,'RP: Enzymes & pH':0,'RP: Photosynthesis & light':0,'RP: Reaction time':1,'RP: Field investigations':1,
+ 'RP: Making salts':2,'RP: Temperature changes':2,'RP: Electrolysis':2,'RP: Rates of reaction':3,'RP: Chromatography':3,'RP: Water purification':3,
+ 'RP: Specific heat capacity':4,'RP: Resistance':4,'RP: I–V characteristics':4,'RP: Density':4,'RP: Force & extension':5,'RP: Acceleration':5,'RP: Waves':5,'RP: Infrared radiation':5,
+ 'RP (triple): Microbiology & antiseptics':0,'RP (triple): Plant responses':1,'RP (triple): Decay':1,'RP (triple): Titration':2,'RP (triple): Identifying ions':3,'RP (triple): Thermal insulation':4,'RP (triple): Light':5,
+ 'Uses & dangers of EM waves':5,'Electromagnets & the motor':5};
+const _sciSec=PAPERS.sci.sec;
+PAPERS.sci.sec=(s,t)=>t in PRAC_P?PRAC_P[t]:_sciSec(s,t);
+
+</script>
+<script>
+// ================= DRAWING NOTES (stylus / finger), auto-smoothed =================
+// Strokes are stored as vectors (not pixels) so they stay sharp on any screen and save small.
+const DR={strokes:[],undo:[],tool:'pen',color:'#ffffff',size:3,cur:null,key:null,dirty:false,penSeen:false};
+const DCOL=['#ffffff','#9fd36b','#6fb8ff','#ffd24d','#ff6b6b','#c58bff'];
+function drawUI(){
+  const tb=$('drtools'); tb.innerHTML='';
+  const tool=(id,label)=>{ const b=document.createElement('button'); b.textContent=label; b.classList.toggle('on',DR.tool===id); b.onclick=()=>{ DR.tool=id; drawUI(); }; tb.appendChild(b); };
+  tool('pen','✒️ Pen'); tool('hl','🖍 Highlighter'); tool('erase','🧽 Eraser');
+  for(const c of DCOL){ const b=document.createElement('button'); b.style.cssText=`width:30px;height:30px;padding:0;border-radius:50%;background:${c}!important;border:3px solid ${DR.color===c?'#fff':'transparent'}`; b.title='Colour'; b.onclick=()=>{ DR.color=c; if(DR.tool==='erase') DR.tool='pen'; drawUI(); }; tb.appendChild(b); }
+  const sz=document.createElement('input'); sz.type='range'; sz.min=1; sz.max=12; sz.value=DR.size; sz.title='Size'; sz.style.width='90px'; sz.oninput=()=>DR.size=+sz.value; tb.appendChild(sz);
+  tb.appendChild(fbtn('↶ Undo','',()=>{ if(DR.strokes.length){ DR.undo.push(DR.strokes.pop()); redraw(); drawChanged(); } }));
+  tb.appendChild(fbtn('↷ Redo','',()=>{ if(DR.undo.length){ DR.strokes.push(DR.undo.pop()); redraw(); drawChanged(); } }));
+  tb.appendChild(fbtn('🗑 Clear','',()=>{ if(DR.strokes.length&&confirm('Clear this whole drawing?')){ DR.strokes=[]; DR.undo=[]; redraw(); drawChanged(); } }));
+  tb.appendChild(fbtn('⤓ Save image','',()=>{ const a=document.createElement('a'); a.download='notes.png'; a.href=$('drcv').toDataURL('image/png'); a.click(); }));
+}
+function cvSize(){ const cv=$('drcv'), w=cv.parentElement.clientWidth, dpr=window.devicePixelRatio||1; cv.style.width=w+'px'; cv.style.height=Math.round(w*1.3)+'px'; cv.width=Math.round(w*dpr); cv.height=Math.round(w*1.3*dpr); redraw(); }
+// smooth a list of points: average neighbours (removes wobble), then draw quadratic curves through midpoints
+function smoothPts(p){ if(p.length<3) return p; const o=[p[0]]; for(let i=1;i<p.length-1;i++) o.push([(p[i-1][0]+p[i][0]*2+p[i+1][0])/4,(p[i-1][1]+p[i][1]*2+p[i+1][1])/4,p[i][2]]); o.push(p[p.length-1]); return o; }
+// if a stroke is almost straight, snap it to a perfect straight line
+function tidy(s){ const p=s.p; if(p.length<4) return s; const a=p[0],b=p[p.length-1], L=Math.hypot(b[0]-a[0],b[1]-a[1]); if(L<40) return s;
+  let dev=0; for(const q of p) dev=Math.max(dev,Math.abs((b[0]-a[0])*(a[1]-q[1])-(a[0]-q[0])*(b[1]-a[1]))/L);
+  let len=0; for(let i=1;i<p.length;i++) len+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);
+  if(dev<L*0.035&&len<L*1.08){ const pr=p.reduce((t,q)=>t+q[2],0)/p.length; s.p=[[a[0],a[1],pr],[b[0],b[1],pr]]; s.line=1; } return s; }
+function strokePath(ctx,s,scale){
+  const p=s.line?s.p:smoothPts(s.p); if(!p.length) return;
+  ctx.globalCompositeOperation='source-over';
+  ctx.globalAlpha=s.t==='hl'?0.32:1; ctx.strokeStyle=s.c; ctx.lineCap=s.t==='hl'?'butt':'round'; ctx.lineJoin='round';
+  const base=(s.t==='hl'?s.w*4:s.w)*scale;
+  if(p.length===1){ ctx.beginPath(); ctx.fillStyle=s.c; ctx.arc(p[0][0]*scale,p[0][1]*scale,base/2,0,7); ctx.fill(); ctx.globalAlpha=1; return; }
+  for(let i=1;i<p.length;i++){
+    const a=p[i-1], b=p[i], m0=i>1?[(p[i-2][0]+a[0])/2,(p[i-2][1]+a[1])/2]:a, m1=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+    ctx.lineWidth=Math.max(0.6,base*(s.t==='pen'?(0.55+0.9*((a[2]+b[2])/2)):1));
+    ctx.beginPath(); ctx.moveTo(m0[0]*scale,m0[1]*scale); ctx.quadraticCurveTo(a[0]*scale,a[1]*scale,(i===p.length-1?b:m1)[0]*scale,(i===p.length-1?b:m1)[1]*scale); ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+}
+// stored coordinates are in a 1000-wide space so drawings scale to any screen
+function redraw(){ const cv=$('drcv'), ctx=cv.getContext('2d'), sc=cv.width/1000; ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1; for(let y=40*sc;y<cv.height;y+=40*sc){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cv.width,y); ctx.stroke(); }
+  for(const s of DR.strokes) strokePath(ctx,s,sc); if(DR.cur) strokePath(ctx,DR.cur,sc); }
+function cvPt(e){ const r=$('drcv').getBoundingClientRect(), k=1000/r.width; const pr=e.pointerType==='pen'?(e.pressure||0.5):0.5; return [Math.round((e.clientX-r.left)*k),Math.round((e.clientY-r.top)*k),Math.round(pr*100)/100]; }
+function eraseAt(pt){ const n=DR.strokes.length; DR.strokes=DR.strokes.filter(s=>!s.p.some(q=>Math.hypot(q[0]-pt[0],q[1]-pt[1])<14+s.w)); if(DR.strokes.length!==n){ redraw(); drawChanged(); } }
+function initCanvas(){
+  const cv=$('drcv');
+  cv.addEventListener('pointerdown',e=>{ if(e.pointerType==='pen') DR.penSeen=true; if(DR.penSeen&&e.pointerType==='touch') return; // palm rejection once a pen is used
+    cv.setPointerCapture(e.pointerId); e.preventDefault();
+    if(DR.tool==='erase'){ DR.cur={erasing:true}; eraseAt(cvPt(e)); return; }
+    DR.cur={t:DR.tool,c:DR.color,w:DR.size,p:[cvPt(e)]}; redraw(); });
+  cv.addEventListener('pointermove',e=>{ if(!DR.cur) return; e.preventDefault();
+    const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];
+    if(DR.cur.erasing){ for(const ev of evs) eraseAt(cvPt(ev)); return; }
+    for(const ev of evs){ const q=cvPt(ev), l=DR.cur.p[DR.cur.p.length-1]; if(Math.hypot(q[0]-l[0],q[1]-l[1])>=1.5) DR.cur.p.push(q); }
+    redraw(); });
+  const end=()=>{ if(!DR.cur) return; if(!DR.cur.erasing){ DR.strokes.push(tidy(DR.cur)); DR.undo=[]; drawChanged(); } DR.cur=null; redraw(); };
+  cv.addEventListener('pointerup',end); cv.addEventListener('pointercancel',end);
+  window.addEventListener('resize',()=>{ if(!$('topic').classList.contains('hidden')) cvSize(); });
+}
+const saveDrawSoon=debounce(()=>{ if(!DR.key) return; const data=JSON.stringify(DR.strokes);
+  if(data.length>900000){ $('drsaved').textContent='⚠ Drawing too big to save. Clear some strokes.'; return; }
+  $('drsaved').textContent='Saving…'; Store.save('draw',DR.key,{s:data}).then(()=>$('drsaved').textContent='Saved ✓').catch(()=>$('drsaved').textContent='⚠ Not saved'); },900);
+function drawChanged(){ $('drsaved').textContent='Editing…'; saveDrawSoon(); }
+async function openDrawing(key){
+  DR.key=key; DR.strokes=[]; DR.undo=[]; $('drsaved').textContent='';
+  drawUI(); cvSize();
+  try{ const all=await Store.list('draw'); const d=all.find(x=>x.id===key); if(d&&DR.key===key){ DR.strokes=JSON.parse(d.s||'[]'); redraw(); } }catch(e){}
+}
+initCanvas();
+const _openTopic2=openTopic;
+openTopic=function(si,ti){ _openTopic2(si,ti); openDrawing(tkey(SUB,si,ti)); };
+
+// ================= PAST PAPERS =================
+const PP={
+ cs:[['Pearson Edexcel (official)','https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html','Official papers and mark schemes. Pick GCSE → Computer Science (2020).'],['Save My Exams','https://www.savemyexams.com/gcse/computer-science/edexcel/past-papers/','Papers and mark schemes by year'],['Physics & Maths Tutor','https://www.physicsandmathstutor.com/','Choose Computer Science → GCSE → Edexcel']],
+ maths:[['Maths Genie','https://www.mathsgenie.co.uk/papers.html','Every Edexcel paper with mark schemes and video solutions'],['Pearson Edexcel (official)','https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html','Pick GCSE → Mathematics (2015)'],['Corbettmaths','https://corbettmaths.com/','Practice papers with answers'],['Physics & Maths Tutor','https://www.physicsandmathstutor.com/','Papers and mark schemes by topic and year']],
+ sci:[['AQA (official)','https://www.aqa.org.uk/find-past-papers-and-mark-schemes','Choose Science → Combined Science: Trilogy (8464), or Biology 8461 / Chemistry 8462 / Physics 8463 for triple'],['Physics & Maths Tutor','https://www.physicsandmathstutor.com/','Papers and mark schemes, plus topic questions'],['Cognito','https://cognitoedu.org/','Exam-style questions by topic']],
+ englang:[['AQA (official)','https://www.aqa.org.uk/find-past-papers-and-mark-schemes','Choose English → English Language (8700)'],['Save My Exams','https://www.savemyexams.com/gcse/english-language/aqa/past-papers/','Papers and mark schemes']],
+ englit:[['AQA (official)','https://www.aqa.org.uk/find-past-papers-and-mark-schemes','Choose English → English Literature (8702)'],['Save My Exams','https://www.savemyexams.com/gcse/english-literature/aqa/past-papers/','Papers and mark schemes']],
+ rs:[['Eduqas (official)','https://www.eduqas.co.uk/qualifications/religious-studies-gcse/','Open "Past papers and mark schemes" on the qualification page'],['Save My Exams','https://www.savemyexams.com/gcse/religious-studies/eduqas/past-papers/','Papers and mark schemes']],
+ bus:[['AQA (official)','https://www.aqa.org.uk/find-past-papers-and-mark-schemes','Choose Business → Business (8132)'],['Save My Exams','https://www.savemyexams.com/gcse/business/aqa/past-papers/','Papers and mark schemes']],
+ geo:[['AQA (official)','https://www.aqa.org.uk/find-past-papers-and-mark-schemes','Choose Geography → Geography (8035)'],['Save My Exams','https://www.savemyexams.com/gcse/geography/aqa/past-papers/','Papers and mark schemes'],['Physics & Maths Tutor','https://www.physicsandmathstutor.com/','Geography papers by board']],
+ hist:[['Pearson Edexcel (official)','https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html','Pick GCSE → History (2016)'],['Save My Exams','https://www.savemyexams.com/gcse/history/edexcel/past-papers','Papers and mark schemes by option'],['Maths Genie (History)','https://www.mathsgenie.co.uk/gcse/history/edexcel/papers','Edexcel History papers and mark schemes']]
+};
+function renderPapers(){
+  const box=$('subbody'); box.innerHTML='<div class="muted" style="margin-bottom:10px">Past papers and mark schemes for '+SUB.name+' ('+SUB.board+'). They open on the exam board or revision site in a new tab. Tip: do a paper timed, then mark it yourself with the mark scheme.</div>';
+  const list=document.createElement('div'); list.className='flist';
+  for(const [n,u,d] of PP[SUB.id]||[]){ const a=document.createElement('a'); a.className='fitem card'; a.href=u; a.target='_blank'; a.rel='noopener noreferrer'; a.style.cssText='text-decoration:none;color:inherit;margin:0';
+    const b=document.createElement('span'); b.className='nm'; b.textContent='📄 '+n; const t=document.createElement('span'); t.className='st'; t.textContent=d; t.style.flexBasis='100%'; a.append(b,t); list.appendChild(a); }
+  box.appendChild(list);
+}
+setSubView=function(v){ subView=v; for(const b of document.querySelectorAll('#subseg button')) b.classList.toggle('on',b.dataset.v===v); (v==='res'?renderResources:v==='pp'?renderPapers:renderTopics)(); };
 </script>
 
 <script type="module">
