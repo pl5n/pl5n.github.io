@@ -497,6 +497,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 
   <div id="friends" class="screen hidden">
     <div class="apphead"><button class="back js-tohub">← Home</button><h2>👥 Friends</h2></div>
+    <div class="htabs" id="ftabs" style="margin:0 0 12px"><button data-ft="friends" class="on">Friends</button><button data-ft="gg">GGCSE</button></div>
+    <div id="fgg" class="hidden"><div class="card"><h3>🎮 Challenges</h3><div class="muted" style="margin-bottom:10px">Challenge a friend to a game. They get a pop-up to join.</div><div class="flist" id="gglist"></div></div></div>
     <div id="fguest" class="card hidden">Friends need an account. <button class="primary js-signin">Sign in</button></div>
     <div id="fmain">
       <div class="card">
@@ -520,7 +522,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
   </div>
 
   <div id="dm" class="screen hidden">
-    <div class="apphead"><button class="back" id="dmback">← Messages</button><h2 id="dmname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1"></h2><select id="dmkeep" title="How long messages are kept"><option value="forever">Keep forever</option><option value="24h">Delete after 24h</option></select><button class="primary" id="dmstudy">📚 Study</button><button id="dmchal">♟ Challenge</button></div>
+    <div class="apphead"><button class="back" id="dmback">← Messages</button><h2 id="dmname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1"></h2><select id="dmkeep" title="How long messages are kept"><option value="forever">Keep forever</option><option value="24h">Delete after 24h</option></select><button class="primary" id="dmstudy">📚 Study</button></div>
     <div class="dmwrap">
       <div id="dmlog"></div>
       <div class="replybar hidden" id="dmreply"><span></span><button title="Cancel reply">✕</button></div>
@@ -1909,9 +1911,8 @@ async function renderFriends(){
     const ib=D.inboxMap[f.id], msgb=fbtn('💬 Message','',()=>openDM(f));
     if(ib&&ib.unread){ const dot=document.createElement('span'); dot.className='udot'; msgb.appendChild(dot); }
     const stb=fbtn('📚 Study','primary',()=>pickStudy(f));
-    const ch=fbtn('♟ Challenge','',()=>challenge(f));
     const rm=fbtn('Remove','',()=>confirmBtn(rm,'Remove',()=>Acct.friends.remove(f).catch(()=>{})));
-    it.append(nm,st,stb,msgb,ch,rm); box.appendChild(it);
+    it.append(nm,st,stb,msgb,rm); box.appendChild(it);
     if(!s&&hasAcct()) Acct.friends.stats(f.id).then(d=>{ F.stats[f.id]=d; st.textContent=`${d.wins||0}W · ${d.losses||0}L · ${d.draws||0}D`; }).catch(()=>{});
   }
 }
@@ -1998,7 +1999,7 @@ function sendDM(){
 }
 $('dmsend').onclick=sendDM;
 $('dmstudy').onclick=()=>{ if(D.cur) pickStudy(D.cur); };
-$('dmchal').onclick=()=>{ if(D.cur){ const f=D.cur; closeDM(); challenge(f); } };
+
 $('dmin').onkeydown=e=>{ if(e.key==='Enter') sendDM(); };
 $('dmback').onclick=()=>{ closeDM(); openMsgs(); };
 App.setInbox=list=>{
@@ -2146,6 +2147,24 @@ $('sform').onsubmit=async e=>{
 $('opensearch').onclick=openSearch;
 
 
+
+// ----- Friends → GGCSE tab: game challenges -----
+let fTab='friends';
+function setFTab(t){ fTab=t; for(const b of document.querySelectorAll('#ftabs button')) b.classList.toggle('on',b.dataset.ft===t);
+  $('fmain').classList.toggle('hidden',t!=='friends'||!hasAcct()); $('fgg').classList.toggle('hidden',t!=='gg'||!hasAcct()); if(t==='gg') renderGG(); }
+for(const b of document.querySelectorAll('#ftabs button')) b.onclick=()=>setFTab(b.dataset.ft);
+function renderGG(){
+  const box=$('gglist'); box.innerHTML='';
+  if(!F.friends.length){ box.innerHTML='<div class="muted">Add friends first (Friends tab).</div>'; return; }
+  for(const f of [...F.friends].sort((a,b)=>(a.name||'').localeCompare(b.name||''))){
+    const it=document.createElement('div'); it.className='fitem';
+    const n=document.createElement('span'); n.className='nm'; n.textContent=f.name||'Friend';
+    const st=document.createElement('span'); st.className='st'; const s=F.stats[f.id]; st.textContent=s&&typeof s.elo==='number'?`♟ ${s.elo}`:'';
+    it.append(n,st,fbtn('♟ Challenge Chess','primary',()=>challenge(f))); box.appendChild(it);
+  }
+}
+const _openFriends=openFriends;
+openFriends=function(){ _openFriends(); setFTab(fTab); };
 // ================= MESSAGES INBOX =================
 function openMsgs(){
   showScreen('msgs'); $('msgpick').classList.add('hidden');
@@ -2432,12 +2451,12 @@ const MATHS_PRACTICE=[
 
 // ---------- hub tabs ----------
 function setHubTab(t){
-  for(const b of document.querySelectorAll('.htabs button')) b.classList.toggle('on',b.dataset.tab===t);
+  for(const b of document.querySelectorAll('#hub .htabs button')) b.classList.toggle('on',b.dataset.tab===t);
   for(const [id,k] of [['tab-home','home'],['tab-subjects','subjects'],['tab-gg','gg']]) $(id).classList.toggle('hidden',k!==t);
   try{ localStorage.setItem('cs_tab',t); }catch(e){}
   if(t==='subjects') renderSubjTiles();
 }
-for(const b of document.querySelectorAll('.htabs button')) b.onclick=()=>setHubTab(b.dataset.tab);
+for(const b of document.querySelectorAll('#hub .htabs button')) b.onclick=()=>setHubTab(b.dataset.tab);
 try{ const t=localStorage.getItem('cs_tab'); if(t) setHubTab(t); }catch(e){}
 
 // ---------- progress (red/amber/green + best quiz) saved per subject ----------
