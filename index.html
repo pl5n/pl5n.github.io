@@ -4021,6 +4021,15 @@ body{background-attachment:scroll!important}
 html,body{overflow-x:hidden;max-width:100%}
 .pc{will-change:auto!important}
 #ghost{filter:none!important}
+
+/* ---------- Android graphics fix: no CSS gradients/patterns on phones ---------- */
+@media (max-width:700px), (hover:none) and (pointer:coarse) and (max-device-width:900px){
+  body{background-image:none!important}
+  body *:not(.sq){background-image:none!important}
+  .sq.chk,.sq.dark.chk{background:#e0443a!important}
+  #hub .hello{background:none!important;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:.2em;text-underline-offset:.08em;text-decoration-skip-ink:none}
+  .tile,.card,.fitem{transition:none!important}
+}
 </style>
 <nav id="mnav" aria-label="Main">
   <button data-go="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home</button>
