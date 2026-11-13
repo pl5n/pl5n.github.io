@@ -226,6 +226,14 @@ button.primary:hover{filter:brightness(1.08)}
   .grid{grid-template-columns:1fr}
   .clock{min-width:78px;font-size:1.15rem;padding:4px 8px}
 }
+
+.warn{margin-top:12px;background:#4a3a14;border:1px solid #7a5f1f;color:#f3dfa6;border-radius:8px;padding:10px 12px;font-size:.86rem;text-align:left;line-height:1.4}
+.badge2{display:inline-block;min-width:20px;padding:1px 6px;border-radius:10px;background:#e02828;color:#fff;font-size:.75rem;font-weight:800;margin-left:6px;vertical-align:middle}
+.flist{display:flex;flex-direction:column;gap:8px}
+.fitem{display:flex;align-items:center;gap:10px;background:#2f2d2a;border-radius:10px;padding:10px 12px;flex-wrap:wrap}
+.fitem .nm{font-weight:700;flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis}
+.fitem .st{color:var(--muted);font-size:.85rem}
+#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;background:#2d3a22;border:1px solid #4b6b33;border-radius:12px;padding:12px 14px;display:none;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:calc(100vw - 24px)}
 </style>
 </head>
 <body>
@@ -241,7 +249,8 @@ button.primary:hover{filter:brightness(1.08)}
         <input id="uname" placeholder="Username" autocomplete="username" maxlength="20" autocapitalize="off" spellcheck="false">
         <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
         <div class="btns"><button class="primary" id="login">Sign in</button><button id="signup">Create account</button></div>
-        <div class="muted" style="margin-top:8px;font-size:.82rem">No email needed. Just pick a username (3–20 letters/numbers) and a password (6+ characters). Don't forget it — there's no reset!</div>
+        <div class="warn">⚠️ <b>Don't use your real name or email</b> as your username, and <b>don't put personal info in your password</b> (like your name or birthday).</div>
+        <div class="muted" style="margin-top:8px;font-size:.82rem">No email needed. Usernames are 3–20 letters/numbers, passwords 6+ characters. There's no password reset, so don't forget it!</div>
       </div>
       <div id="wmsg" class="muted"></div>
       <button class="link" id="guest">Play as guest (no account)</button>
@@ -259,6 +268,7 @@ button.primary:hover{filter:brightness(1.08)}
       <button class="tile" id="openchess"><div class="ic"><img data-piece="wN" alt=""></div><b><span class="logo" data-logo style="font-size:1.15rem"></span></b><span>Play friends online, take on the bots, and review your games.</span><div class="go">View</div></button>
       <button class="tile" id="opennotes"><div class="ic" style="background:#3b5f8a;font-size:2rem">📝</div><b>Notes</b><span>Write and search your notes. Saves as you type.</span><div class="go">View</div></button>
       <button class="tile" id="opencards"><div class="ic" style="background:#7a4d8f;font-size:2rem">🗂️</div><b>Flashcards</b><span>Make decks and test yourself with flip cards.</span><div class="go">View</div></button>
+      <button class="tile" id="openfriends"><div class="ic" style="background:#8a6a2b;font-size:2rem">👥</div><b>Friends<span id="fbadge" class="badge2 hidden"></span></b><span>Add friends by username and challenge them.</span><div class="go">View</div></button>
       <div class="tile soon"><div class="ic">＋</div><b>More coming soon</b><span>New apps will show up here.</span></div>
     </div>
   </div>
@@ -370,6 +380,20 @@ button.primary:hover{filter:brightness(1.08)}
     </div>
   </div>
 
+
+  <div id="friends" class="screen hidden">
+    <div class="apphead"><button class="back js-tohub">← Home</button><h2>👥 Friends</h2></div>
+    <div id="fguest" class="card hidden">Friends need an account. <button class="primary js-signin">Sign in</button></div>
+    <div id="fmain">
+      <div class="card">
+        <h3>Add a friend</h3>
+        <div class="row"><input id="fadd" placeholder="Their username" maxlength="20" autocapitalize="off" spellcheck="false" style="flex:1;min-width:160px"><button class="primary" id="faddbtn">Send request</button></div>
+        <div id="faddmsg" class="muted" style="margin-top:8px"></div>
+      </div>
+      <div class="card" id="freqcard"><h3>Friend requests</h3><div class="flist" id="freqs"></div></div>
+      <div class="card"><h3>Your friends</h3><div class="flist" id="flist"><div class="muted">Loading…</div></div></div>
+    </div>
+  </div>
   <div id="game" class="hidden">
     <div id="boardcol">
       <div class="pbar" id="ptop"></div>
@@ -400,6 +424,7 @@ button.primary:hover{filter:brightness(1.08)}
   </div>
 </div>
 <div id="promo"><div class="box" id="promobox"></div></div>
+<div id="toast"></div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script id="eng">
@@ -1165,7 +1190,7 @@ function needPeer(){ if(typeof Peer==='undefined'){ msg('Could not load the netw
 function resetNet(){ try{conn&&conn.close();}catch(e){} try{peer&&peer.destroy();}catch(e){} conn=null; peer=null; }
 function sayHello(){ if(conn&&conn.open) conn.send({t:'hello',name:(window.Acct&&Acct.user)?Acct.name:'Guest'}); }
 
-function createGame(){
+function createGame(onCode){
   if(!needPeer()) return;
   resetNet(); msg('');
   const code=rand5(), tc=parseTc($('tc').value);
@@ -1174,6 +1199,7 @@ function createGame(){
     $('code').textContent=code;
     $('link').value=location.href.split('#')[0]+'#'+code;
     $('linkbox').style.display='block';
+    if(typeof onCode==='function') onCode(code);
   });
   peer.on('connection',c=>{
     if(conn&&conn.open){ c.close(); return; }
@@ -1185,7 +1211,7 @@ function createGame(){
       newGame({mode:'online',mine,tc,oppName:null}); sayHello();
     });
   });
-  peer.on('error',e=>{ if(e.type==='unavailable-id') createGame(); else msg('Connection error: '+e.type); });
+  peer.on('error',e=>{ if(e.type==='unavailable-id') createGame(onCode); else msg('Connection error: '+e.type); });
 }
 function joinGame(code){
   if(!needPeer()) return;
@@ -1230,7 +1256,7 @@ function banner(text,btns){
 
 
 // ---------- screens, accounts glue, saving ----------
-const SCREENS=['splash','welcome','hub','home','game','notes','cards'];
+const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends'];
 const all=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
 function showScreen(id){
   for(const s of SCREENS) $(s).classList.toggle('hidden',s!==id);
@@ -1268,7 +1294,7 @@ window.App={
     if(!G) showScreen('hub');
     runPendingJoin();
   },
-  signedOut(msg){ if(G&&G.mode==='online') return; G=null; resetNet(); $('pw').value=''; $('wmsg').textContent=msg||''; showScreen('welcome'); },
+  signedOut(msg){ $('toast').style.display='none'; $('fbadge').classList.add('hidden'); if(G&&G.mode==='online') return; G=null; resetNet(); $('pw').value=''; $('wmsg').textContent=msg||''; showScreen('welcome'); },
   noAccounts(msg){ $('wform').classList.add('hidden'); $('wsub').textContent=msg; showScreen('welcome'); },
   applyPrefs(p){
     if(!p) return;
@@ -1326,7 +1352,7 @@ function setBotLevel(l){ if(!BOTS[l]) return; botLevel=l; for(const x of documen
 for(const b of document.querySelectorAll('#bots button')) b.onclick=()=>{ setBotLevel(b.dataset.l); savePrefs(); };
 for(const id of ['botcol','pref','tc','tclocal']) $(id).onchange=savePrefs;
 $('playbot').onclick=()=>{ resetNet(); const v=$('botcol').value; newGame({mode:'bot',mine:v==='r'?(Math.random()<.5?'w':'b'):v,level:botLevel,oppName:null}); };
-$('create').onclick=createGame;
+$('create').onclick=()=>createGame();
 $('copy').onclick=()=>{ $('link').select(); (navigator.clipboard?navigator.clipboard.writeText($('link').value):Promise.reject()).catch(()=>document.execCommand('copy')); $('copy').textContent='Copied!'; setTimeout(()=>$('copy').textContent='Copy link',1500); };
 $('join').onclick=()=>joinGame($('joincode').value);
 $('joincode').onkeydown=e=>{ if(e.key==='Enter') joinGame($('joincode').value); };
@@ -1572,6 +1598,83 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='ArrowLeft'||e.key==='1') answer(false);
 });
 
+
+// ================= FRIENDS =================
+const F={friends:[],requests:[],invites:[],stats:{}};
+const hasAcct=()=>!!(window.Acct&&Acct.user&&Acct.friends);
+function openFriends(){
+  showScreen('friends');
+  $('fguest').classList.toggle('hidden',hasAcct()); $('fmain').classList.toggle('hidden',!hasAcct());
+  $('faddmsg').textContent='';
+  renderFriends(); renderRequests();
+}
+function fbtn(label,cls,fn){ const b=document.createElement('button'); b.textContent=label; if(cls) b.className=cls; b.onclick=fn; return b; }
+function renderRequests(){
+  const n=F.requests.length, badge=$('fbadge');
+  badge.textContent=n; badge.classList.toggle('hidden',!n);
+  $('freqcard').classList.toggle('hidden',!n);
+  const box=$('freqs'); box.innerHTML='';
+  for(const r of F.requests){
+    const it=document.createElement('div'); it.className='fitem';
+    const nm=document.createElement('span'); nm.className='nm'; nm.textContent=r.name||'Someone';
+    const st=document.createElement('span'); st.className='st'; st.textContent='wants to be friends';
+    it.append(nm,st,
+      fbtn('Accept','primary',async()=>{ try{ await Acct.friends.accept(r); }catch(e){ $('faddmsg').textContent='Couldn\'t accept: '+e.message; } }),
+      fbtn('Decline','',()=>Acct.friends.decline(r)));
+    box.appendChild(it);
+  }
+}
+async function renderFriends(){
+  const box=$('flist'); box.innerHTML='';
+  if(!F.friends.length){ box.innerHTML='<div class="muted">No friends yet. Add someone by their username above.</div>'; return; }
+  const list=[...F.friends].sort((x,y)=>(x.name||'').localeCompare(y.name||''));
+  for(const f of list){
+    const it=document.createElement('div'); it.className='fitem';
+    const nm=document.createElement('span'); nm.className='nm'; nm.textContent=f.name||'Friend';
+    const st=document.createElement('span'); st.className='st'; const s=F.stats[f.id]; st.textContent=s?`${s.wins||0}W · ${s.losses||0}L · ${s.draws||0}D`:'';
+    const ch=fbtn('♟ Challenge','primary',()=>challenge(f));
+    const rm=fbtn('Remove','',()=>confirmBtn(rm,'Remove',()=>Acct.friends.remove(f).catch(()=>{})));
+    it.append(nm,st,ch,rm); box.appendChild(it);
+    if(!s&&hasAcct()) Acct.friends.stats(f.id).then(d=>{ F.stats[f.id]=d; st.textContent=`${d.wins||0}W · ${d.losses||0}L · ${d.draws||0}D`; }).catch(()=>{});
+  }
+}
+function challenge(f){
+  showScreen('home'); $('lobbymsg').textContent=`Setting up a game for ${f.name}…`;
+  createGame(code=>{
+    Acct.friends.invite(f.id,code)
+      .then(()=>{ $('lobbymsg').textContent=`Challenge sent to ${f.name}! The game starts as soon as they accept.`; })
+      .catch(()=>{ $('lobbymsg').textContent=`Couldn't send the challenge. You can send ${f.name} the link instead.`; });
+  });
+}
+$('faddbtn').onclick=async()=>{
+  const name=$('fadd').value; $('faddmsg').textContent='Looking…';
+  try{ $('faddmsg').textContent=await Acct.friends.send(name); $('fadd').value=''; }
+  catch(e){ $('faddmsg').textContent=e.code==='permission-denied'?'Couldn\'t send. The site owner needs to update the Firestore rules.':e.message; }
+};
+$('fadd').onkeydown=e=>{ if(e.key==='Enter') $('faddbtn').click(); };
+$('openfriends').onclick=openFriends;
+
+// live updates from the account system
+let shownInvite=null;
+App.setFriends=list=>{ F.friends=list; if(!$('friends').classList.contains('hidden')) renderFriends(); };
+App.setRequests=list=>{ F.requests=list; renderRequests(); };
+App.setInvites=list=>{
+  const fresh=list.filter(x=>Date.now()-(x.at||0)<10*60*1000).sort((a,b)=>b.at-a.at);
+  for(const old of list) if(!fresh.includes(old)) Acct.friends.dismiss(old.id);
+  F.invites=fresh; showInviteToast();
+};
+function showInviteToast(){
+  const t=$('toast'), inv=F.invites[0];
+  if(!inv||(G&&!G.over&&G.mode==='online')){ t.style.display='none'; shownInvite=null; return; }
+  if(shownInvite===inv.id+inv.code) return;
+  shownInvite=inv.id+inv.code; t.innerHTML='';
+  const tx=document.createElement('span'); tx.textContent=`♟ ${inv.name||'A friend'} challenged you to a game!`;
+  t.append(tx,
+    fbtn('Join','primary',()=>{ t.style.display='none'; Acct.friends.dismiss(inv.id); resetNet(); G=null; showScreen('home'); joinGame(inv.code); }),
+    fbtn('Not now','',()=>{ t.style.display='none'; Acct.friends.dismiss(inv.id); }));
+  t.style.display='flex'; sound('check');
+}
+
 // shared: back to home from apps (save anything pending first)
 all('.js-tohub',e=>e.onclick=()=>{ flushNote(); flushDeck(); showScreen('hub'); });
 window.addEventListener('beforeunload',()=>{ flushNote(); flushDeck(); });
@@ -1610,7 +1713,7 @@ if(!FIREBASE_CONFIG){
     const V='10.12.2', base=`https://www.gstatic.com/firebasejs/${V}/`;
     const {initializeApp}=await import(base+'firebase-app.js');
     const {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,updateProfile,setPersistence,browserLocalPersistence}=await import(base+'firebase-auth.js');
-    const {getFirestore,doc,getDoc,setDoc,deleteDoc,addDoc,collection,query,orderBy,limit,getDocs,increment,serverTimestamp}=await import(base+'firebase-firestore.js');
+    const {getFirestore,doc,getDoc,setDoc,deleteDoc,onSnapshot,addDoc,collection,query,orderBy,limit,getDocs,increment,serverTimestamp}=await import(base+'firebase-firestore.js');
     const app=initializeApp(FIREBASE_CONFIG), auth=getAuth(app), db=getFirestore(app);
     await setPersistence(auth,browserLocalPersistence); // stay signed in
 
@@ -1645,6 +1748,52 @@ if(!FIREBASE_CONFIG){
         save(kind,id,data){ return setDoc(doc(db,'users',Acct.user.uid,kind,id),data); },
         remove(kind,id){ return deleteDoc(doc(db,'users',Acct.user.uid,kind,id)); }
       }};
+
+
+    // ---------- friends ----------
+    // usernames/{lowercase} -> {uid,name}   (lets people find each other by username)
+    // users/{uid}/requests/{fromUid}        (incoming friend requests)
+    // users/{uid}/friends/{otherUid}        (friend list)
+    // users/{uid}/invites/{fromUid}         (game challenges from friends)
+    async function ensureUsername(uid,name){
+      try{ const r=doc(db,'usernames',name.toLowerCase()); const s=await getDoc(r); if(!s.exists()) await setDoc(r,{uid,name}); }catch(e){ console.warn(e); }
+    }
+    let unsubs=[];
+    function stopFriends(){ unsubs.forEach(f=>f()); unsubs=[]; }
+    function startFriends(){
+      stopFriends(); const me=Acct.user.uid;
+      const live=(sub,cb)=>unsubs.push(onSnapshot(collection(db,'users',me,sub),qs=>{ const out=[]; qs.forEach(d=>out.push({...d.data(),id:d.id})); cb(out); },e=>console.warn(sub,e)));
+      live('requests',App.setRequests); live('friends',App.setFriends); live('invites',App.setInvites);
+    }
+    Acct.friends={
+      async send(name){
+        const me=Acct.user.uid; name=(name||'').trim();
+        if(!/^[A-Za-z0-9_]{3,20}$/.test(name)) throw new Error('That isn\'t a valid username.');
+        const s=await getDoc(doc(db,'usernames',name.toLowerCase()));
+        if(!s.exists()) throw new Error('No one has that username.');
+        const {uid,name:real}=s.data();
+        if(uid===me) throw new Error('That\'s you!');
+        if((await getDoc(doc(db,'users',me,'friends',uid))).exists()) throw new Error(`${real} is already your friend.`);
+        if((await getDoc(doc(db,'users',me,'requests',uid))).exists()){ await this.accept({id:uid,name:real}); return `${real} had already asked, so you're now friends!`; }
+        await setDoc(doc(db,'users',uid,'requests',me),{name:Acct.name,at:Date.now()});
+        return `Request sent to ${real}.`;
+      },
+      async accept(r){
+        const me=Acct.user.uid, at=Date.now();
+        await setDoc(doc(db,'users',me,'friends',r.id),{name:r.name,at});
+        await setDoc(doc(db,'users',r.id,'friends',me),{name:Acct.name,at});
+        await deleteDoc(doc(db,'users',me,'requests',r.id));
+      },
+      decline(r){ return deleteDoc(doc(db,'users',Acct.user.uid,'requests',r.id)); },
+      async remove(f){
+        const me=Acct.user.uid;
+        await deleteDoc(doc(db,'users',me,'friends',f.id));
+        await deleteDoc(doc(db,'users',f.id,'friends',me)).catch(()=>{});
+      },
+      invite(fid,code){ return setDoc(doc(db,'users',fid,'invites',Acct.user.uid),{name:Acct.name,code,at:Date.now()}); },
+      dismiss(fromId){ return deleteDoc(doc(db,'users',Acct.user.uid,'invites',fromId)).catch(()=>{}); },
+      async stats(uid){ const s=await getDoc(doc(db,'users',uid)); return s.exists()?s.data():{}; }
+    };
 
     async function loadHome(){
       const u=Acct.user; if(!u) return;
@@ -1686,13 +1835,15 @@ if(!FIREBASE_CONFIG){
       const u=$('uname').value.trim(), p=$('pw').value;
       if(!valid(u)) return wm('Usernames are 3–20 letters, numbers or _.');
       if(p.length<6) return wm('Password must be at least 6 characters.');
+      if(p.toLowerCase().includes(u.toLowerCase())) return wm("Your password can't contain your username. Pick something else.");
       wm('Creating account…');
       try{
         creating=u;
         const c=await createUserWithEmailAndPassword(auth,toEmail(u),p);
         await updateProfile(c.user,{displayName:u});
         await setDoc(doc(db,'users',c.user.uid),{name:u,wins:0,losses:0,draws:0,created:serverTimestamp()},{merge:true});
-        creating=null; Acct.name=u; App.signedIn(u); loadHome();
+        await ensureUsername(c.user.uid,u);
+        creating=null; Acct.name=u; App.signedIn(u); loadHome(); startFriends();
       }catch(e){ creating=null; fail(e); }
     };
     let creating=null;
@@ -1702,12 +1853,13 @@ if(!FIREBASE_CONFIG){
 
     onAuthStateChanged(auth,async u=>{
       Acct.user=u;
-      if(!u){ Acct.name=null; App.signedOut(); return; }
+      if(!u){ Acct.name=null; stopFriends(); App.signedOut(); return; }
       Acct.name=creating||u.displayName||u.email.split('@')[0];
       if(creating) return; // sign-up finishes the rest
       wm('');
       try{ const s=await getDoc(userDoc()); if(s.exists()) App.applyPrefs(s.data().prefs); }catch(e){}
       App.signedIn(Acct.name); loadHome();
+      ensureUsername(u.uid,Acct.name); startFriends();
     });
   }catch(e){
     console.error(e);
