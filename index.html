@@ -2044,15 +2044,15 @@ function compressImage(file){
     if(!file||!/^image\//.test(file.type)) return rej(new Error('Not an image'));
     const url=URL.createObjectURL(file), im=new Image();
     im.onload=()=>{ URL.revokeObjectURL(url);
-      let max=1024,q=.72,out='';
+      let max=800,q=.7,out='';
       for(let i=0;i<6;i++){
         const sc=Math.min(1,max/Math.max(im.width,im.height)), cv=document.createElement('canvas');
         cv.width=Math.round(im.width*sc); cv.height=Math.round(im.height*sc);
         cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
-        out=cv.toDataURL('image/jpeg',q); if(out.length<380000) return res(out);
+        out=cv.toDataURL('image/jpeg',q); if(out.length<250000) return res(out);
         max=Math.round(max*.8); q=Math.max(.45,q-.08);
       }
-      out.length<580000?res(out):rej(new Error('Image too big'));
+      out.length<400000?res(out):rej(new Error('That photo is too big. Try a smaller one.'));
     };
     im.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('Couldn\'t read image')); };
     im.src=url;
@@ -2241,7 +2241,7 @@ async function sendImage(k,file){
     const img=await compressImage(file);
     if(k==='c'){ if(Date.now()-R.last<2000) return note('Slow down a bit!'); R.last=Date.now(); const rt=REPLY.c; setReply('c',null); await Acct.chat.send('',rt,img); }
     else { const rt=REPLY.dm; setReply('dm',null); await Acct.dm.send(D.cur,'',rt,img,D.keep); }
-  }catch(e){ note(e.code==='permission-denied'?'Couldn\'t send. The site rules may need updating.':(e.message||'Couldn\'t send the photo.')); }
+  }catch(e){ console.warn(e); note(e.code==='permission-denied'?'Couldn\'t send the photo: blocked by the Firestore rules (update the okImg line).':('Couldn\'t send the photo'+(e.code?' ('+e.code+')':'')+'. '+(e.message||''))); }
 }
 for(const [k,btn,inp] of [['c','cimgbtn','cimg'],['dm','dmimgbtn','dmimg']]){
   $(btn).onclick=()=>$(inp).click();
