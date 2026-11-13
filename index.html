@@ -246,6 +246,60 @@ button.primary:hover{filter:brightness(1.08)}
 .logo .cc{position:relative;display:inline-block}
 .logo .cc img{position:absolute;width:.5em;height:.5em;left:.19em;top:50%;transform:translateY(-48%)}
 .tile b span{color:inherit!important;font-size:inherit!important}
+
+/* ===== cinematic theme ===== */
+:root{--glass:rgba(24,24,30,.58);--glass2:rgba(16,16,20,.7);--edge:rgba(255,255,255,.08)}
+html{background:#0b0c10}
+body{background:transparent}
+body::before{content:"";position:fixed;inset:-25%;z-index:-2;pointer-events:none;
+  background:radial-gradient(38% 32% at 18% 22%,rgba(129,182,76,.28),transparent 70%),
+             radial-gradient(34% 30% at 82% 18%,rgba(80,110,255,.24),transparent 70%),
+             radial-gradient(44% 40% at 62% 88%,rgba(175,80,210,.2),transparent 70%),
+             radial-gradient(30% 28% at 8% 85%,rgba(40,170,190,.16),transparent 70%);
+  filter:blur(28px);animation:drift 30s ease-in-out infinite alternate}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.6))}
+@keyframes drift{0%{transform:translate(0,0) rotate(0) scale(1)}50%{transform:translate(4%,-3%) rotate(6deg) scale(1.08)}100%{transform:translate(-3%,3%) rotate(-4deg) scale(1.04)}}
+@keyframes enter{from{opacity:0;transform:translateY(16px) scale(.985);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes pop{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:none}}
+.screen:not(.hidden),#game:not(.hidden){animation:enter .55s cubic-bezier(.2,.8,.2,1)}
+.card,.tile,.wcard,.nlist,.ned,.deck,#side,.dmwrap,#resume{background:var(--glass)!important;backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);border:1px solid var(--edge)!important;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+#resume{background:linear-gradient(135deg,rgba(60,90,40,.6),rgba(30,45,25,.6))!important}
+.wcard{box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(129,182,76,.15),0 0 60px rgba(129,182,76,.08)}
+.logo{background:linear-gradient(100deg,#ffffff 10%,#d8f0c0 45%,#a8d4ff 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.wcard .logo{font-size:2.6rem;filter:drop-shadow(0 4px 20px rgba(129,182,76,.25))}
+#hub .hello{font-size:clamp(1.8rem,5vw,2.8rem);margin:22px 0 4px;letter-spacing:-.02em;background:linear-gradient(100deg,#fff,#cfe9b5 60%,#a8d4ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tiles>*{animation:pop .6s cubic-bezier(.2,.8,.2,1) both}
+.tiles>*:nth-child(2){animation-delay:.05s}.tiles>*:nth-child(3){animation-delay:.1s}.tiles>*:nth-child(4){animation-delay:.15s}
+.tiles>*:nth-child(5){animation-delay:.2s}.tiles>*:nth-child(6){animation-delay:.25s}.tiles>*:nth-child(7){animation-delay:.3s}.tiles>*:nth-child(8){animation-delay:.35s}
+.tile{transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,border-color .25s}
+.tile:hover{transform:translateY(-5px) scale(1.015);box-shadow:0 20px 50px rgba(0,0,0,.45),0 0 0 1px rgba(129,182,76,.35),0 0 40px rgba(129,182,76,.12)}
+.tile .ic{box-shadow:0 8px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.15)}
+.tile.soon:hover{transform:none;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+button{transition:background .2s,transform .12s,box-shadow .2s,filter .2s}
+button:active{transform:scale(.97)}
+button.primary,.tile .go{background:linear-gradient(180deg,#8fc75a,#6fa63e)!important;box-shadow:0 3px 0 #45753c,0 6px 18px rgba(129,182,76,.25)}
+button.primary:hover{box-shadow:0 3px 0 #45753c,0 8px 26px rgba(129,182,76,.45)}
+button:not(.primary){background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)}
+button:not(.primary):hover{background:rgba(255,255,255,.12)}
+input,select,textarea{background:rgba(0,0,0,.28)!important;border-color:rgba(255,255,255,.1)!important;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,76,.7)!important;box-shadow:0 0 0 3px rgba(129,182,76,.18)}
+.ned input.t{background:none!important;box-shadow:none!important;border:0!important}
+#board{box-shadow:0 24px 70px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.05)}
+.bub{box-shadow:0 2px 8px rgba(0,0,0,.2);animation:pop .25s ease-out both}
+.bub.me{background:linear-gradient(135deg,#4c7a2c,#3a5f22)}
+.bub.them{background:rgba(255,255,255,.08)}
+.topbar{padding:6px 2px}
+.stat div{background:rgba(255,255,255,.05);border:1px solid var(--edge)}
+#status{background:rgba(0,0,0,.25)}
+#clog{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:6px}
+#sres .gsc-control-cse{background:transparent!important;border:0!important;padding:0!important;font-family:inherit!important}
+#sres .gsc-webResult.gsc-result,#sres .gsc-results .gsc-imageResult{background:transparent!important;border:0!important;border-bottom:1px solid var(--edge)!important;padding:12px 0!important}
+#sres .gs-title,#sres .gs-title *{color:#a8d4ff!important;text-decoration:none!important}
+#sres .gs-snippet{color:#d5d3cd!important}
+#sres .gs-visibleUrl,#sres .gsc-url-top *{color:#8fc75a!important}
+#sres .gsc-cursor-page{color:var(--text)!important;background:transparent!important}
+#sres .gsc-above-wrapper-area,#sres .gsc-adBlock{border-color:var(--edge)!important}
+@media (prefers-reduced-motion:reduce){body::before,.screen:not(.hidden),#game:not(.hidden),.tiles>*,.bub{animation:none!important}}
 </style>
 </head>
 <body>
@@ -273,13 +327,15 @@ button.primary:hover{filter:brightness(1.08)}
       <span class="logo" data-logo></span>
       <div class="chip"><span>👤 <span class="js-me">Guest</span></span><button class="js-logout">Sign out</button><button class="js-signin primary hidden">Sign in</button></div>
     </div>
-    <div class="hello">Hi, <span class="js-me">Guest</span> 👋</div>
-    <div class="muted">Pick something to open.</div>
+    <div class="hello"><span id="greet">Hi</span>, <span class="js-me">Guest</span></div>
+    <div class="muted" style="font-size:1rem">What are we doing today?</div>
     <div class="tiles">
-      <button class="tile" id="openchess"><div class="ic"><img data-piece="wN" alt=""></div><b><span class="logo" data-logo style="font-size:1.15rem"></span></b><span>Online games with friends, computer opponents and game reviews.</span><div class="go">View</div></button>
+      <button class="tile" id="openchess"><div class="ic"><img data-piece="wN" alt=""></div><b><span class="logo" data-logo style="font-size:1.15rem"></span></b><span>GCSE Maths revision: practise topics, test yourself and track your progress.</span><div class="go">View</div></button>
       <button class="tile" id="opennotes"><div class="ic" style="background:#3b5f8a;font-size:2rem">📝</div><b>Notes</b><span>Write and search your notes. Saves as you type.</span><div class="go">View</div></button>
       <button class="tile" id="opencards"><div class="ic" style="background:#7a4d8f;font-size:2rem">🗂️</div><b>Flashcards</b><span>Make decks and test yourself with flip cards.</span><div class="go">View</div></button>
       <button class="tile" id="openfriends"><div class="ic" style="background:#8a6a2b;font-size:2rem">👥</div><b>Friends<span id="fbadge" class="badge2 hidden"></span></b><span>Add friends by username, message them and challenge them.</span><div class="go">View</div></button>
+      <button class="tile" id="openchat"><div class="ic" style="background:linear-gradient(135deg,#2b7a8a,#1f4f6b);font-size:2rem">💬</div><b>Chat</b><span>Talk with everyone. Kept clean automatically.</span><div class="go">View</div></button>
+      <button class="tile" id="opensearch"><div class="ic" style="background:linear-gradient(135deg,#4a5bd6,#2c3a99);font-size:2rem">🔎</div><b>Search</b><span>Search the web right here, without it going in your history.</span><div class="go">View</div></button>
       <button class="tile hidden" id="openadmin"><div class="ic" style="background:#8a2b2b;font-size:2rem">👑</div><b>Admin</b><span>Manage players: stats and bans.</span><div class="go">View</div></button>
       <div class="tile soon"><div class="ic">＋</div><b>More coming soon</b><span>New apps will show up here.</span></div>
     </div>
@@ -426,6 +482,19 @@ button.primary:hover{filter:brightness(1.08)}
       <div class="chatin"><input id="dmin" maxlength="500" placeholder="Message…" autocomplete="off"><button class="primary" id="dmsend">Send</button></div>
     </div>
     <div class="muted" style="font-size:.8rem;margin-top:6px">Only you and your friend can read these messages. Don't share personal info.</div>
+  </div>
+
+  <div id="chat" class="screen hidden">
+    <div class="apphead"><button class="back js-tohub">← Home</button><h2>💬 Chat</h2></div>
+    <div class="dmwrap"><div id="clog"></div><div class="chatin"><input id="cin" maxlength="300" placeholder="Message everyone…" autocomplete="off"><button class="primary" id="csend">Send</button></div></div>
+    <div class="muted" style="font-size:.8rem;margin-top:6px">Everyone who's signed in can see this chat. Swearing, rude words and personal info (numbers, emails, socials) are blocked.</div>
+  </div>
+
+  <div id="search" class="screen hidden">
+    <div class="apphead"><button class="back js-tohub">← Home</button><h2>🔎 Search</h2></div>
+    <form class="card row" id="sform" style="margin-top:0"><input id="sq" placeholder="Search the web…" style="flex:1;min-width:0;font-size:1.05rem;padding:12px 14px" autocomplete="off"><button class="primary" style="padding:12px 18px">Search</button></form>
+    <div class="muted" style="font-size:.82rem;margin:0 0 10px">Searches here don't go into your browser history. Pages you open from the results will.</div>
+    <div class="card" id="sres"><div class="muted">Results will show here.</div></div>
   </div>
   <div id="game" class="hidden">
     <div id="boardcol">
@@ -1211,6 +1280,7 @@ function botReply(t){
 }
 function sendChat(text){
   text=(text||'').trim().slice(0,300); if(!text||!G) return;
+  const bad=SAFETY.check(text); if(bad) return sys(bad);
   if(G.mode==='online'){ if(!conn||!conn.open) return sys('Not connected.'); conn.send({t:'chat',text}); addChat('me',null,text); }
   else if(G.mode==='bot'){ addChat('me',null,text); const my=G; setTimeout(()=>{ if(G===my) botSay(botReply(text)); },700+Math.random()*800); }
 }
@@ -1276,7 +1346,7 @@ function wire(c){
     else if(d.t==='draw-no') banner('Draw declined.',[]);
     else if(d.t==='rematch'&&on) banner('Opponent wants a rematch.',[['Accept',()=>{c.send({t:'rematch-ok'});newGame({mode:'online',mine:other(G.mine),tc:G.tc,keepChat:true});}],['Decline',()=>{}]]);
     else if(d.t==='rematch-ok'&&on) newGame({mode:'online',mine:other(G.mine),tc:G.tc,keepChat:true});
-    else if(d.t==='chat'&&on&&typeof d.text==='string') addChat('them',G.oppName||'Opponent',d.text.slice(0,300));
+    else if(d.t==='chat'&&on&&typeof d.text==='string') addChat('them',G.oppName||'Opponent',SAFETY.clean(d.text.slice(0,300)));
   });
   c.on('close',()=>{ if(G&&G.mode==='online'){ sys('Opponent disconnected.'); if(!G.over) banner('Opponent disconnected.',[]); } });
 }
@@ -1291,9 +1361,10 @@ function banner(text,btns){
 
 
 // ---------- screens, accounts glue, saving ----------
-const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin','dm'];
+const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin','dm','search','chat'];
 const all=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
 function showScreen(id){
+  if(id!=='chat'&&window.closeRoom) closeRoom();
   for(const s of SCREENS) $(s).classList.toggle('hidden',s!==id);
   document.body.classList.toggle('playing',id==='game');
   window.scrollTo(0,0);
@@ -1327,6 +1398,7 @@ window.App={
     $('openadmin').classList.toggle('hidden',!(window.Acct&&Acct.isAdmin));
     for(const el of document.querySelectorAll('.acctonly')) el.classList.remove('hidden');
     all('.js-logout',e=>e.classList.remove('hidden')); all('.js-signin',e=>e.classList.add('hidden'));
+    const hr=new Date().getHours(); $('greet').textContent=hr<5?'Late night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
     if(!G) showScreen('hub');
     runPendingJoin();
   },
@@ -1429,6 +1501,63 @@ $('chatin').onkeydown=e=>{ if(e.key==='Enter'){ sendChat($('chatin').value); $('
 let pendingJoin=location.hash.length>1?location.hash.slice(1).toUpperCase():null;
 if(pendingJoin){ $('joincode').value=pendingJoin; $('wsub').textContent='Sign in to join your friend\'s game.'; }
 setTimeout(()=>{ if(!$('splash').classList.contains('hidden')) App.noAccounts("Couldn't reach the account server. Check your connection and refresh."); },9000);
+</script>
+
+<script>
+// ---------- safety filter: swearing, slurs, sexual words, and personal info ----------
+// Checks every message before it's sent (group chat, private messages, game chat) and usernames.
+// The strongest words are ALSO blocked by the Firestore rules, so this can't be skipped by editing the page.
+const SAFETY=(()=>{
+  // Matched anywhere inside a word (after undoing tricks like 5h1t, f.u.c.k, fuuuck)
+  const ANYWHERE=['fuck','fuk','fck','fuq','phuck','shit','cunt','bitch','biatch','wank','whore','slut','nigg','niga','fagg','retard',
+    'bollock','bastard','motherf','dildo','porn','pussy','jizz','horny','boob','asshole','arsehole','dickhead','tosser','skank',
+    'tranny','twat','penis','vagina','blowjob','handjob','bellend','shag','spunk','minge','clit','erection','orgasm','masturb'];
+  // Matched as whole words (plus plurals/endings), because they appear inside normal words (class, title, arsenal…)
+  const WHOLE=['ass','arse','tit','tits','titty','titties','cum','cumming','cock','cocks','dick','dicks','fag','fags',
+    'hoe','hoes','thot','thots','kys','stfu','wtf','ffs','omfg','lmfao','pmsl','chink','paki','spic','kike','dyke','coon','wog','nonce',
+    'damn','crap','crappy','piss','pissed','prick','bugger','rape','raped','raping','rapist','sex','sexy','sexting','nude','nudes','naked',
+    'bloody','hell','milf','simp','bj','hj','gtfo','af','nob','knob','muff','tw4t'];
+  const PHRASES=['kill yourself','kill urself','kill ur self','go die','neck yourself','neck urself','go kill','i hope you die'];
+  const LEET={'0':'o','1':'i','3':'e','4':'a','5':'s','7':'t','8':'b','9':'g','@':'a','$':'s','!':'i','|':'i','+':'t','€':'e','£':'l'};
+  const strip=s=>s.normalize('NFKD').replace(/[̀-ͯ]/g,'');
+  const norm=s=>strip(String(s||'').toLowerCase()).replace(/[0-9@$!|+€£]/g,c=>LEET[c]||c);
+  const collapse=w=>w.replace(/(.)\1+/g,'$1');
+  const endings=w=>[w,w.replace(/(es|s|ing|ed|er)$/,'')];
+  const wholeSet=new Set(WHOLE);
+  function badWord(text){
+    const t=norm(text);
+    const toks=t.split(/[^a-z]+/).filter(Boolean);
+    // join runs of single letters: "f u c k" / "f.u.c.k" -> "fuck"
+    const joined=[]; let run='';
+    for(const w of toks){ if(w.length===1) run+=w; else { if(run.length>1) joined.push(run); run=''; } }
+    if(run.length>1) joined.push(run);
+    const cands=[...toks,...joined];
+    for(const w of cands){
+      for(const v of [w,collapse(w)]){
+        if(ANYWHERE.some(b=>v.includes(b))) return true;
+        if(endings(v).some(x=>wholeSet.has(x))) return true;
+      }
+    }
+    const spaced=' '+toks.join(' ')+' ';
+    return PHRASES.some(p=>spaced.includes(' '+p+' '));
+  }
+  function personalInfo(text){
+    const s=String(text||'');
+    if(/[^\s@]+@[^\s@]+\.[a-z]{2,}/i.test(s)) return 'email addresses';
+    if(/(\+?\d[\d\s().-]{8,}\d)/.test(s)&&s.replace(/\D/g,'').length>=10) return 'phone numbers';
+    if(/\b(snap(chat)?|insta(gram)?|tiktok|discord|whatsapp)\b\s*[:@-]?\s*@?\w{3,}/i.test(s)&&/@\w{3,}|:\s*\w{3,}/.test(s)) return 'social media handles';
+    return null;
+  }
+  // Returns null if OK, or a reason string to show the user
+  function check(text){
+    if(badWord(text)) return 'Message blocked: no swearing or inappropriate language.';
+    const p=personalInfo(text); if(p) return `Message blocked: don't share ${p}.`;
+    return null;
+  }
+  function clean(text){ return badWord(text)?'*** message hidden ***':text; }
+  return {check,clean,badWord};
+})();
+window.SAFETY=SAFETY;
 </script>
 
 <script>
@@ -1743,7 +1872,7 @@ function renderDM(msgs){
   if(!msgs.length){ log.innerHTML='<div class="sys">No messages yet. Say hi!</div>'; return; }
   for(const x of msgs){
     const mine=x.from===Acct.user.uid, d=document.createElement('div');
-    d.className='bub '+(mine?'me':'them'); d.appendChild(document.createTextNode(x.text||''));
+    d.className='bub '+(mine?'me':'them'); d.appendChild(document.createTextNode(SAFETY.clean(x.text||'')));
     const t=document.createElement('small'); t.textContent=x.at?fmtTime(x.at):''; d.appendChild(t);
     log.appendChild(d);
   }
@@ -1751,6 +1880,7 @@ function renderDM(msgs){
 }
 function sendDM(){
   const text=$('dmin').value.trim().slice(0,500); if(!text||!D.cur) return;
+  const bad=SAFETY.check(text); if(bad){ const s=document.createElement('div'); s.className='sys'; s.textContent=bad; $('dmlog').appendChild(s); $('dmlog').scrollTop=1e9; return; }
   $('dmin').value='';
   Acct.dm.send(D.cur,text).catch(e=>{ const s=document.createElement('div'); s.className='sys'; s.textContent=e.code==='permission-denied'?'Couldn\'t send. You can only message friends (and the site rules must be up to date).':'Couldn\'t send. Check your connection.'; $('dmlog').appendChild(s); $('dmin').value=text; });
 }
@@ -1773,11 +1903,80 @@ App.setInbox=list=>{
 function msgToast(x){
   if(G&&!G.over&&!$('game').classList.contains('hidden')) return; // don't interrupt a game
   const t=$('mtoast'); t.innerHTML='';
-  const s=document.createElement('span'); s.textContent=`💬 ${x.name}: ${x.text}`; t.appendChild(s);
+  const s=document.createElement('span'); s.textContent=`💬 ${x.name}: ${SAFETY.clean(x.text)}`; t.appendChild(s);
   t.onclick=()=>{ t.style.display='none'; const f=F.friends.find(y=>y.id===x.id)||{id:x.id,name:x.name}; openDM(f); };
   t.style.display='flex'; sound('move');
   clearTimeout(msgToast.tm); msgToast.tm=setTimeout(()=>t.style.display='none',6000);
 }
+
+
+// ================= GROUP CHAT =================
+const R={unsub:null,last:0};
+function openRoom(){
+  showScreen('chat'); closeRoom();
+  $('clog').innerHTML='<div class="sys">Loading…</div>';
+  R.unsub=Acct.chat.listen(renderRoom,()=>{ $('clog').innerHTML='<div class="sys">Couldn\'t load the chat. The site owner may need to update the Firestore rules.</div>'; });
+  setTimeout(()=>$('cin').focus(),50);
+}
+function closeRoom(){ if(R.unsub){ R.unsub(); R.unsub=null; } }
+window.closeRoom=closeRoom;
+function renderRoom(msgs){
+  const log=$('clog'), atBottom=log.scrollHeight-log.scrollTop-log.clientHeight<80; log.innerHTML='';
+  if(!msgs.length){ log.innerHTML='<div class="sys">No messages yet. Say hi to everyone!</div>'; return; }
+  for(const x of msgs){
+    const mine=x.from===Acct.user.uid, d=document.createElement('div'); d.className='bub '+(mine?'me':'them');
+    if(!mine){ const b=document.createElement('b'); b.textContent=x.name||'?'; d.appendChild(b); }
+    d.appendChild(document.createTextNode(SAFETY.clean(x.text||'')));
+    const t=document.createElement('small'); t.textContent=x.at?fmtTime(x.at):'';
+    if(Acct.isAdmin||mine){ const del=document.createElement('a'); del.textContent=' 🗑'; del.href='#'; del.title='Delete message'; del.style.textDecoration='none';
+      del.onclick=e=>{ e.preventDefault(); Acct.chat.remove(x.id).catch(()=>{}); }; t.appendChild(del); }
+    d.appendChild(t); log.appendChild(d);
+  }
+  if(atBottom||msgs[msgs.length-1].from===Acct.user.uid) log.scrollTop=log.scrollHeight;
+}
+function roomNote(t){ const s=document.createElement('div'); s.className='sys'; s.textContent=t; $('clog').appendChild(s); $('clog').scrollTop=1e9; }
+function sendRoom(){
+  const text=$('cin').value.trim().slice(0,300); if(!text) return;
+  const bad=SAFETY.check(text); if(bad) return roomNote(bad);
+  if(Date.now()-R.last<2000) return roomNote('Slow down a bit!');
+  R.last=Date.now(); $('cin').value='';
+  Acct.chat.send(text).catch(e=>{ roomNote(e.code==='permission-denied'?'Couldn\'t send. That message isn\'t allowed (or the site rules need updating).':'Couldn\'t send. Check your connection.'); $('cin').value=text; });
+}
+$('csend').onclick=sendRoom;
+$('cin').onkeydown=e=>{ if(e.key==='Enter') sendRoom(); };
+$('openchat').onclick=()=>{ if(window.Acct&&Acct.chat) openRoom(); };
+
+// ================= SEARCH (Google Programmable Search, shown inside the app) =================
+// Paste your Programmable Search Engine ID here (see setup steps). Searches run inside this page,
+// so they don't add entries to the browser's history. Pages you open from the results do.
+const SEARCH_CX='';
+let cseReady=null;
+function loadCSE(){
+  if(cseReady) return cseReady;
+  cseReady=new Promise((res,rej)=>{
+    window.__gcse={parsetags:'explicit',callback:()=>{
+      google.search.cse.element.render({div:'sres',tag:'searchresults-only',gname:'csq',
+        attributes:{enableHistory:false,linkTarget:'_blank',safeSearch:'active',noResultsString:'No results found.'}});
+      res();
+    }};
+    const s=document.createElement('script'); s.src='https://cse.google.com/cse.js?cx='+encodeURIComponent(SEARCH_CX); s.async=true;
+    s.onerror=()=>{ cseReady=null; rej(); }; document.head.appendChild(s);
+  });
+  return cseReady;
+}
+function openSearch(){
+  showScreen('search');
+  if(!SEARCH_CX){ $('sres').innerHTML='<div class="muted">Search isn\'t switched on yet. The site owner needs to add a Google search ID.</div>'; }
+  setTimeout(()=>$('sq').focus(),50);
+}
+$('sform').onsubmit=async e=>{
+  e.preventDefault();
+  const q=$('sq').value.trim(); if(!q||!SEARCH_CX) return;
+  if(SAFETY.badWord(q)){ $('sres').innerHTML='<div class="muted">That search isn\'t allowed.</div>'; return; }
+  try{ await loadCSE(); google.search.cse.element.getElement('csq').execute(q); }
+  catch(err){ $('sres').innerHTML='<div class="muted">Couldn\'t load search. Check your connection.</div>'; }
+};
+$('opensearch').onclick=openSearch;
 
 // ================= ADMIN =================
 // Heuristic "looks like a real name" check for usernames (common UK first names + surnames).
@@ -1957,6 +2156,15 @@ if(!FIREBASE_CONFIG){
       },
       markRead(other){ return setDoc(doc(db,'users',Acct.user.uid,'inbox',other),{unread:false},{merge:true}).catch(()=>{}); }
     };
+    // group chat: rooms/global/messages/{id}
+    Acct.chat={
+      listen(cb,err){
+        return onSnapshot(query(collection(db,'rooms','global','messages'),orderBy('at'),limitToLast(120)),
+          qs=>{ const out=[]; qs.forEach(d=>out.push({...d.data(),id:d.id})); cb(out); },e=>{ console.warn(e); err&&err(e); });
+      },
+      send(text){ return addDoc(collection(db,'rooms','global','messages'),{from:Acct.user.uid,name:Acct.name,text,at:Date.now()}); },
+      remove(id){ return deleteDoc(doc(db,'rooms','global','messages',id)); }
+    };
     Acct.friends={
       async send(name){
         const me=Acct.user.uid; name=(name||'').trim();
@@ -2030,6 +2238,7 @@ if(!FIREBASE_CONFIG){
     $('signup').onclick=async()=>{
       const u=$('uname').value.trim(), p=$('pw').value;
       if(!valid(u)) return wm('Usernames are 3–20 letters, numbers or _.');
+      if(window.SAFETY&&SAFETY.badWord(u.replace(/_/g,' '))||SAFETY.badWord(u)) return wm('That username isn\'t allowed. Pick something else.');
       if(p.length<6) return wm('Password must be at least 6 characters.');
       if(p.toLowerCase().includes(u.toLowerCase())) return wm("Your password can't contain your username. Pick something else.");
       wm('Creating account…');
