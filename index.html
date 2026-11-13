@@ -413,7 +413,6 @@ body.calm::before{animation:none!important}
       <button class="tile" id="openfriends"><div class="ic" style="background:#8a6a2b;font-size:2rem">👥</div><b>Friends<span id="fbadge" class="badge2 hidden"></span></b><span>Add friends and study with them</span><div class="go">View</div></button>
       <button class="tile" id="openmsgs"><div class="ic" style="background:linear-gradient(135deg,#8a2b6b,#5a1f4a);font-size:2rem">✉️</div><b>Messages<span id="mbadge" class="badge2 hidden"></span></b><span>Private chats with friends</span><div class="go">View</div></button>
       <button class="tile" id="openchat"><div class="ic" style="background:linear-gradient(135deg,#2b7a8a,#1f4f6b);font-size:2rem">💬</div><b>Chat</b><span>Chat here</span><div class="go">View</div></button>
-      <button class="tile" id="opensearch"><div class="ic" style="background:linear-gradient(135deg,#4a5bd6,#2c3a99);font-size:2rem">🔎</div><b>Search</b><span>Search the web</span><div class="go">View</div></button>
       <button class="tile hidden" id="openadmin"><div class="ic" style="background:#8a2b2b;font-size:2rem">👑</div><b>Admin</b><span>Manage players</span><div class="go">View</div></button>
       <button class="tile js-profile"><div class="ic" style="background:linear-gradient(135deg,#4b4b5a,#2c2c38);font-size:2rem">⚙️</div><b>Profile & settings</b><span>Avatar, theme, exams, password</span><div class="go">View</div></button>
       <button class="tile" id="openfb"><div class="ic" style="background:#6b6b2b;font-size:2rem">🐞</div><b>Bugs & ideas</b><span>Report a bug or suggest something</span><div class="go">View</div></button>
@@ -574,13 +573,6 @@ body.calm::before{animation:none!important}
     <div class="muted" style="font-size:.8rem;margin-top:6px">Everyone who's signed in can see this chat. Swearing, rude words and personal info (numbers, emails, socials) are blocked.</div>
   </div>
 
-  <div id="search" class="screen hidden">
-    <div class="apphead"><button class="back js-tohub">← Home</button><h2>🔎 Search</h2></div>
-    <form class="card row" id="sform" style="margin-top:0"><input id="sq" placeholder="Search the web…" style="flex:1;min-width:0;font-size:1.05rem;padding:12px 14px" autocomplete="off"><button class="primary" style="padding:12px 18px">Search</button></form>
-    <div class="muted" style="font-size:.82rem;margin:0 0 10px">Searches here don't go into your browser history. Pages you open from the results will.</div>
-    <div class="card hidden" id="wres"></div>
-    <div class="card" id="sres"><div class="muted">Results will show here.</div></div>
-  </div>
 
   <div id="subject" class="screen hidden">
     <div class="apphead"><button class="back" id="subback">← Subjects</button><h2 id="subname"></h2></div>
@@ -1541,7 +1533,7 @@ function banner(text,btns){
 
 
 // ---------- screens, accounts glue, saving ----------
-const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin','dm','search','chat','subject','together','topic','fb','msgs','profile'];
+const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin','dm','chat','subject','together','topic','fb','msgs','profile'];
 const all=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
 function showScreen(id){
   if(id!=='chat'&&window.closeRoom) closeRoom();
@@ -2185,73 +2177,6 @@ function sendRoom(){
 $('csend').onclick=sendRoom;
 $('cin').onkeydown=e=>{ if(e.key==='Enter') sendRoom(); };
 $('openchat').onclick=()=>{ if(window.Acct&&Acct.chat) openRoom(); };
-
-// ================= SEARCH (Google Programmable Search, shown inside the app) =================
-// Paste your Programmable Search Engine ID here (see setup steps). Searches run inside this page,
-// so they don't add entries to the browser's history. Pages you open from the results do.
-const SEARCH_CX='051e19d4570e74c2f';
-let cseReady=null;
-function loadCSE(){
-  if(cseReady) return cseReady;
-  cseReady=new Promise((res,rej)=>{
-    window.__gcse={parsetags:'explicit',callback:()=>{
-      $('sres').innerHTML='<div id="sresbox"></div>';
-      google.search.cse.element.render({div:'sresbox',tag:'searchresults-only',gname:'csq',
-        attributes:{enableHistory:false,linkTarget:'_blank',safeSearch:'active',noResultsString:'No results found.'}});
-      res();
-    }};
-    const s=document.createElement('script'); s.src='https://cse.google.com/cse.js?cx='+encodeURIComponent(SEARCH_CX); s.async=true;
-    s.onerror=()=>{ cseReady=null; rej(); }; document.head.appendChild(s);
-  });
-  return cseReady;
-}
-function openSearch(){
-  showScreen('search');
-  if(!SEARCH_CX){ $('sres').classList.add('hidden'); }
-  setTimeout(()=>$('sq').focus(),50);
-}
-// Wikipedia search inside the app (no setup needed, nothing added to browser history)
-async function wikiSearch(q){
-  const box=$('wres'); box.classList.remove('hidden'); box.innerHTML='<h3 style="margin-top:0">📚 Wikipedia</h3><div class="muted">Searching…</div>';
-  try{
-    const r=await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&format=json&origin=*&srlimit=6&srsearch='+encodeURIComponent(q));
-    const d=await r.json(); const hits=(d.query&&d.query.search)||[];
-    box.innerHTML='<h3 style="margin-top:0">📚 Wikipedia</h3>';
-    if(!hits.length){ box.innerHTML+='<div class="muted">No Wikipedia results.</div>'; return; }
-    for(const hit of hits){
-      const a=document.createElement('a'); a.className='wr'; a.href='#';
-      const b=document.createElement('b'); b.textContent=hit.title;
-      const sp=document.createElement('span'); sp.textContent=(hit.snippet||'').replace(/<[^>]+>/g,'').replace(/&quot;/g,'"').replace(/&amp;/g,'&').replace(/&#039;/g,"'");
-      a.append(b,sp); a.onclick=ev=>{ ev.preventDefault(); wikiRead(hit.title); }; box.appendChild(a);
-    }
-  }catch(err){ box.innerHTML='<h3 style="margin-top:0">📚 Wikipedia</h3><div class="muted">Couldn\'t reach Wikipedia.</div>'; }
-}
-// read the article's intro inside the app
-async function wikiRead(title){
-  const box=$('wres'); box.innerHTML='<div class="muted">Loading…</div>';
-  try{
-    const r=await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=plain&exchars=6000&format=json&origin=*&redirects=1&titles='+encodeURIComponent(title));
-    const d=await r.json(); const pg=Object.values((d.query&&d.query.pages)||{})[0]||{};
-    box.innerHTML='';
-    const back=fbtn('← Back to results','',()=>wikiSearch($('sq').value.trim()));
-    const h=document.createElement('h3'); h.textContent=pg.title||title; h.style.margin='10px 0 0';
-    const body=document.createElement('div'); body.className='wiki-read'; body.textContent=pg.extract||'No text available.';
-    const src=document.createElement('div'); src.className='muted'; src.style.cssText='font-size:.8rem;margin-top:8px'; src.textContent='From Wikipedia (CC BY-SA). ';
-    const ln=document.createElement('a'); ln.href='https://en.wikipedia.org/wiki/'+encodeURIComponent((pg.title||title).replace(/ /g,'_')); ln.target='_blank'; ln.rel='noopener noreferrer'; ln.textContent='Open full article'; ln.style.color='#a8d4ff'; src.appendChild(ln);
-    box.append(back,h,body,src);
-  }catch(err){ box.innerHTML='<div class="muted">Couldn\'t load the article.</div>'; }
-}
-$('sform').onsubmit=async e=>{
-  e.preventDefault();
-  const q=$('sq').value.trim(); if(!q) return;
-  if(SAFETY.badWord(q)){ $('sres').innerHTML='<div class="muted">That search isn\'t allowed.</div>'; $('wres').classList.add('hidden'); return; }
-  wikiSearch(q);
-  if(!SEARCH_CX) return;
-  try{ await loadCSE(); google.search.cse.element.getElement('csq').execute(q);
-    setTimeout(()=>{ const nr=$('sres').querySelector('.gs-no-results-result'); if(nr&&!$('sres').querySelector('.gnote')){ const n=document.createElement('div'); n.className='muted gnote'; n.style.marginTop='8px'; n.textContent='Google only searches the revision sites added to this search engine. If nothing shows, the site owner needs to add sites in Programmable Search → Sites to search.'; $('sres').appendChild(n); } },2500);
-  }catch(err){ $('sres').innerHTML='<div class="muted">Couldn\'t load Google search. Check your connection.</div>'; }
-};
-$('opensearch').onclick=openSearch;
 
 
 
