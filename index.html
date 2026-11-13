@@ -369,6 +369,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
       <button class="tile" id="opennotes"><div class="ic" style="background:#3b5f8a;font-size:2rem">📝</div><b>Notes</b><span>Your notes</span><div class="go">View</div></button>
       <button class="tile" id="opencards"><div class="ic" style="background:#7a4d8f;font-size:2rem">🗂️</div><b>Flashcards</b><span>Make flashcards</span><div class="go">View</div></button>
       <button class="tile" id="openfriends"><div class="ic" style="background:#8a6a2b;font-size:2rem">👥</div><b>Friends<span id="fbadge" class="badge2 hidden"></span></b><span>Add friends and study with them</span><div class="go">View</div></button>
+      <button class="tile" id="openmsgs"><div class="ic" style="background:linear-gradient(135deg,#8a2b6b,#5a1f4a);font-size:2rem">✉️</div><b>Messages<span id="mbadge" class="badge2 hidden"></span></b><span>Private chats with friends</span><div class="go">View</div></button>
       <button class="tile" id="openchat"><div class="ic" style="background:linear-gradient(135deg,#2b7a8a,#1f4f6b);font-size:2rem">💬</div><b>Chat</b><span>Chat here</span><div class="go">View</div></button>
       <button class="tile" id="opensearch"><div class="ic" style="background:linear-gradient(135deg,#4a5bd6,#2c3a99);font-size:2rem">🔎</div><b>Search</b><span>Search the web</span><div class="go">View</div></button>
       <button class="tile hidden" id="openadmin"><div class="ic" style="background:#8a2b2b;font-size:2rem">👑</div><b>Admin</b><span>Manage players</span><div class="go">View</div></button>
@@ -512,7 +513,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
   </div>
 
   <div id="dm" class="screen hidden">
-    <div class="apphead"><button class="back" id="dmback">← Friends</button><h2 id="dmname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1"></h2><button class="primary" id="dmstudy">📚 Study</button><button id="dmchal">♟ Challenge</button></div>
+    <div class="apphead"><button class="back" id="dmback">← Messages</button><h2 id="dmname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1"></h2><button class="primary" id="dmstudy">📚 Study</button><button id="dmchal">♟ Challenge</button></div>
     <div class="dmwrap">
       <div id="dmlog"></div>
       <div class="replybar hidden" id="dmreply"><span></span><button title="Cancel reply">✕</button></div>
@@ -578,6 +579,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
       <textarea id="fbtext" maxlength="1000" placeholder="What happened, or what would you like added?" style="width:100%;min-height:140px;padding:12px;border-radius:8px;color:var(--text);font:inherit"></textarea>
       <div class="row" style="margin-top:10px"><button class="primary" id="fbsend">Send</button><span class="muted" id="fbmsg"></span></div></div>
     <div class="card hidden" id="fbinbox"><h3>📥 Received (admin only)</h3><div class="flist" id="fblist"></div></div>
+  </div>
+
+  <div id="msgs" class="screen hidden">
+    <div class="apphead"><button class="back js-tohub">← Home</button><h2>✉️ Messages</h2><span class="sp"></span><button class="primary" id="newmsg">+ New chat</button></div>
+    <div class="flist" id="msglist"></div>
+    <div class="card hidden" id="msgpick" style="margin-top:12px"><h3>Start a chat with…</h3><div class="flist" id="msgfriends"></div></div>
   </div>
   <div id="game" class="hidden">
     <div id="boardcol">
@@ -1444,7 +1451,7 @@ function banner(text,btns){
 
 
 // ---------- screens, accounts glue, saving ----------
-const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin','dm','search','chat','subject','together','topic','fb'];
+const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin','dm','search','chat','subject','together','topic','fb','msgs'];
 const all=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
 function showScreen(id){
   if(id!=='chat'&&window.closeRoom) closeRoom();
@@ -1858,7 +1865,9 @@ function openFriends(){
   renderFriends(); renderRequests();
 }
 function fbtn(label,cls,fn){ const b=document.createElement('button'); b.textContent=label; if(cls) b.className=cls; b.onclick=fn; return b; }
-function updateBadge(){ const n=F.requests.length+D.inbox.filter(x=>x.unread).length, badge=$('fbadge'); badge.textContent=n; badge.classList.toggle('hidden',!n); }
+function updateBadge(){ const n=F.requests.length, badge=$('fbadge'); badge.textContent=n; badge.classList.toggle('hidden',!n);
+  const u=D.inbox.filter(x=>x.unread&&!x.mine).length, mb=$('mbadge'); mb.textContent=u; mb.classList.toggle('hidden',!u);
+  if(!$('msgs').classList.contains('hidden')) renderMsgs(); }
 function renderRequests(){
   const n=F.requests.length; updateBadge();
   $('freqcard').classList.toggle('hidden',!n);
@@ -1974,7 +1983,7 @@ $('dmsend').onclick=sendDM;
 $('dmstudy').onclick=()=>{ if(D.cur) pickStudy(D.cur); };
 $('dmchal').onclick=()=>{ if(D.cur){ const f=D.cur; closeDM(); challenge(f); } };
 $('dmin').onkeydown=e=>{ if(e.key==='Enter') sendDM(); };
-$('dmback').onclick=()=>{ closeDM(); openFriends(); };
+$('dmback').onclick=()=>{ closeDM(); openMsgs(); };
 App.setInbox=list=>{
   const prev=D.inboxMap;
   D.inbox=list; D.inboxMap=Object.fromEntries(list.map(x=>[x.id,x]));
@@ -2077,6 +2086,32 @@ $('sform').onsubmit=async e=>{
 };
 $('opensearch').onclick=openSearch;
 
+
+// ================= MESSAGES INBOX =================
+function openMsgs(){
+  showScreen('msgs'); $('msgpick').classList.add('hidden');
+  if(!hasAcct()){ $('msglist').innerHTML='<div class="muted">Sign in to message friends.</div>'; return; }
+  renderMsgs();
+}
+function renderMsgs(){
+  const box=$('msglist'); box.innerHTML='';
+  const list=[...D.inbox].filter(x=>F.friends.some(f=>f.id===x.id)).sort((a,b)=>(b.at||0)-(a.at||0));
+  if(!list.length){ box.innerHTML='<div class="muted">No chats yet. Tap <b>+ New chat</b> to message a friend.</div>'; return; }
+  for(const x of list){
+    const f=F.friends.find(y=>y.id===x.id)||{id:x.id,name:x.name};
+    const it=document.createElement('button'); it.className='fitem'; it.style.cssText='width:100%;text-align:left';
+    const n=document.createElement('span'); n.className='nm'; n.textContent=(f.name||x.name||'Friend'); if(x.unread&&!x.mine){ const dot=document.createElement('span'); dot.className='udot'; n.appendChild(dot); n.style.fontWeight='900'; }
+    const t=document.createElement('span'); t.className='st'; t.textContent=x.at?fmtTime(x.at):'';
+    const p=document.createElement('span'); p.style.cssText='flex-basis:100%;color:var(--muted);font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'; p.textContent=(x.mine?'You: ':'')+SAFETY.clean(x.text||'');
+    it.append(n,t,p); it.onclick=()=>openDM(f); box.appendChild(it);
+  }
+}
+$('newmsg').onclick=()=>{
+  const box=$('msgfriends'); box.innerHTML=''; $('msgpick').classList.remove('hidden');
+  if(!F.friends.length){ box.innerHTML='<div class="muted">Add friends first (Home → Friends).</div>'; return; }
+  for(const f of [...F.friends].sort((a,b)=>(a.name||'').localeCompare(b.name||''))) box.appendChild(fbtn('💬 '+(f.name||'Friend'),'',()=>openDM(f)));
+};
+$('openmsgs').onclick=openMsgs;
 // ================= ADMIN =================
 // Heuristic "looks like a real name" check for usernames (common UK first names + surnames).
 const FIRST_NAMES=new Set(('oliver george harry jack noah leo arthur oscar charlie muhammad mohammed freddie alfie theo thomas archie henry william james joshua jacob alexander isaac ethan max lucas samuel sam daniel dan joseph joe benjamin ben adam dylan logan harrison sebastian liam mason ryan lewis tyler kai luke callum matthew matt aaron reece nathan connor jake michael mike david dave chris christopher andrew andy john jon peter paul mark tom tommy jamie josh alex owen elliot finley rory toby zac zach jayden '+
