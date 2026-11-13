@@ -537,7 +537,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 
   <div id="subject" class="screen hidden">
     <div class="apphead"><button class="back" id="subback">← Subjects</button><h2 id="subname"></h2></div>
-    <div class="seg" id="subseg"><button data-v="topics" class="on">Topics</button><button data-v="quiz">Quiz</button><button data-v="practice" id="segprac">Practice</button><button data-v="res">Resources</button></div>
+    <div class="seg" id="subseg"><button data-v="res" class="on">Resources</button><button data-v="topics">Topics</button><span id="segprac"></span></div>
     <div id="subbody"></div>
   </div>
 
@@ -2314,7 +2314,7 @@ async function renderSubjTiles(){
     const c=confidence(s);
     b.innerHTML=`<div class="ic" style="background:${s.color};font-size:2rem"></div><b></b><span></span><div class="pbarx" style="width:100%;margin-top:4px"><div style="height:100%;width:${c}%;background:var(--accent)"></div></div><div class="go">View</div>`;
     b.querySelector('.ic').textContent=s.icon; b.querySelector('b').textContent=s.name;
-    b.querySelector('span').textContent=`${s.topics.length} topics · ${c}% confident`;
+    b.querySelector('span').textContent=`${c}% confident`;
     b.onclick=()=>openSubject(s); box.appendChild(b);
   }
 }
@@ -2351,7 +2351,7 @@ function renderResources(){
 }
 // ---------- subject screen ----------
 let SUB=null, subView='topics';
-function openSubject(s){ SUB=s; showScreen('subject'); $('subname').textContent=s.icon+' '+s.name; $('segprac').classList.toggle('hidden',s.id!=='maths'); setSubView('topics'); }
+function openSubject(s){ SUB=s; showScreen('subject'); $('subname').textContent=s.icon+' '+s.name; $('segprac').classList.toggle('hidden',s.id!=='maths'); setSubView('res'); }
 function setSubView(v){ subView=v; for(const b of document.querySelectorAll('#subseg button')) b.classList.toggle('on',b.dataset.v===v); ({topics:renderTopics,quiz:startQuiz,practice:startPractice,res:renderResources})[v](); }
 for(const b of document.querySelectorAll('#subseg button')) b.onclick=()=>setSubView(b.dataset.v);
 $('subback').onclick=()=>{ showScreen('hub'); setHubTab('subjects'); };
@@ -2371,7 +2371,7 @@ function renderTopics(){
     const mk=document.createElement('button'); mk.textContent='🗂️ Make flashcards from this topic';
     mk.onclick=async()=>{ const cards=[...tp.n.map(n=>({f:`${tp.t}: fill in the key fact`,b:n})).slice(0,0),...qs.map(q=>({f:q[1],b:q[2][0]+' — '+q[3]})),...tp.n.map((n,j)=>({f:`${SUB.name} · ${tp.t} — key point ${j+1}`,b:n}))];
       await Store.save('decks',newId(),{name:`${SUB.name}: ${tp.t}`,cards}); mk.textContent='✓ Added to Flashcards'; mk.disabled=true; };
-    d.appendChild(mk); box.appendChild(d);
+    box.appendChild(d);
   });
 }
 
@@ -2443,10 +2443,10 @@ function pickStudy(f){
   const box=$('picklist'); box.innerHTML='<div class="muted">Loading…</div>'; $('picker').classList.remove('hidden');
   Store.list('decks').catch(()=>[]).then(decks=>{
     box.innerHTML='';
+    if(!decks.some(d=>(d.cards||[]).some(c=>(c.f||'').trim()))) box.innerHTML='<div class="muted">Make a flashcard deck first (Home → Flashcards), then you can study it together.</div>';
     const add=(label,sub,cards)=>{ const it=document.createElement('button'); it.className='fitem'; it.style.textAlign='left';
       const n=document.createElement('span'); n.className='nm'; n.textContent=label; const s=document.createElement('span'); s.className='st'; s.textContent=sub; it.append(n,s);
       it.onclick=()=>{ $('picker').classList.add('hidden'); startTogether(f,label,cards); }; box.appendChild(it); };
-    for(const s of SUBJECTS) add(`${s.icon} ${s.name}`,`${s.quiz.length} cards`,s.quiz.map(q=>({f:q[1],b:q[2][0]})));
     for(const d of decks){ const cards=(d.cards||[]).filter(c=>(c.f||'').trim()); if(cards.length) add(`🗂️ ${d.name||'Deck'}`,`${cards.length} cards`,cards); }
   });
 }
