@@ -284,7 +284,7 @@ body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 .tile.soon:hover{transform:none;box-shadow:0 12px 40px rgba(0,0,0,.35)}
 button{transition:background .2s,transform .12s,box-shadow .2s,filter .2s}
 button:active{transform:scale(.97)}
-button.primary,.tile .go{background:linear-gradient(180deg,#8fc75a,#6fa63e)!important;box-shadow:0 3px 0 #45753c,0 6px 18px rgba(129,182,76,.25)}
+button.primary,.tile .go{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 85%,#fff),var(--accent))!important;box-shadow:0 3px 0 #45753c,0 6px 18px rgba(129,182,76,.25)}
 button.primary:hover{box-shadow:0 3px 0 #45753c,0 8px 26px rgba(129,182,76,.45)}
 button:not(.primary){background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)}
 button:not(.primary):hover{background:rgba(255,255,255,.12)}
@@ -310,7 +310,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 
 .htabs{display:flex;gap:6px;margin:16px 0 4px;background:rgba(0,0,0,.25);padding:5px;border-radius:12px;width:fit-content;max-width:100%;border:1px solid var(--edge)}
 .htabs button{border:0;background:none!important;padding:8px 16px;font-weight:800;letter-spacing:.04em;color:var(--muted);border-radius:9px}
-.htabs button.on{background:linear-gradient(180deg,#8fc75a,#6fa63e)!important;color:#fff}
+.htabs button.on{background:var(--accent)!important;color:#fff}
 .rag{display:flex;gap:4px}.rag button{padding:4px 10px;font-size:.85rem}.rag button.on{outline:2px solid #fff}
 .topic{margin-bottom:10px}.topic summary{cursor:pointer;font-weight:700;font-size:1.05rem;list-style:none;display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
 .topic ul{margin:10px 0 4px;padding-left:20px;line-height:1.55}
@@ -352,6 +352,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 #wres .wr{display:block;padding:10px 0;border-bottom:1px solid var(--edge);text-decoration:none;color:inherit}
 #wres .wr b{color:#a8d4ff}#wres .wr span{display:block;color:#cfcdc7;font-size:.9rem;margin-top:2px}
 .wiki-read{white-space:pre-wrap;line-height:1.6;max-height:60vh;overflow:auto;margin-top:8px}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid var(--edge);font-weight:700;font-size:.9rem}
+.js-profile{background:none!important;border:0!important;padding:4px 6px!important}
+.avbtn{font-size:1.5rem;padding:4px 8px!important}.avbtn.on{outline:2px solid var(--accent)}
+.accbtn{width:34px;height:34px;border-radius:50%;padding:0!important;border:3px solid transparent!important}.accbtn.on{border-color:#fff!important}
+body.calm *{animation:none!important;transition:none!important}
+body.calm::before{animation:none!important}
 </style>
 </head>
 <body>
@@ -377,10 +384,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
   <div id="hub" class="screen hidden">
     <div class="topbar">
       <span class="logo" data-logo></span>
-      <div class="chip"><span>👤 <span class="js-me">Guest</span></span><button class="js-logout">Sign out</button><button class="js-signin primary hidden">Sign in</button></div>
+      <div class="chip"><button class="js-profile" title="Profile & settings" style="display:flex;align-items:center;gap:6px;font-weight:700"><span class="js-avatar">👤</span><span class="js-me">Guest</span></button><button class="js-logout">Sign out</button><button class="js-signin primary hidden">Sign in</button></div>
     </div>
     <div class="hello"><span id="greet">Hi</span>, <span class="js-me">Guest</span></div>
     <div class="muted" style="font-size:1rem">What are we doing today?</div>
+    <div class="row" id="hubwidgets" style="margin-top:12px;gap:8px">
+      <span class="pill" id="wstreak" title="Days in a row you've revised">🔥 0-day streak</span>
+      <span class="pill hidden" id="wexam"></span>
+      <button class="primary" id="wreview">⚡ Daily review</button>
+    </div>
     <div class="htabs"><button data-tab="home" class="on">Home</button><button data-tab="subjects">SUBJECTS</button><button data-tab="gg">GGCSE</button></div>
     <div id="tab-subjects" class="hidden">
 <div class="revwarn">⚠️ NOT ALL INFORMATION MAY BE INCLUDED OR ACCURATE, PLEASE DO NOT USE THIS AS A MAIN SOURCE OF REVISION!!</div>
@@ -401,6 +413,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
       <button class="tile" id="openchat"><div class="ic" style="background:linear-gradient(135deg,#2b7a8a,#1f4f6b);font-size:2rem">💬</div><b>Chat</b><span>Chat here</span><div class="go">View</div></button>
       <button class="tile" id="opensearch"><div class="ic" style="background:linear-gradient(135deg,#4a5bd6,#2c3a99);font-size:2rem">🔎</div><b>Search</b><span>Search the web</span><div class="go">View</div></button>
       <button class="tile hidden" id="openadmin"><div class="ic" style="background:#8a2b2b;font-size:2rem">👑</div><b>Admin</b><span>Manage players</span><div class="go">View</div></button>
+      <button class="tile js-profile"><div class="ic" style="background:linear-gradient(135deg,#4b4b5a,#2c2c38);font-size:2rem">⚙️</div><b>Profile & settings</b><span>Avatar, theme, exams, password</span><div class="go">View</div></button>
       <button class="tile" id="openfb"><div class="ic" style="background:#6b6b2b;font-size:2rem">🐞</div><b>Bugs & ideas</b><span>Report a bug or suggest something</span><div class="go">View</div></button>
     </div>
     </div>
@@ -409,7 +422,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
   <div id="home" class="screen hidden">
     <div class="topbar">
       <div class="row"><button class="back" id="tohub">← Home</button><span class="logo" data-logo></span></div>
-      <div class="chip"><span>👤 <span class="js-me">Guest</span></span><button class="js-logout">Sign out</button><button class="js-signin primary hidden">Sign in</button></div>
+      <div class="chip"><button class="js-profile" title="Profile & settings" style="display:flex;align-items:center;gap:6px;font-weight:700"><span class="js-avatar">👤</span><span class="js-me">Guest</span></button><button class="js-logout">Sign out</button><button class="js-signin primary hidden">Sign in</button></div>
     </div>
 
     <div id="resume"><div><b>Unfinished game</b> <span class="muted" id="resumeinfo"></span></div><div class="row"><button class="primary" id="resumebtn">Resume</button><button id="discard">Discard</button></div></div>
@@ -625,6 +638,40 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
     <div class="apphead"><button class="back js-tohub">← Home</button><h2>✉️ Messages</h2><span class="sp"></span><button class="primary" id="newmsg">+ New chat</button></div>
     <div class="flist" id="msglist"></div>
     <div class="card hidden" id="msgpick" style="margin-top:12px"><h3>Start a chat with…</h3><div class="flist" id="msgfriends"></div></div>
+  </div>
+
+  <div id="profile" class="screen hidden">
+    <div class="apphead"><button class="back js-tohub">← Home</button><h2>⚙️ Profile & settings</h2><span class="sp"></span><span class="muted" id="pfsaved"></span></div>
+    <div class="grid">
+      <div class="card">
+        <h3>👤 Profile</h3>
+        <div class="row" style="gap:14px;align-items:center"><div id="pfav" style="font-size:3rem;width:72px;height:72px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06)">👤</div>
+          <div><div style="font-size:1.3rem;font-weight:800" class="js-me">Guest</div><div class="muted" id="pfstats"></div></div></div>
+        <div class="muted" style="margin:12px 0 6px">Avatar</div><div class="row" id="pfavatars" style="gap:6px"></div>
+        <div class="muted" style="margin:12px 0 6px">Bio (friends can see this)</div>
+        <input id="pfbio" maxlength="80" placeholder="e.g. Year 11 · aiming for 7s" style="width:100%">
+      </div>
+      <div class="card">
+        <h3>🎨 Appearance & sound</h3>
+        <div class="muted" style="margin-bottom:6px">Accent colour</div><div class="row" id="pfaccents" style="gap:8px"></div>
+        <label class="row" style="margin-top:14px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="pfsound" style="margin-top:3px"> Sounds (chess moves, notifications)</label>
+        <label class="row" style="margin-top:8px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="pfcalm" style="margin-top:3px"> Reduce motion (turn off animations and moving background)</label>
+      </div>
+      <div class="card">
+        <h3>📅 My exams</h3>
+        <div class="muted" style="margin-bottom:8px">Add your exam dates to get a countdown on the home page.</div>
+        <div class="row"><input id="pfexname" placeholder="e.g. Maths Paper 1" maxlength="40" style="flex:1;min-width:140px"><input id="pfexdate" type="date"><button class="primary" id="pfexadd">Add</button></div>
+        <div class="flist" id="pfexams" style="margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <h3>🔒 Account</h3>
+        <div class="muted" style="margin-bottom:6px">Change password</div>
+        <input id="pfold" type="password" placeholder="Current password" style="width:100%;margin-bottom:6px" autocomplete="current-password">
+        <input id="pfnew" type="password" placeholder="New password (6+ characters)" style="width:100%;margin-bottom:6px" autocomplete="new-password">
+        <div class="row"><button class="primary" id="pfpw">Change password</button><span class="muted" id="pfpwmsg"></span></div>
+        <div class="row" style="margin-top:16px"><button class="js-logout">Sign out</button></div>
+      </div>
+    </div>
   </div>
   <div id="game" class="hidden">
     <div id="boardcol">
@@ -966,6 +1013,7 @@ function fmtEval(cp){
 // ---------- sounds ----------
 let AC=null;
 function sound(k){
+  if(window.SETTINGS&&SETTINGS.sound===false) return;
   try{
     AC=AC||new (window.AudioContext||window.webkitAudioContext)();
     const o=AC.createOscillator(), gn=AC.createGain(), t=AC.currentTime, len=k==='end'?.45:.11;
@@ -1491,7 +1539,7 @@ function banner(text,btns){
 
 
 // ---------- screens, accounts glue, saving ----------
-const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin','dm','search','chat','subject','together','topic','fb','msgs'];
+const SCREENS=['splash','welcome','hub','home','game','notes','cards','friends','admin','dm','search','chat','subject','together','topic','fb','msgs','profile'];
 const all=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
 function showScreen(id){
   if(id!=='chat'&&window.closeRoom) closeRoom();
@@ -3760,6 +3808,109 @@ function renderPapers(){
 setSubView=function(v){ subView=v; for(const b of document.querySelectorAll('#subseg button')) b.classList.toggle('on',b.dataset.v===v); (v==='res'?renderResources:v==='pp'?renderPapers:renderTopics)(); };
 </script>
 
+<script>
+// ================= PROFILE, SETTINGS, STREAK, EXAMS, DAILY REVIEW =================
+const AVATARS=['👤','🦊','🐼','🐸','🐧','🦉','🐯','🐨','🐙','🦄','🐲','🌟','🔥','⚡','🎯','🧠','📚','🎧','🚀','🌙'];
+const ACCENTS=['#81b64c','#3f9cff','#a66bff','#ff9f43','#ff5d8f','#2ec4b6'];
+let SETTINGS={sound:true,calm:false,accent:ACCENTS[0]};
+let PROFILE={avatar:'👤',bio:'',exams:[],streak:0,lastDay:''};
+try{ Object.assign(SETTINGS,JSON.parse(localStorage.getItem('cs_settings')||'{}')); }catch(e){}
+window.SETTINGS=SETTINGS;
+function saveSettings(){ try{ localStorage.setItem('cs_settings',JSON.stringify(SETTINGS)); }catch(e){} }
+function applySettings(){
+  document.documentElement.style.setProperty('--accent',SETTINGS.accent||ACCENTS[0]);
+  document.body.classList.toggle('calm',!!SETTINGS.calm);
+}
+applySettings();
+const today=()=>new Date().toISOString().slice(0,10);
+const dayDiff=(a,b)=>Math.round((new Date(b)-new Date(a))/86400000);
+function profileChanged(){ if(window.Acct&&Acct.user&&Acct.saveProfile){ Acct.saveProfile(PROFILE); $('pfsaved').textContent='Saved ✓'; setTimeout(()=>$('pfsaved').textContent='',1500); } renderHubWidgets(); }
+App.applyProfile=p=>{
+  PROFILE=Object.assign({avatar:'👤',bio:'',exams:[],streak:0,lastDay:''},p||{});
+  // streak is broken if you missed a whole day
+  if(PROFILE.lastDay&&dayDiff(PROFILE.lastDay,today())>1) PROFILE.streak=0;
+  all('.js-avatar',e=>e.textContent=PROFILE.avatar||'👤');
+  renderHubWidgets();
+};
+// called whenever someone actually revises (studies cards, opens a topic, studies with a friend)
+function markStudied(){
+  if(!(window.Acct&&Acct.user)) return;
+  const t=today(); if(PROFILE.lastDay===t) return;
+  PROFILE.streak=(PROFILE.lastDay&&dayDiff(PROFILE.lastDay,t)===1)?(PROFILE.streak||0)+1:1;
+  PROFILE.lastDay=t; profileChanged();
+  if(PROFILE.streak>1&&window.alertMsg) alertMsg(`🔥 ${PROFILE.streak}-day revision streak!`);
+}
+function renderHubWidgets(){
+  const s=PROFILE.streak||0, active=PROFILE.lastDay===today();
+  $('wstreak').textContent=`🔥 ${s}-day streak`+(s&&!active?' · revise today to keep it!':'');
+  const up=(PROFILE.exams||[]).filter(e=>e.date>=today()).sort((a,b)=>a.date.localeCompare(b.date));
+  $('wexam').classList.toggle('hidden',!up.length);
+  if(up.length){ const d=dayDiff(today(),up[0].date); $('wexam').textContent=`📅 ${up[0].name}: ${d===0?'today!':d===1?'tomorrow':d+' days'}`; }
+}
+
+// ----- profile screen -----
+async function openProfile(){
+  if(!(window.Acct&&Acct.user)) return;
+  showScreen('profile');
+  $('pfav').textContent=PROFILE.avatar||'👤'; $('pfbio').value=PROFILE.bio||'';
+  $('pfsound').checked=SETTINGS.sound!==false; $('pfcalm').checked=!!SETTINGS.calm;
+  $('pfstats').textContent=`♟ Rating ${Acct.elo||1200} · 🔥 ${PROFILE.streak||0}-day streak`;
+  const av=$('pfavatars'); av.innerHTML='';
+  for(const a of AVATARS){ const b=document.createElement('button'); b.className='avbtn'+(a===PROFILE.avatar?' on':''); b.textContent=a;
+    b.onclick=()=>{ PROFILE.avatar=a; $('pfav').textContent=a; all('.js-avatar',e=>e.textContent=a); for(const x of av.children) x.classList.toggle('on',x===b); profileChanged(); }; av.appendChild(b); }
+  const ac=$('pfaccents'); ac.innerHTML='';
+  for(const c of ACCENTS){ const b=document.createElement('button'); b.className='accbtn'+(c===SETTINGS.accent?' on':''); b.style.background=c; b.title='Accent colour';
+    b.onclick=()=>{ SETTINGS.accent=c; saveSettings(); applySettings(); for(const x of ac.children) x.classList.toggle('on',x===b); }; ac.appendChild(b); }
+  renderExams(); $('pfpwmsg').textContent=''; $('pfold').value=''; $('pfnew').value='';
+}
+const saveBioSoon=debounce(()=>{ const v=$('pfbio').value.trim(); if(v&&SAFETY.check(v)){ $('pfsaved').textContent=SAFETY.check(v); return; } PROFILE.bio=v; profileChanged(); },800);
+$('pfbio').oninput=saveBioSoon;
+$('pfsound').onchange=()=>{ SETTINGS.sound=$('pfsound').checked; saveSettings(); };
+$('pfcalm').onchange=()=>{ SETTINGS.calm=$('pfcalm').checked; saveSettings(); applySettings(); };
+function renderExams(){
+  const box=$('pfexams'); box.innerHTML='';
+  const list=[...(PROFILE.exams||[])].sort((a,b)=>a.date.localeCompare(b.date));
+  if(!list.length){ box.innerHTML='<div class="muted">No exams added yet.</div>'; return; }
+  for(const e of list){ const it=document.createElement('div'); it.className='fitem';
+    const n=document.createElement('span'); n.className='nm'; n.textContent=e.name;
+    const d=dayDiff(today(),e.date), st=document.createElement('span'); st.className='st'; st.textContent=`${new Date(e.date).toLocaleDateString()} · ${d<0?'done':d===0?'today':d+' days'}`;
+    it.append(n,st,fbtn('✕','',()=>{ PROFILE.exams=PROFILE.exams.filter(x=>x!==e); renderExams(); profileChanged(); })); box.appendChild(it); }
+}
+$('pfexadd').onclick=()=>{
+  const n=$('pfexname').value.trim(), d=$('pfexdate').value;
+  if(!n||!d) return; if(SAFETY.badWord(n)) return;
+  PROFILE.exams=[...(PROFILE.exams||[]),{name:n.slice(0,40),date:d}].slice(-30);
+  $('pfexname').value=''; $('pfexdate').value=''; renderExams(); profileChanged();
+};
+$('pfpw').onclick=async()=>{
+  const o=$('pfold').value, n=$('pfnew').value, m=$('pfpwmsg');
+  if(n.length<6) return m.textContent='New password must be 6+ characters.';
+  if(n.toLowerCase().includes((Acct.name||'').toLowerCase())) return m.textContent='Password can\'t contain your username.';
+  m.textContent='Changing…';
+  try{ await Acct.changePassword(o,n); m.textContent='✓ Password changed.'; $('pfold').value=''; $('pfnew').value=''; }
+  catch(e){ m.textContent=/wrong-password|invalid-credential/.test(e.code||'')?'Current password is wrong.':'Couldn\'t change it ('+(e.code||'error')+').'; }
+};
+all('.js-profile',e=>e.onclick=openProfile);
+
+// ----- daily review: up to 15 cards, prioritising topics rated red/amber, then anything -----
+$('wreview').onclick=async()=>{
+  await loadTD();
+  const weak=[], other=[];
+  for(const s of SPEC) s.sections.forEach((sec,si)=>sec.t.forEach((t,ti)=>{
+    const d=TD[tkey(s,si,ti)]||{}, cards=[...cardsFor(s,t[0]).map(([f,b])=>({f:`${s.icon} ${f}`,b})),...(d.cards||[]).filter(c=>(c.f||'').trim())];
+    (d.rag==='r'||d.rag==='a'?weak:d.rag==='g'?[]:other).push(...cards);
+  }));
+  const pickN=(arr,n)=>shuffle([...arr]).slice(0,n);
+  let cards=pickN(weak,12); cards=[...cards,...pickN(other,15-cards.length)];
+  if(!cards.length){ alertMsg('No cards yet!'); return; }
+  showScreen('cards'); C.cur={id:'daily_'+today(),name:'⚡ Daily review',cards}; startStudy();
+};
+
+// mark revision activity
+const _startStudy=startStudy; startStudy=function(){ markStudied(); return _startStudy.apply(this,arguments); };
+const _openTopic3=openTopic; openTopic=function(){ markStudied(); return _openTopic3.apply(this,arguments); };
+</script>
+
 <script type="module">
 // ======== PASTE YOUR FIREBASE CONFIG HERE (see setup steps) ========
 const FIREBASE_CONFIG = {
@@ -3791,7 +3942,7 @@ if(!FIREBASE_CONFIG){
   try{
     const V='10.12.2', base=`https://www.gstatic.com/firebasejs/${V}/`;
     const {initializeApp}=await import(base+'firebase-app.js');
-    const {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,updateProfile,setPersistence,browserLocalPersistence}=await import(base+'firebase-auth.js');
+    const {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,updateProfile,setPersistence,browserLocalPersistence,updatePassword,reauthenticateWithCredential,EmailAuthProvider}=await import(base+'firebase-auth.js');
     const {getFirestore,doc,getDoc,setDoc,updateDoc,deleteField,deleteDoc,onSnapshot,addDoc,collection,query,where,orderBy,limit,limitToLast,getDocs,increment,serverTimestamp}=await import(base+'firebase-firestore.js');
     const app=initializeApp(FIREBASE_CONFIG), auth=getAuth(app), db=getFirestore(app);
     await setPersistence(auth,browserLocalPersistence); // stay signed in
@@ -3911,6 +4062,10 @@ if(!FIREBASE_CONFIG){
       async list(){ const qs=await getDocs(query(collection(db,'feedback'),orderBy('at','desc'),limit(200))); const out=[]; qs.forEach(d=>out.push({...d.data(),id:d.id})); return out; },
       remove(id){ return deleteDoc(doc(db,'feedback',id)); }
     };
+    // profile & settings (stored on the user doc; bio/avatar visible to signed-in users)
+    Acct.saveProfile=p=>safe(setDoc(userDoc(),{profile:p},{merge:true}));
+    Acct.loadProfile=async()=>{ try{ const s=await getDoc(userDoc()); return (s.exists()&&s.data().profile)||{}; }catch(e){ return {}; } };
+    Acct.changePassword=async(oldPw,newPw)=>{ const u=Acct.user; await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,oldPw)); await updatePassword(u,newPw); };
     Acct.friends={
       async send(name){
         const me=Acct.user.uid; name=(name||'').trim();
@@ -3994,7 +4149,7 @@ if(!FIREBASE_CONFIG){
         await updateProfile(c.user,{displayName:u});
         await setDoc(doc(db,'users',c.user.uid),{name:u,wins:0,losses:0,draws:0,elo:1200,peak:1200,created:serverTimestamp()},{merge:true});
         await ensureUsername(c.user.uid,u);
-        creating=null; Acct.name=u; App.signedIn(u); loadHome(); startFriends();
+        creating=null; Acct.name=u; App.signedIn(u); loadHome(); startFriends(); App.applyProfile&&App.applyProfile({});
       }catch(e){ creating=null; fail(e); }
     };
     let creating=null;
@@ -4012,6 +4167,7 @@ if(!FIREBASE_CONFIG){
       try{ const s=await getDoc(userDoc()); if(s.exists()){ if(s.data().banned){ await signOut(auth); wm('This account has been banned.'); return; } App.applyPrefs(s.data().prefs); } }catch(e){}
       App.signedIn(Acct.name); loadHome();
       ensureUsername(u.uid,Acct.name); startFriends();
+      Acct.loadProfile().then(p=>App.applyProfile&&App.applyProfile(p));
     });
   }catch(e){
     console.error(e);
