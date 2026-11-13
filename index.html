@@ -319,6 +319,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 .opt.right{background:rgba(129,182,76,.35)!important;border-color:var(--accent)!important}.opt.wrong{background:rgba(224,40,40,.3)!important}
 .pbarx.big{height:8px;margin:6px 0 12px}
 .scorebox{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:8px 0}
+
+.replybar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid var(--edge);background:rgba(129,182,76,.1);font-size:.85rem}
+.replybar span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid var(--accent);padding-left:8px;color:var(--muted)}
+.replybar button{padding:2px 8px}
+.quote{display:block;border-left:3px solid rgba(255,255,255,.45);padding:2px 8px;margin:2px 0 4px;font-size:.8rem;opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+.rbtn{text-decoration:none;margin-left:6px;cursor:pointer;opacity:.7}
 </style>
 </head>
 <body>
@@ -509,6 +515,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
     <div class="apphead"><button class="back" id="dmback">← Friends</button><h2 id="dmname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1"></h2><button class="primary" id="dmstudy">📚 Study</button><button id="dmchal">♟ Challenge</button></div>
     <div class="dmwrap">
       <div id="dmlog"></div>
+      <div class="replybar hidden" id="dmreply"><span></span><button title="Cancel reply">✕</button></div>
       <div class="chatin"><input id="dmin" maxlength="500" placeholder="Message…" autocomplete="off"><button class="primary" id="dmsend">Send</button></div>
     </div>
     <div class="muted" style="font-size:.8rem;margin-top:6px">Only you and your friend can read these messages. Don't share personal info.</div>
@@ -516,7 +523,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 
   <div id="chat" class="screen hidden">
     <div class="apphead"><button class="back js-tohub">← Home</button><h2>💬 Chat</h2></div>
-    <div class="dmwrap"><div id="clog"></div><div class="chatin"><input id="cin" maxlength="300" placeholder="Message everyone…" autocomplete="off"><button class="primary" id="csend">Send</button></div></div>
+    <div class="dmwrap"><div id="clog"></div><div class="replybar hidden" id="creply"><span></span><button title="Cancel reply">✕</button></div>
+      <div class="chatin"><input id="cin" maxlength="300" placeholder="Message everyone…" autocomplete="off"><button class="primary" id="csend">Send</button></div></div>
     <div class="muted" style="font-size:.8rem;margin-top:6px">Everyone who's signed in can see this chat. Swearing, rude words and personal info (numbers, emails, socials) are blocked.</div>
   </div>
 
@@ -1923,15 +1931,15 @@ function openDM(f){
   $('mtoast').style.display='none';
   setTimeout(()=>$('dmin').focus(),50);
 }
-function closeDM(){ if(D.unsub){ D.unsub(); D.unsub=null; } D.cur=null; }
+function closeDM(){ setReply('dm',null); if(D.unsub){ D.unsub(); D.unsub=null; } D.cur=null; }
 window.closeDM=closeDM;
 function renderDM(msgs){
   const log=$('dmlog'); log.innerHTML='';
   if(!msgs.length){ log.innerHTML='<div class="sys">No messages yet. Say hi!</div>'; return; }
   for(const x of msgs){
     const mine=x.from===Acct.user.uid, d=document.createElement('div');
-    d.className='bub '+(mine?'me':'them'); d.appendChild(document.createTextNode(SAFETY.clean(x.text||'')));
-    const t=document.createElement('small'); t.textContent=x.at?fmtTime(x.at):''; d.appendChild(t);
+    d.className='bub '+(mine?'me':'them'); addQuote(d,x); d.appendChild(document.createTextNode(SAFETY.clean(x.text||'')));
+    const t=document.createElement('small'); t.textContent=x.at?fmtTime(x.at):''; addReplyBtn(t,'dm',x,mine?'You':(D.cur&&D.cur.name)||'Friend'); d.appendChild(t);
     log.appendChild(d);
   }
   log.scrollTop=log.scrollHeight;
@@ -1939,8 +1947,8 @@ function renderDM(msgs){
 function sendDM(){
   const text=$('dmin').value.trim().slice(0,500); if(!text||!D.cur) return;
   const bad=SAFETY.check(text); if(bad){ const s=document.createElement('div'); s.className='sys'; s.textContent=bad; $('dmlog').appendChild(s); $('dmlog').scrollTop=1e9; return; }
-  $('dmin').value='';
-  Acct.dm.send(D.cur,text).catch(e=>{ const s=document.createElement('div'); s.className='sys'; s.textContent=e.code==='permission-denied'?'Couldn\'t send. You can only message friends (and the site rules must be up to date).':'Couldn\'t send. Check your connection.'; $('dmlog').appendChild(s); $('dmin').value=text; });
+  $('dmin').value=''; const rt=REPLY.dm; setReply('dm',null);
+  Acct.dm.send(D.cur,text,rt).catch(e=>{ const s=document.createElement('div'); s.className='sys'; s.textContent=e.code==='permission-denied'?'Couldn\'t send. You can only message friends (and the site rules must be up to date).':'Couldn\'t send. Check your connection.'; $('dmlog').appendChild(s); $('dmin').value=text; });
 }
 $('dmsend').onclick=sendDM;
 $('dmstudy').onclick=()=>{ if(D.cur) pickStudy(D.cur); };
@@ -1969,6 +1977,17 @@ function msgToast(x){
 }
 
 
+
+// ----- replies (shared by group chat + private messages) -----
+const REPLY={c:null,dm:null};
+function setReply(k,msg){
+  REPLY[k]=msg?{name:msg.name||'?',text:SAFETY.clean(msg.text||'').slice(0,80)}:null;
+  const bar=$(k+'reply'); bar.classList.toggle('hidden',!msg);
+  if(msg){ bar.querySelector('span').textContent=`Replying to ${REPLY[k].name}: ${REPLY[k].text}`; $(k==='c'?'cin':'dmin').focus(); }
+}
+for(const k of ['c','dm']) $(k+'reply').querySelector('button').onclick=()=>setReply(k,null);
+function addQuote(d,x){ if(x.replyTo&&x.replyTo.text){ const q=document.createElement('span'); q.className='quote'; q.textContent=`${x.replyTo.name}: ${SAFETY.clean(String(x.replyTo.text)).slice(0,80)}`; d.appendChild(q); } }
+function addReplyBtn(t,k,x,name){ const r=document.createElement('a'); r.className='rbtn'; r.textContent='↩'; r.title='Reply'; r.onclick=e=>{ e.preventDefault(); setReply(k,{name,text:x.text}); }; t.appendChild(r); }
 // ================= GROUP CHAT =================
 const R={unsub:null,last:0};
 function openRoom(){
@@ -1977,7 +1996,7 @@ function openRoom(){
   R.unsub=Acct.chat.listen(renderRoom,()=>{ $('clog').innerHTML='<div class="sys">Couldn\'t load the chat. The site owner may need to update the Firestore rules.</div>'; });
   setTimeout(()=>$('cin').focus(),50);
 }
-function closeRoom(){ if(R.unsub){ R.unsub(); R.unsub=null; } }
+function closeRoom(){ setReply('c',null); if(R.unsub){ R.unsub(); R.unsub=null; } }
 window.closeRoom=closeRoom;
 function renderRoom(msgs){
   const log=$('clog'), atBottom=log.scrollHeight-log.scrollTop-log.clientHeight<80; log.innerHTML='';
@@ -1985,8 +2004,9 @@ function renderRoom(msgs){
   for(const x of msgs){
     const mine=x.from===Acct.user.uid, d=document.createElement('div'); d.className='bub '+(mine?'me':'them');
     if(!mine){ const b=document.createElement('b'); b.textContent=x.name||'?'; d.appendChild(b); }
+    addQuote(d,x);
     d.appendChild(document.createTextNode(SAFETY.clean(x.text||'')));
-    const t=document.createElement('small'); t.textContent=x.at?fmtTime(x.at):'';
+    const t=document.createElement('small'); t.textContent=x.at?fmtTime(x.at):''; addReplyBtn(t,'c',x,mine?'You':x.name);
     if(Acct.isAdmin||mine){ const del=document.createElement('a'); del.textContent=' 🗑'; del.href='#'; del.title='Delete message'; del.style.textDecoration='none';
       del.onclick=e=>{ e.preventDefault(); Acct.chat.remove(x.id).catch(()=>{}); }; t.appendChild(del); }
     d.appendChild(t); log.appendChild(d);
@@ -1998,8 +2018,8 @@ function sendRoom(){
   const text=$('cin').value.trim().slice(0,300); if(!text) return;
   const bad=SAFETY.check(text); if(bad) return roomNote(bad);
   if(Date.now()-R.last<2000) return roomNote('Slow down a bit!');
-  R.last=Date.now(); $('cin').value='';
-  Acct.chat.send(text).catch(e=>{ roomNote(e.code==='permission-denied'?'Couldn\'t send. That message isn\'t allowed (or the site rules need updating).':'Couldn\'t send. Check your connection.'); $('cin').value=text; });
+  R.last=Date.now(); $('cin').value=''; const rt=REPLY.c; setReply('c',null);
+  Acct.chat.send(text,rt).catch(e=>{ roomNote(e.code==='permission-denied'?'Couldn\'t send. That message isn\'t allowed (or the site rules need updating).':'Couldn\'t send. Check your connection.'); $('cin').value=text; });
 }
 $('csend').onclick=sendRoom;
 $('cin').onkeydown=e=>{ if(e.key==='Enter') sendRoom(); };
@@ -2553,9 +2573,9 @@ if(!FIREBASE_CONFIG){
         return onSnapshot(query(collection(db,'chats',chatId(other),'messages'),orderBy('at'),limitToLast(150)),
           qs=>{ const out=[]; qs.forEach(d=>out.push(d.data())); cb(out); },e=>{ console.warn(e); err&&err(e); });
       },
-      async send(f,text){
-        const me=Acct.user.uid, at=Date.now();
-        await addDoc(collection(db,'chats',chatId(f.id),'messages'),{from:me,text,at});
+      async send(f,text,replyTo){
+        const me=Acct.user.uid, at=Date.now(), m={from:me,text,at}; if(replyTo) m.replyTo=replyTo;
+        await addDoc(collection(db,'chats',chatId(f.id),'messages'),m);
         await setDoc(doc(db,'users',f.id,'inbox',me),{name:Acct.name,text,at,unread:true});
         await setDoc(doc(db,'users',me,'inbox',f.id),{name:f.name||'',text,at,unread:false,mine:true});
       },
@@ -2567,7 +2587,7 @@ if(!FIREBASE_CONFIG){
         return onSnapshot(query(collection(db,'rooms','global','messages'),orderBy('at'),limitToLast(120)),
           qs=>{ const out=[]; qs.forEach(d=>out.push({...d.data(),id:d.id})); cb(out); },e=>{ console.warn(e); err&&err(e); });
       },
-      send(text){ return addDoc(collection(db,'rooms','global','messages'),{from:Acct.user.uid,name:Acct.name,text,at:Date.now()}); },
+      send(text,replyTo){ const m={from:Acct.user.uid,name:Acct.name,text,at:Date.now()}; if(replyTo) m.replyTo=replyTo; return addDoc(collection(db,'rooms','global','messages'),m); },
       remove(id){ return deleteDoc(doc(db,'rooms','global','messages',id)); }
     };
     // study together: sessions/{id} readable/writable only by the two friends
