@@ -327,6 +327,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 .rbtn{text-decoration:none;margin-left:6px;cursor:pointer;opacity:.7}
 #dm .apphead h2{flex:1 1 140px!important}
 #dm .apphead select{flex:0 0 auto}
+.dropping .dmwrap{outline:3px dashed var(--accent);outline-offset:-6px}
+.dropping .dmwrap::after{content:"Drop photo to send";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;background:rgba(0,0,0,.45);border-radius:12px;pointer-events:none}
+.dmwrap{position:relative}
 </style>
 </head>
 <body>
@@ -540,6 +543,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 
   <div id="subject" class="screen hidden">
     <div class="apphead"><button class="back" id="subback">← Subjects</button><h2 id="subname"></h2></div>
+    <div class="row" id="sublevel" style="gap:10px;margin-bottom:10px"></div>
     <div class="seg" id="subseg"><button data-v="topics" class="on">Topics</button><button data-v="res">Resources</button></div>
     <div id="subbody"></div>
   </div>
@@ -571,7 +575,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
     <div class="card"><h3>▶ Watch & practise</h3><div class="row" id="tplinks"></div></div>
     <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">📝 My notes</h3><span class="muted" id="tpsaved"></span></div>
       <textarea id="tpnotes" placeholder="Write your own notes for this topic… they save automatically." style="width:100%;min-height:160px;margin-top:8px;resize:vertical;padding:12px;border-radius:8px;color:var(--text);font:inherit;line-height:1.5"></textarea></div>
-    <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">🗂️ My flashcards</h3><div class="row"><button id="tpaddc">+ Card</button><button class="primary" id="tpstudy">▶ Study</button></div></div>
+    <div class="card" id="tpprecard"><div class="row" style="justify-content:space-between"><h3 style="margin:0">⚡ Ready-made flashcards <span class="muted" id="tpprecount" style="font-size:.85rem;font-weight:400"></span></h3><button class="primary" id="tpprestudy">▶ Study these</button></div>
+      <div class="muted" style="font-size:.8rem;margin:4px 0">Tap a question to see the answer.</div><div id="tppre"></div></div>
+    <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">🗂️ My flashcards</h3><div class="row"><button id="tpaddc">+ Card</button><button class="primary" id="tpstudy">▶ Study all</button></div></div>
       <div id="tpcards" style="margin-top:10px"></div></div>
   </div>
 
@@ -2233,6 +2239,13 @@ for(const [k,btn,inp] of [['c','cimgbtn','cimg'],['dm','dmimgbtn','dmimg']]){
   $(btn).onclick=()=>$(inp).click();
   $(inp).onchange=()=>{ const f=$(inp).files[0]; $(inp).value=''; if(f) sendImage(k,f); };
 }
+for(const [k,area,inp] of [['c','chat','cin'],['dm','dm','dmin']]){
+  const el=$(area);
+  el.addEventListener('dragover',e=>{ if([...(e.dataTransfer.items||[])].some(i=>i.kind==='file')){ e.preventDefault(); el.classList.add('dropping'); } });
+  el.addEventListener('dragleave',e=>{ if(e.target===el||!el.contains(e.relatedTarget)) el.classList.remove('dropping'); });
+  el.addEventListener('drop',e=>{ e.preventDefault(); el.classList.remove('dropping'); const f=[...e.dataTransfer.files].find(f=>/^image\//.test(f.type)); if(f) sendImage(k,f); });
+  $(inp).addEventListener('paste',e=>{ const f=[...(e.clipboardData&&e.clipboardData.files||[])].find(f=>/^image\//.test(f.type)); if(f){ e.preventDefault(); sendImage(k,f); } });
+}
 $('dmkeep').onchange=()=>{ if(D.cur) Acct.dm.setKeep(D.cur.id,$('dmkeep').value).catch(()=>{}); };
 setInterval(()=>{ if(R.msgs&&!$('chat').classList.contains('hidden')) renderRoom(R.msgs); if(D.msgs&&!$('dm').classList.contains('hidden')) renderDM(D.msgs); },60000);
 </script>
@@ -3083,6 +3096,356 @@ $('fbsend').onclick=async()=>{
   try{ await Acct.feedback.send(fbType,t.slice(0,1000)); $('fbtext').value=''; $('fbmsg').textContent='Sent, thank you! ✓'; }
   catch(e){ $('fbmsg').textContent='Couldn\'t send. Try again later.'; }
 };
+</script>
+<script>
+// ================= READY-MADE FLASHCARDS (original, written for this site) =================
+// CARDS[subjectId][topicName] = [[question, answer], ...]
+const CARDS={
+cs:{
+'Decomposition & abstraction':[['What is decomposition?','Breaking a problem down into smaller, more manageable sub-problems.'],['What is abstraction?','Removing unnecessary detail to focus on the important parts of a problem.'],['Give 3 ways to represent an algorithm.','Flowchart, pseudocode, written description.']],
+'Inputs, processes & outputs':[['What is a trace table used for?','Tracking variable values line by line to find errors or work out the output.'],['What is a logic error?','The program runs but gives the wrong result.'],['What is a syntax error?','Code breaks the language rules so it won\'t run.']],
+'Searching':[['How does a linear search work?','Checks each item in turn until the target is found or the list ends.'],['What does binary search require?','The data must be sorted.'],['How does binary search work?','Compare with the middle item, discard the half it can\'t be in, repeat.'],['Which search is faster on a big sorted list?','Binary search.']],
+'Sorting':[['How does a bubble sort work?','Compare adjacent items, swap if out of order, repeat passes until no swaps.'],['How does a merge sort work?','Split into single items, then repeatedly merge pairs in order.'],['Advantage of merge sort over bubble sort?','Much faster on large lists.'],['Disadvantage of merge sort?','Uses more memory.']],
+'Truth tables & logic':[['When is A AND B true?','Only when both A and B are true.'],['When is A OR B true?','When at least one input is true.'],['What does NOT do?','Reverses the input.'],['Order of precedence for logic?','Brackets, NOT, AND, OR.']],
+'Binary & denary':[['Why do computers use binary?','Transistors have two states: on and off.'],['How many values can 8 bits represent?','256 (2⁸).'],['Convert 1010 1010 to denary.','170'],['Convert 45 to 8-bit binary.','0010 1101']],
+'Binary addition & overflow':[['What is 1 + 1 in binary?','10 (0 carry 1).'],['What is 1 + 1 + 1 in binary?','11 (1 carry 1).'],['What is overflow?','When a result needs more bits than are available.']],
+'Two\'s complement':[['What is the value of the MSB in 8-bit two\'s complement?','−128'],['How do you make a number negative in two\'s complement?','Write the positive, flip all bits, add 1.'],['Range of 8-bit two\'s complement?','−128 to +127.'],['What is 1111 1111 in two\'s complement?','−1']],
+'Binary shifts':[['Effect of a logical left shift by 2?','Multiplies by 4.'],['Effect of a logical right shift by 1?','Divides by 2 (losing any remainder).'],['How is an arithmetic right shift different?','It copies the sign bit (MSB) in from the left.']],
+'Hexadecimal':[['What base is hexadecimal?','Base 16.'],['What is hex B in denary?','11'],['Convert 1111 0010 to hex.','F2'],['Why use hex?','Shorter and easier for humans to read than binary; fewer errors.']],
+'Characters (ASCII)':[['How many characters does 7-bit ASCII represent?','128'],['Why is Unicode needed?','It uses more bits so it can represent every language and emoji.'],['If \'A\' is 65, what is \'D\'?','68']],
+'Images & sound':[['What is colour depth?','The number of bits used per pixel.'],['Image file size formula?','Width × height × colour depth (bits).'],['Sound file size formula?','Sample rate × bit depth × duration (bits).'],['Effect of a higher sample rate?','Better quality, bigger file.']],
+'Units & compression':[['How many bytes in a kibibyte (KiB)?','1024'],['Lossless vs lossy?','Lossless keeps all data; lossy permanently removes some.'],['Give a lossless method.','Run-length encoding (RLE).']],
+'Von Neumann architecture & CPU':[['Key idea of Von Neumann architecture?','Instructions and data are stored together in the same memory.'],['What does the ALU do?','Arithmetic and logic operations.'],['What does the control unit do?','Decodes instructions and coordinates the CPU.'],['3 factors affecting CPU performance?','Clock speed, number of cores, cache size.']],
+'Fetch–decode–execute':[['What does the program counter hold?','The address of the next instruction.'],['What happens in the fetch stage?','The instruction is copied from memory into the CPU.'],['What happens in decode?','The control unit works out what the instruction means.']],
+'Memory & storage':[['RAM vs ROM?','RAM is volatile and holds programs in use; ROM is non-volatile and holds start-up instructions.'],['3 types of secondary storage?','Magnetic, optical, solid state.'],['Advantage of SSD over HDD?','Faster, no moving parts, more durable.'],['Why is secondary storage needed?','RAM is volatile; data must be kept when power is off.']],
+'Embedded systems':[['What is an embedded system?','A computer built into a device to do one dedicated task.'],['Give 2 examples.','Washing machine, microwave, car engine management.']],
+'Operating systems':[['List 4 functions of an OS.','Memory management, process management, file management, user management/interface.'],['What is a device driver?','Software that lets the OS communicate with a piece of hardware.']],
+'Utility software':[['What does defragmentation do?','Reorganises file fragments on a hard disk so they\'re stored together.'],['Name 3 utility programs.','Backup, compression, encryption, anti-malware, defragmenter.']],
+'Programming languages & translators':[['Compiler vs interpreter?','A compiler translates the whole program at once; an interpreter translates and runs line by line.'],['What does an assembler do?','Translates assembly language into machine code.'],['Advantage of high-level languages?','Easier to read, write and debug; portable.']],
+'LANs & WANs':[['What is a LAN?','A network covering a small area, e.g. one building.'],['What is a WAN?','A network covering a large geographical area.'],['Largest WAN?','The internet.']],
+'Network speed & performance':[['What is bandwidth?','The amount of data that can be transferred per second.'],['Formula for transmission time?','File size ÷ bit rate.'],['Factors affecting network speed?','Bandwidth, number of users, interference, latency, connection type.']],
+'Wired vs wireless':[['Advantage of wired connections?','Faster, more reliable and more secure.'],['Advantage of wireless?','Mobility and convenience; no cables.']],
+'Topologies':[['Describe a star topology.','All devices connect to a central switch.'],['Advantage of star?','If one cable fails, the rest of the network still works.'],['Advantage of mesh?','Multiple routes for data, so very robust.']],
+'Protocols & the TCP/IP model':[['What is a protocol?','A set of rules for communication.'],['Name the 4 TCP/IP layers.','Application, transport, internet, link.'],['What is packet switching?','Data is split into packets that may travel different routes and are reassembled.'],['Which protocol sends email?','SMTP.']],
+'Network security':[['What does a firewall do?','Monitors and blocks unauthorised network traffic.'],['Why use encryption?','So intercepted data can\'t be understood.']],
+'Environmental impact':[['Give 2 environmental impacts of computing.','Energy use, e-waste, mining rare materials.'],['How can impact be reduced?','Recycling, energy-efficient devices, renewable energy for data centres.']],
+'Ethical & legal issues':[['What does the Data Protection Act control?','How personal data is collected, stored and used.'],['What is the digital divide?','Unequal access to technology.']],
+'Intellectual property':[['What does copyright protect?','Creative work (automatically).'],['What does a patent protect?','An invention.'],['Open source vs proprietary?','Open source can be viewed, shared and changed; proprietary can\'t.']],
+'Malware':[['What is a worm?','Malware that copies itself across networks without needing a host file.'],['What is a trojan?','Malware disguised as useful software.'],['What is ransomware?','Encrypts files and demands payment.']],
+'Hackers & technical vulnerabilities':[['What is a brute-force attack?','Trying every possible password combination.'],['What is SQL injection?','Entering SQL code into an input box to access or change a database.']],
+'Social engineering':[['What is phishing?','Fake emails or websites that trick people into giving details.'],['What is shoulder surfing?','Watching someone enter a password or PIN.'],['What is pretexting (blagging)?','Inventing a scenario to trick someone into giving information.']],
+'Protecting digital systems':[['What is two-factor authentication?','Needing two different proofs of identity, e.g. password and code.'],['What is penetration testing?','Authorised simulated attacks to find weaknesses.']],
+'Data types & variables':[['Data type for 3.14?','Real (float).'],['Data type for True/False?','Boolean.'],['What is casting?','Converting from one data type to another, e.g. int("5").']],
+'Selection & iteration':[['What is selection?','Choosing which code runs based on a condition (if/elif/else).'],['Count-controlled vs condition-controlled loop?','For loops repeat a set number of times; while loops repeat until a condition changes.']],
+'Lists & 2D arrays':[['Index of the first item in a Python list?','0'],['How do you access row 2, column 3 of a 2D list t?','t[2][3]'],['What is a record?','A data structure grouping related fields of different types.']],
+'Subprograms':[['Function vs procedure?','A function returns a value; a procedure doesn\'t.'],['Local vs global variable?','Local exists only inside its subprogram; global can be used anywhere.'],['Why use subprograms?','Reuse code, easier to test and maintain.']],
+'String manipulation':[['What does len("hello") return?','5'],['What does "hello"[1:3] return?','"el"'],['What does .upper() do?','Converts a string to capitals.']],
+'File handling':[['File mode "a" means?','Append: add to the end of the file.'],['File mode "w" means?','Write: overwrite the file.'],['Why close a file?','Saves changes and frees the resource.']],
+'Validation & authentication':[['Name 4 validation checks.','Range, length, presence, type, format.'],['Validation vs authentication?','Validation checks data is sensible; authentication checks who the user is.']],
+'Testing':[['3 types of test data?','Normal, boundary, erroneous.'],['Iterative vs final testing?','Iterative happens during development; final at the end.']]},
+
+maths:{
+'Rounding & bounds':[['Round 0.04567 to 2 s.f.','0.046'],['Error interval for 7 rounded to the nearest whole number?','6.5 ≤ x < 7.5'],['For the max value of a ÷ b, which bounds do you use?','Upper bound of a ÷ lower bound of b.']],
+'Fractions, decimals & percentages':[['How do you divide fractions?','Flip the second fraction and multiply.'],['Write 0.3̇ as a fraction.','1/3'],['3/8 as a decimal?','0.375']],
+'Primes, HCF & LCM':[['60 as a product of primes?','2² × 3 × 5'],['HCF of 12 and 18?','6'],['LCM of 4 and 6?','12']],
+'Indices & surds':[['Simplify a⁴ × a³.','a⁷'],['What is 8^(2/3)?','4'],['Simplify √50.','5√2'],['Rationalise 1/√2.','√2/2']],
+'Standard form':[['Write 0.00052 in standard form.','5.2 × 10⁻⁴'],['(2 × 10³) × (4 × 10⁵)?','8 × 10⁸'],['Rule for A in A × 10ⁿ?','1 ≤ A < 10']],
+'Expanding & factorising':[['Expand (x + 3)(x − 2).','x² + x − 6'],['Factorise x² − 9.','(x + 3)(x − 3)'],['Factorise x² + 7x + 12.','(x + 3)(x + 4)']],
+'Linear equations & inequalities':[['Solve 5x − 4 = 21.','x = 5'],['Solve −2x < 6.','x > −3 (flip the sign)'],['Number line symbol for ≤?','A closed (filled) circle.']],
+'Quadratic equations':[['Quadratic formula?','x = (−b ± √(b² − 4ac)) / 2a'],['Solve x² − 5x + 6 = 0.','x = 2 or x = 3'],['Complete the square: x² + 6x + 1.','(x + 3)² − 8']],
+'Simultaneous equations':[['Solve x + y = 10, x − y = 4.','x = 7, y = 3'],['Method for linear + quadratic?','Rearrange the linear one and substitute into the quadratic.']],
+'Sequences':[['nth term of 3, 7, 11, 15…?','4n − 1'],['How do you spot a quadratic sequence?','The second differences are constant.'],['What is a geometric sequence?','Each term is multiplied by the same number.']],
+'Straight-line graphs':[['Gradient and intercept of y = 3x − 2?','Gradient 3, y-intercept −2.'],['Gradient perpendicular to 2?','−½'],['Gradient formula?','Change in y ÷ change in x.']],
+'Other graphs':[['Shape of y = 1/x?','Reciprocal: two curves in opposite quadrants with asymptotes on the axes.'],['What do the roots of a quadratic graph show?','Where y = 0 (crosses the x-axis).'],['Area under a velocity-time graph?','Distance travelled.']],
+'Functions, iteration & proof':[['If f(x) = 2x + 1, what is f(3)?','7'],['What does fg(x) mean?','Apply g first, then f.'],['Algebraic expression for an odd number?','2n + 1']],
+'Ratio':[['Share £45 in the ratio 4 : 5.','£20 and £25'],['Ratio 2 : 3 as a fraction of the whole for the first part?','2/5']],
+'Percentages':[['Multiplier for a 15% decrease?','0.85'],['After a 20% rise a price is £60. Original?','£50'],['£500 at 3% compound interest for 2 years?','£530.45']],
+'Direct & inverse proportion':[['y is inversely proportional to x. Formula?','y = k/x'],['y ∝ x and y = 12 when x = 4. Find y when x = 10.','30']],
+'Compound measures':[['Formula for speed?','Distance ÷ time.'],['Formula for density?','Mass ÷ volume.'],['Formula for pressure?','Force ÷ area.']],
+'Angles & polygons':[['Sum of interior angles of a pentagon?','540°'],['Alternate angles are…?','Equal.'],['Exterior angle of a regular hexagon?','60°']],
+'Area & perimeter':[['Area of a trapezium?','½(a + b)h'],['Area of a sector?','(θ/360) × πr²'],['Arc length?','(θ/360) × 2πr']],
+'Volume & surface area':[['Volume of a cylinder?','πr²h'],['Volume of a cone?','⅓πr²h'],['Volume of a sphere?','(4/3)πr³']],
+'Pythagoras & trigonometry':[['Pythagoras\' theorem?','a² + b² = c²'],['What does SOH mean?','sin = opposite ÷ hypotenuse.'],['Exact value of tan 45°?','1'],['Exact value of sin 30°?','½']],
+'Sine & cosine rules':[['Sine rule?','a/sin A = b/sin B = c/sin C'],['Cosine rule (for a side)?','a² = b² + c² − 2bc cos A'],['Area of a triangle using sine?','½ab sin C']],
+'Circle theorems':[['Angle at the centre vs circumference?','The angle at the centre is twice the angle at the circumference.'],['Opposite angles in a cyclic quadrilateral?','Add up to 180°.'],['Angle between a tangent and radius?','90°']],
+'Transformations':[['What do you need to describe a rotation?','Angle, direction and centre.'],['What describes a translation?','A column vector.'],['Effect of a negative scale factor?','The image is on the other side of the centre and upside down.']],
+'Similarity & congruence':[['4 conditions for congruent triangles?','SSS, SAS, ASA, RHS.'],['Length scale factor 3. Area scale factor?','9'],['Length scale factor 2. Volume scale factor?','8']],
+'Vectors':[['If AB = a, what is BA?','−a'],['How do you show points are collinear?','Show vectors are multiples of each other and share a point.']],
+'Constructions, loci & bearings':[['How are bearings measured?','Clockwise from north, with 3 figures.'],['Locus of points equidistant from two points?','The perpendicular bisector.']],
+'Probability basics':[['P(A) = 0.35. P(not A)?','0.65'],['Expected number of 6s in 120 rolls of a fair dice?','20'],['Relative frequency formula?','Frequency ÷ total trials.']],
+'Tree diagrams':[['Do you add or multiply along branches?','Multiply.'],['What changes "without replacement"?','The second set of probabilities.']],
+'Venn diagrams & sets':[['What does A ∩ B mean?','In both A and B.'],['What does A ∪ B mean?','In A or B or both.'],['P(A given B)?','P(A and B) ÷ P(B)']],
+'Averages & spread':[['Mean of 3, 5, 10?','6'],['Which average is best when there are outliers?','The median.'],['How do you estimate the mean from grouped data?','Use midpoints × frequencies, then divide by the total frequency.']],
+'Cumulative frequency & box plots':[['Where do you plot cumulative frequency points?','At the upper class boundary.'],['How do you find the IQR?','Upper quartile − lower quartile.']],
+'Histograms':[['Frequency density formula?','Frequency ÷ class width.'],['What does the area of a histogram bar show?','The frequency.']],
+'Scatter graphs & sampling':[['What is extrapolation and why is it risky?','Estimating outside the data range; unreliable.'],['Why use a random sample?','To avoid bias.']]},
+
+sci:{
+'Cell structure':[['Function of mitochondria?','Aerobic respiration.'],['Function of ribosomes?','Protein synthesis.'],['3 things plant cells have that animal cells don\'t?','Cell wall, chloroplasts, permanent vacuole.'],['Magnification formula?','Image size ÷ actual size.']],
+'Cell division & stem cells':[['What does mitosis produce?','Two genetically identical cells.'],['Where are plant stem cells found?','In meristems (root and shoot tips).'],['Embryonic vs adult stem cells?','Embryonic can become any cell; adult can only become a few types.']],
+'Transport in cells':[['Define diffusion.','Net movement of particles from high to low concentration.'],['Define osmosis.','Movement of water through a partially permeable membrane from dilute to concentrated solution.'],['How is active transport different?','It moves substances against the gradient using energy from respiration.']],
+'Digestive system & enzymes':[['What does amylase break down?','Starch into sugars.'],['What does protease break down?','Proteins into amino acids.'],['Two jobs of bile?','Neutralises stomach acid and emulsifies fats.'],['What denatures an enzyme?','High temperature or the wrong pH.']],
+'Heart, blood & lungs':[['Which vessels carry blood away from the heart?','Arteries.'],['Job of red blood cells?','Carry oxygen.'],['Job of platelets?','Help blood clot.'],['Why are alveoli good for gas exchange?','Large surface area, thin walls, good blood supply.']],
+'Non-communicable disease':[['What causes coronary heart disease?','Fatty deposits narrowing the coronary arteries.'],['2 treatments for CHD?','Stents and statins.']],
+'Plant tissues & transport':[['What does xylem carry?','Water and mineral ions.'],['What does phloem carry?','Dissolved sugars.'],['2 things that increase transpiration?','Higher temperature, more light, more wind.']],
+'Pathogens & disease':[['4 types of pathogen?','Bacteria, viruses, fungi, protists.'],['What causes malaria?','A protist, spread by mosquitoes.'],['How does HIV spread?','Sexual contact and exchange of body fluids.']],
+'Immune system & vaccines':[['3 ways white blood cells defend the body?','Phagocytosis, antibodies, antitoxins.'],['How do vaccines work?','Inactive pathogens trigger antibodies and memory cells for a faster response later.']],
+'Drugs':[['Why don\'t antibiotics treat colds?','Colds are viruses; antibiotics only kill bacteria.'],['What is a double-blind trial?','Neither patients nor doctors know who gets the drug or the placebo.']],
+'Photosynthesis':[['Word equation for photosynthesis?','Carbon dioxide + water → glucose + oxygen.'],['3 limiting factors?','Light intensity, CO₂ concentration, temperature.'],['Is photosynthesis endo- or exothermic?','Endothermic.']],
+'Respiration':[['Word equation for aerobic respiration?','Glucose + oxygen → carbon dioxide + water.'],['Anaerobic respiration in muscles makes?','Lactic acid.'],['Anaerobic respiration in yeast makes?','Ethanol and carbon dioxide.']],
+'Nervous system':[['Order of a reflex arc?','Receptor → sensory neurone → relay neurone → motor neurone → effector.'],['Why are reflexes fast?','They skip the conscious part of the brain.']],
+'Hormones & blood glucose':[['Which hormone lowers blood glucose?','Insulin.'],['Type 1 vs Type 2 diabetes?','Type 1: no insulin made. Type 2: cells stop responding to insulin.'],['Where is insulin made?','The pancreas.']],
+'Reproductive hormones':[['Which hormone triggers ovulation?','LH.'],['What does FSH do?','Causes an egg to mature.']],
+'DNA & genetics':[['What is a gene?','A section of DNA that codes for a protein.'],['Genotype vs phenotype?','Genotype = alleles; phenotype = the characteristic shown.'],['Bb × bb: chance of bb offspring?','50%']],
+'Meiosis & reproduction':[['What does meiosis produce?','Four genetically different gametes with half the chromosomes.'],['Advantage of sexual reproduction?','Variation.']],
+'Evolution & selective breeding':[['Steps of natural selection?','Variation → best adapted survive → reproduce → pass on alleles.'],['What is selective breeding?','Humans choosing parents with useful traits to breed.']],
+'Ecosystems':[['Abiotic vs biotic factor?','Abiotic is non-living (light, temperature); biotic is living (predators, disease).'],['Equipment to sample plants?','Quadrats and transects.']],
+'Cycles & biodiversity':[['How does carbon return to the air?','Respiration, combustion and decomposition.'],['2 human threats to biodiversity?','Deforestation, pollution, global warming.']],
+'Atoms & isotopes':[['Charge and mass of a proton?','+1, mass 1.'],['What is an isotope?','Same element (protons) but different numbers of neutrons.'],['What experiment disproved the plum pudding model?','Rutherford\'s alpha scattering.']],
+'Periodic table & groups':[['Group 1 reactivity going down?','Increases.'],['Group 7 reactivity going down?','Decreases.'],['Why are noble gases unreactive?','They have full outer shells.']],
+'Ionic, covalent & metallic bonding':[['What happens in ionic bonding?','Electrons are transferred from a metal to a non-metal.'],['What happens in covalent bonding?','Non-metals share pairs of electrons.'],['Why do metals conduct?','Delocalised electrons can move.']],
+'Properties of substances':[['Why do simple molecules have low melting points?','Weak intermolecular forces.'],['Why does graphite conduct?','Each carbon has one delocalised electron.']],
+'Moles & masses':[['Moles formula?','Mass ÷ Mr.'],['Mr of H₂O?','18'],['What is conservation of mass?','Total mass of reactants = total mass of products.']],
+'Concentration':[['Concentration formula (g/dm³)?','Mass ÷ volume in dm³.'],['250 cm³ in dm³?','0.25 dm³']],
+'Reactivity & extraction':[['How is iron extracted?','Reduction with carbon.'],['How is aluminium extracted?','Electrolysis.'],['What is reduction?','Loss of oxygen (or gain of electrons).']],
+'Acids, bases & salts':[['Acid + metal makes?','Salt + hydrogen.'],['Acid + carbonate makes?','Salt + water + carbon dioxide.'],['Salt made from sulfuric acid?','A sulfate.']],
+'Electrolysis':[['Where do positive ions go?','The cathode (negative electrode).'],['What forms at the cathode in aqueous solution if the metal is reactive?','Hydrogen.']],
+'Energy changes':[['Exothermic reaction?','Releases energy; temperature rises.'],['Is bond breaking endo- or exothermic?','Endothermic.']],
+'Rates of reaction':[['5 factors that increase rate?','Temperature, concentration, pressure, surface area, catalyst.'],['What is activation energy?','The minimum energy needed for particles to react.']],
+'Reversible reactions':[['What is dynamic equilibrium?','Forward and backward reactions happen at the same rate.'],['Le Chatelier\'s principle?','Equilibrium shifts to oppose any change in conditions.']],
+'Crude oil & hydrocarbons':[['General formula of alkanes?','CₙH₂ₙ₊₂'],['What is cracking?','Breaking long hydrocarbons into shorter, more useful ones.'],['Test for alkenes?','Bromine water turns from orange to colourless.']],
+'Chemical analysis':[['Rf value formula?','Distance moved by spot ÷ distance moved by solvent.'],['Test for oxygen?','Relights a glowing splint.'],['Test for CO₂?','Turns limewater cloudy.']],
+'The atmosphere':[['Main gas in the early atmosphere?','Carbon dioxide.'],['Name 3 greenhouse gases.','Carbon dioxide, methane, water vapour.']],
+'Using resources':[['What is potable water?','Water safe to drink.'],['What is a life cycle assessment?','Assessing a product\'s environmental impact from raw materials to disposal.']],
+'Energy stores & equations':[['Kinetic energy formula?','½mv²'],['GPE formula?','mgh'],['Specific heat capacity equation?','ΔE = mcΔθ']],
+'Power & efficiency':[['Power formula?','Energy ÷ time.'],['Efficiency formula?','Useful output ÷ total input.']],
+'Energy resources':[['2 renewable energy resources?','Wind, solar, hydro, tidal, geothermal, biofuel.'],['Disadvantage of wind power?','Unreliable: depends on the weather.']],
+'Circuits':[['Ohm\'s law?','V = IR'],['Current in a series circuit?','The same everywhere.'],['What happens to an LDR\'s resistance in bright light?','It decreases.']],
+'Mains electricity & power':[['UK mains voltage and frequency?','230 V, 50 Hz.'],['Colour of the live wire?','Brown.'],['Why does the National Grid use high voltage?','Lower current means less energy lost as heat.']],
+'Particle model':[['Density formula?','Mass ÷ volume.'],['Specific latent heat equation?','E = mL']],
+'Radioactivity':[['What stops alpha radiation?','Paper (or a few cm of air).'],['What is half-life?','Time for half the radioactive nuclei to decay.'],['Contamination vs irradiation?','Contamination: radioactive atoms get on/in something. Irradiation: exposed to radiation.']],
+'Forces & motion':[['Newton\'s second law?','F = ma'],['Weight formula?','W = mg'],['Work done formula?','Force × distance.']],
+'Motion graphs & stopping':[['Gradient of a distance-time graph?','Speed.'],['Stopping distance =?','Thinking distance + braking distance.'],['What affects thinking distance?','Speed, tiredness, alcohol, drugs, distractions.']],
+'Momentum':[['Momentum formula?','Mass × velocity.'],['What happens to total momentum in a collision?','It is conserved.']],
+'Waves':[['Wave speed equation?','v = fλ'],['Is sound transverse or longitudinal?','Longitudinal.'],['EM wave with the highest frequency?','Gamma rays.']],
+'Magnetism & electromagnetism':[['Motor effect force equation?','F = BIl'],['Which rule gives the direction of force on a wire?','Fleming\'s left-hand rule.']],
+'Monoclonal antibodies & plant disease':[['What makes monoclonal antibodies?','Hybridoma cells.'],['2 uses of monoclonal antibodies?','Pregnancy tests and targeting cancer cells.']],
+'The brain & the eye':[['What does the cerebellum control?','Balance and muscle coordination.'],['What is accommodation?','The lens changing shape to focus.']],
+'Further homeostasis':[['Which hormone controls water balance?','ADH.'],['How does the body cool down?','Sweating and vasodilation.']],
+'Food security & biotechnology':[['3 factors affecting decomposition?','Temperature, water, oxygen availability.'],['Give a threat to food security.','Growing population, pests, climate change.']],
+'Transition metals & nanoparticles':[['3 properties of transition metals?','High melting points, coloured compounds, catalysts.'],['Why are nanoparticles useful?','Very high surface area to volume ratio.']],
+'Titrations & gas volumes':[['Volume of 1 mole of gas at RTP?','24 dm³'],['What is a titration used for?','Finding the exact volume needed to neutralise a solution.']],
+'Further organic chemistry':[['Alcohol + carboxylic acid makes?','An ester.'],['Addition vs condensation polymerisation?','Condensation releases a small molecule such as water.']],
+'Further analysis & resources':[['Flame colour of potassium?','Lilac.'],['Flame colour of sodium?','Yellow.'],['What does the Haber process make?','Ammonia.']],
+'Space physics':[['What forms at the end of a massive star\'s life?','A neutron star or black hole.'],['What is red-shift evidence for?','The universe expanding (Big Bang).']],
+'Static & pressure':[['How does an object become charged by friction?','Electrons are transferred.'],['Pressure in a liquid formula?','p = hρg']],
+'Lenses, light & sound':[['Which lens can make a real image?','Convex (converging).'],['What is ultrasound?','Sound above 20 000 Hz.']],
+'Further electromagnetism':[['Transformer equation?','Vp/Vs = np/ns'],['What does a step-up transformer do?','Increases voltage.']]},
+
+englang:{
+'Q1: List four things (4 marks)':[['How long on Paper 1 Q1?','About 5 minutes.'],['What must your four points be?','True, and from the given lines only.']],
+'Q2: Language (8 marks)':[['What should Q2 focus on?','Words, phrases, techniques and sentence forms.'],['Key skill for Q2?','Zooming in on individual words and explaining their effect.']],
+'Q3: Structure (8 marks)':[['What does Q3 ask about?','How the text is structured: openings, shifts in focus, endings.'],['Useful structure terms?','Shift in focus, flashback, foreshadowing, cyclical structure, climax.']],
+'Q4: Evaluation (20 marks)':[['What must you do in Q4?','Evaluate how far you agree with the statement, analysing methods with evidence.'],['How long on Q4?','About 20–25 minutes.']],
+'Q5: Creative writing (40 marks)':[['Marks for content/organisation vs technical accuracy?','24 and 16.'],['3 ways to improve Q5?','Plan, vary sentences and punctuation, use a clear structure.']],
+'Q1: True or false (4 marks)':[['What do you do in Paper 2 Q1?','Shade four true statements.']],
+'Q2: Summary of differences (8 marks)':[['Key skill for Paper 2 Q2?','Inferring differences between the two sources, with evidence from both.']],
+'Q3: Language (12 marks)':[['How many sources does Paper 2 Q3 use?','One.']],
+'Q4: Compare perspectives (16 marks)':[['What does Q4 compare?','The writers\' viewpoints and the methods used to show them.'],['Give 2 comparative connectives.','Similarly, whereas, in contrast, on the other hand.']],
+'Q5: Viewpoint writing (40 marks)':[['Give 4 persuasive devices.','Direct address, rhetorical questions, facts/statistics, anecdotes, rule of three.'],['What should the ending be?','A strong call to action or memorable final point.']],
+'Language techniques':[['What is pathetic fallacy?','Weather or setting reflecting mood.'],['Simile vs metaphor?','Simile compares using like/as; metaphor says something IS something else.'],['What is sibilance?','Repeated "s" sounds.']],
+'SPaG':[['"It\'s" means?','It is / it has.'],['What is a comma splice?','Joining two full sentences with only a comma.']],
+'Spoken language (endorsement)':[['How is spoken language graded?','Pass, Merit or Distinction, separate from the GCSE grade.']]},
+
+englit:{
+'Plot & structure':[['What genre is Macbeth?','Tragedy.'],['Who kills Macbeth?','Macduff.']],
+'Characters':[['What is Macbeth\'s fatal flaw?','Ambition.'],['How does Lady Macbeth change?','From manipulative and controlling to guilt-ridden; she sleepwalks and dies.']],
+'Themes & context':[['Which king was Macbeth written for?','James I.'],['Name 3 themes of Macbeth.','Ambition, guilt, the supernatural, kingship.']],
+'Characters & themes':[['How does Scrooge change?','From a cold miser to a generous, kind man.'],['Name 3 themes of A Christmas Carol.','Social responsibility, redemption, poverty, family.']],
+'Context (ACC)':[['What was Dickens criticising?','The treatment of the poor: the Poor Law and workhouses.']],
+'Context (AIC)':[['When is An Inspector Calls set and written?','Set in 1912, written in 1945.'],['What were Priestley\'s politics?','Socialist.']],
+'Characters & themes (AIC)':[['Which characters change in An Inspector Calls?','Sheila and Eric (the younger generation).'],['Main theme of An Inspector Calls?','Social responsibility.']],
+'Power & Conflict anthology':[['How many poems in Power & Conflict?','15.'],['3 things to compare in poems?','What the poet says, how (methods), why (context).']],
+'Unseen poetry':[['What does the unseen comparison focus on?','Methods: how each poet presents the theme.']]},
+
+rs:{
+'Issues of Relationships':[['What is cohabitation?','Living together without being married.'],['Christian view of marriage?','A sacred covenant before God, ideally for life.']],
+'Issues of Life and Death':[['What is the sanctity of life?','Life is sacred because it is God-given.'],['What is euthanasia?','Ending a life to relieve suffering.']],
+'Issues of Good and Evil':[['3 aims of punishment?','Retribution, deterrence, reformation (and protection).'],['What is the problem of evil?','If God is all-loving and all-powerful, why is there evil and suffering?']],
+'Issues of Human Rights':[['What is social justice?','Fair treatment and equal opportunities for everyone.'],['Prejudice vs discrimination?','Prejudice is an attitude; discrimination is an action.']],
+'Christian beliefs':[['What is the Trinity?','God as Father, Son and Holy Spirit: three persons, one God.'],['What is the incarnation?','God becoming human in Jesus.']],
+'Christian practices':[['What are sacraments?','Rituals through which God\'s grace is received, e.g. baptism, Eucharist.'],['Liturgical vs non-liturgical worship?','Liturgical follows a set structure; non-liturgical is informal.']],
+'Muslim beliefs':[['What is Tawhid?','The oneness of God.'],['What is Akhirah?','Life after death.']],
+'Muslim practices':[['Name the Five Pillars.','Shahadah, Salah, Zakah, Sawm, Hajj.'],['Greater vs lesser jihad?','Greater: personal struggle to live as a good Muslim. Lesser: defending Islam.']]},
+
+bus:{
+'Purpose & enterprise':[['What is an entrepreneur?','Someone who takes a risk to start a business.'],['Give 3 business aims.','Survival, profit, growth, market share.']],
+'Ownership & location':[['What is unlimited liability?','Owners are personally responsible for all business debts.'],['Which types have limited liability?','Private (Ltd) and public (PLC) limited companies.']],
+'Business plans & stakeholders':[['Why write a business plan?','To plan, reduce risk and get finance.'],['What is a stakeholder?','Anyone affected by or interested in a business.']],
+'Technology, ethics & environment':[['What is e-commerce?','Buying and selling online.']],
+'Economy & legislation':[['Effect of higher interest rates?','Borrowing costs more, so spending and demand usually fall.']],
+'Globalisation & competition':[['What is globalisation?','Increasing links between economies worldwide.']],
+'Production':[['3 methods of production?','Job, batch and flow.'],['Quality control vs quality assurance?','QC checks finished products; QA builds quality into every stage.']],
+'Supply chain & procurement':[['What is just-in-time?','Ordering stock only when it\'s needed.'],['Risk of JIT?','Running out if suppliers are late.']],
+'Sales & customer service':[['Why is customer service important?','Builds loyalty, repeat custom and reputation.']],
+'Organisational structure':[['What is span of control?','The number of people a manager directly supervises.'],['Tall vs flat structure?','Tall: many layers. Flat: few layers, wide spans of control.']],
+'Recruitment & training':[['Advantage of internal recruitment?','Cheaper and quicker; the person knows the business.'],['On-the-job vs off-the-job training?','On-the-job happens at work; off-the-job happens elsewhere.']],
+'Motivation':[['2 financial motivators?','Bonus, commission, profit sharing.'],['2 non-financial motivators?','Praise, promotion, job enrichment.']],
+'Market research & segmentation':[['Primary vs secondary research?','Primary is collected first-hand; secondary already exists.'],['What is segmentation?','Dividing the market into groups of similar customers.']],
+'The marketing mix (4Ps)':[['What are the 4Ps?','Product, Price, Place, Promotion.'],['Stages of the product life cycle?','Development, introduction, growth, maturity, decline.']],
+'Sources of finance':[['2 internal sources of finance?','Retained profit, selling assets.'],['What is crowdfunding?','Raising small amounts of money from many people online.']],
+'Revenue, costs & break-even':[['Revenue formula?','Price × quantity sold.'],['Break-even formula?','Fixed costs ÷ (price − variable cost per unit).'],['Total costs?','Fixed costs + variable costs.']],
+'Cash flow & profitability':[['Net cash flow?','Cash inflows − cash outflows.'],['Gross profit margin formula?','Gross profit ÷ revenue × 100.']]},
+
+geo:{
+'Tectonic hazards':[['What happens at a constructive margin?','Plates move apart; magma rises.'],['What happens at a destructive margin?','The oceanic plate subducts under the continental plate.'],['4 ways to reduce tectonic risk?','Monitoring, prediction, protection, planning.']],
+'Weather hazards':[['Minimum sea temperature for a tropical storm?','About 27°C.']],
+'Climate change':[['3 pieces of evidence for climate change?','Ice cores, tree rings, temperature records.'],['Mitigation vs adaptation?','Mitigation reduces the causes; adaptation copes with the effects.']],
+'Ecosystems & tropical rainforests':[['3 causes of deforestation?','Logging, farming, mining, roads.']],
+'Hot deserts or cold environments':[['What is desertification?','Land turning into desert, e.g. from overgrazing.']],
+'Coasts':[['4 types of coastal erosion?','Hydraulic action, abrasion, attrition, solution.'],['Hard vs soft engineering?','Hard uses structures (sea walls); soft works with nature (beach nourishment).']],
+'Rivers':[['How does an oxbow lake form?','A meander is cut off during erosion and deposition, often in a flood.'],['What does a flood hydrograph show?','Rainfall and river discharge over time.']],
+'Glacial landscapes':[['Name 2 glacial erosion landforms.','Corrie, arête, pyramidal peak.']],
+'Urban issues & challenges':[['What is urbanisation?','The increasing proportion of people living in towns and cities.']],
+'The changing economic world':[['What does HDI measure?','Life expectancy, education and income.'],['2 ways to close the development gap?','Aid, fair trade, tourism, investment.']],
+'Resource management':[['3 key resources studied?','Food, water, energy.']],
+'Issue evaluation':[['When is the pre-release issued?','12 weeks before the exam.']],
+'Fieldwork':[['Stages of a fieldwork enquiry?','Question, methods, data, analysis, conclusion, evaluation.']],
+'Geographical skills':[['How many figures in a 6-figure grid reference?','Six: 3 for the easting and 3 for the northing.']]},
+
+hist:{
+'Medieval medicine c1250–1500':[['What were the Four Humours?','Blood, phlegm, yellow bile, black bile.'],['What was miasma?','The idea that bad air caused disease.']],
+'Renaissance c1500–1700':[['What did Vesalius do?','Corrected Galen\'s anatomy through dissection.'],['What did Harvey discover?','The circulation of the blood.']],
+'18th & 19th centuries':[['When did Jenner develop the smallpox vaccine?','1796'],['When did Pasteur publish germ theory?','1861'],['What did Lister introduce?','Antiseptics (carbolic acid).']],
+'Modern medicine c1900–present':[['Who discovered penicillin and when?','Fleming, 1928.'],['When was the NHS founded?','1948']],
+'The Western Front 1914–18':[['Order of the chain of evacuation?','Regimental aid post → dressing station → casualty clearing station → base hospital.'],['Name 2 common injuries.','Shrapnel wounds, gas attacks, trench foot, shell shock.']],
+'Queen, government & religion 1558–69':[['What was the Religious Settlement of 1559?','A "middle way" Church of England.'],['Give 2 problems Elizabeth faced in 1558.','Legitimacy, gender, marriage, finance, religion.']],
+'Challenges at home & abroad 1569–88':[['When was the Revolt of the Northern Earls?','1569'],['When was Mary, Queen of Scots executed?','1587'],['When was the Armada defeated?','1588']],
+'Elizabethan society':[['Who circumnavigated the globe 1577–80?','Francis Drake.']],
+'Origins 1941–58':[['What was the Truman Doctrine?','The US policy of containing communism.'],['When was the Berlin Blockade?','1948–49']],
+'Crises 1958–70':[['When was the Berlin Wall built?','1961'],['When was the Cuban Missile Crisis?','1962']],
+'The end of the Cold War 1970–91':[['What was détente?','A relaxing of tensions in the 1970s.'],['When did the Berlin Wall fall?','1989']],
+'The Weimar Republic 1918–29':[['What was Article 48?','Allowed the president to rule by decree in an emergency.'],['When was hyperinflation?','1923']],
+'Hitler\'s rise to power 1919–33':[['When was the Munich Putsch?','1923'],['When did Hitler become Chancellor?','January 1933']],
+'Nazi control & dictatorship 1933–39':[['What did the Enabling Act do?','Let Hitler pass laws without the Reichstag.'],['When was the Night of the Long Knives?','June 1934']],
+'Life in Nazi Germany 1933–39':[['What were the Nuremberg Laws (1935)?','Laws removing Jews\' citizenship and banning marriage between Jews and non-Jews.'],['When was Kristallnacht?','November 1938']],
+'Source & interpretation questions':[['How do you judge a source\'s usefulness?','Content, provenance (nature, origin, purpose) and your own knowledge.']]}
+};
+// Topics with the same name in more than one place (English Literature) share cards by text, so add the set-text-specific ones:
+CARDS.englit['Plot & structure (ACC)']=[['How many staves are in A Christmas Carol?','Five.'],['Who visits Scrooge first?','Marley\'s ghost.']];
+CARDS.englit['Plot & structure (AIC)']=[['Who interrupts the Birlings\' celebration?','Inspector Goole.'],['Whose death is investigated?','Eva Smith\'s.']];
+
+// ================= PAPERS, LEVELS (tiers / triple) =================
+// Which paper each section (or topic) is on.
+const PAPERS={
+ cs:{order:['Paper 1: Principles of Computer Science (written, 1h 30)','Paper 2: Application of Computational Thinking (onscreen Python, 2h)'],
+   sec:s=>s.startsWith('Topic 6')?1:0, note:'Topic 1 (computational thinking) is tested on both papers.'},
+ maths:{order:['All three papers (Paper 1 non-calculator, Papers 2 & 3 calculator)'],sec:()=>0},
+ sci:{order:['Biology Paper 1','Biology Paper 2','Chemistry Paper 1','Chemistry Paper 2','Physics Paper 1','Physics Paper 2'],
+   sec:(s,t)=>{
+     const bio1=['Cell biology','Organisation','Infection & response','Bioenergetics'], chem1=['Atomic structure','Bonding','Quantitative','Chemical changes'], phys1=['Energy','Electricity','Particles'];
+     const name=s.replace(/^.*?:\s*/,'');
+     const p1Topics=['Energy changes','Monoclonal antibodies & plant disease','Transition metals & nanoparticles','Titrations & gas volumes','Static & pressure'];
+     if(s.startsWith('Biology')||s==='Triple only: Biology') return (bio1.some(x=>name.startsWith(x))||p1Topics.includes(t))?0:1;
+     if(s.startsWith('Chemistry')||s==='Triple only: Chemistry') return (chem1.some(x=>name.startsWith(x))||p1Topics.includes(t))?2:3;
+     return (phys1.some(x=>name.startsWith(x))||p1Topics.includes(t))?4:5; }},
+ englang:{order:['Paper 1: Explorations in creative reading & writing','Paper 2: Writers\' viewpoints & perspectives','Both papers'],sec:s=>s.startsWith('Paper 1')?0:s.startsWith('Paper 2')?1:2},
+ englit:{order:['Paper 1: Shakespeare & the 19th-century novel','Paper 2: Modern texts & poetry','Notes'],sec:s=>/Macbeth|Christmas/.test(s)?0:/Inspector|Poetry/.test(s)?1:2},
+ rs:{order:['Component 1','Component 2','Component 3'],sec:s=>s.startsWith('Component 1')?0:s.startsWith('Component 2')?1:2},
+ bus:{order:['Paper 1: Business activity, operations & HR','Paper 2: Marketing & finance'],sec:s=>/Marketing|Finance/.test(s)?1:0,note:'Business in the real world and Influences on business are tested on both papers.'},
+ geo:{order:['Paper 1','Paper 2','Paper 3'],sec:s=>s.startsWith('Paper 1')?0:s.startsWith('Paper 2')?1:2},
+ hist:{order:['Paper 1','Paper 2','Paper 3','Exam skills'],sec:s=>s.startsWith('Paper 1')?0:s.startsWith('Paper 2')?1:s.startsWith('Paper 3')?2:3}
+};
+// Higher-tier-only topics, and Higher-only key points (by index)
+const HTOPICS={maths:['Functions, iteration & proof','Sine & cosine rules','Circle theorems','Histograms','Cumulative frequency & box plots'],sci:['Momentum']};
+const HPOINTS={maths:{'Rounding & bounds':[2],'Fractions, decimals & percentages':[1],'Indices & surds':[1,2],'Quadratic equations':[1],'Simultaneous equations':[1],'Sequences':[1],'Straight-line graphs':[1],'Similarity & congruence':[1],'Vectors':[1],'Venn diagrams & sets':[1],'Direct & inverse proportion':[1]},
+  sci:{'Moles & masses':[0,1],'Reversible reactions':[1],'Magnetism & electromagnetism':[1],'Electrolysis':[1]}};
+const HASLEVEL={maths:{tier:true},sci:{tier:true,route:true}};
+function getLevel(id){ let v={}; try{ v=JSON.parse(localStorage.getItem('cs_lvl_'+id)||'{}'); }catch(e){} return {tier:v.tier||'H',route:v.route||'C'}; }
+function setLevel(id,v){ try{ localStorage.setItem('cs_lvl_'+id,JSON.stringify(v)); }catch(e){} if(window.Acct&&Acct.user&&Acct.savePrefs){ /* kept on this device */ } }
+const isTriple=s=>s.startsWith('Triple only');
+function topicVisible(subj,secName,tname){
+  const L=getLevel(subj.id), H=HASLEVEL[subj.id]||{};
+  if(H.route&&L.route==='C'&&isTriple(secName)) return false;
+  if(H.tier&&L.tier==='F'&&(HTOPICS[subj.id]||[]).includes(tname)) return false;
+  return true;
+}
+function pointVisible(subj,tname,i){ const H=HASLEVEL[subj.id]||{}; if(!H.tier) return true; return getLevel(subj.id).tier==='H'||!((HPOINTS[subj.id]||{})[tname]||[]).includes(i); }
+const isHPoint=(subj,tname,i)=>((HPOINTS[subj.id]||{})[tname]||[]).includes(i);
+const cardsFor=(subj,tname)=>(CARDS[subj.id]||{})[tname]||[];
+
+function renderLevelBar(){
+  const bar=$('sublevel'); bar.innerHTML=''; const H=HASLEVEL[SUB.id];
+  bar.classList.toggle('hidden',!H); if(!H) return;
+  const L=getLevel(SUB.id);
+  const mk=(opts,key)=>{ const g=document.createElement('div'); g.className='htabs'; g.style.margin='0';
+    for(const [v,l] of opts){ const b=document.createElement('button'); b.textContent=l; b.classList.toggle('on',L[key]===v);
+      b.onclick=()=>{ L[key]=v; setLevel(SUB.id,L); renderLevelBar(); setSubView(subView); }; g.appendChild(b); } bar.appendChild(g); };
+  if(H.route) mk([['C','Combined'],['T','Triple']],'route');
+  if(H.tier) mk([['F','Foundation'],['H','Higher']],'tier');
+}
+// override: subject screen
+function openSubject(s){ SUB=s; showScreen('subject'); $('subname').textContent=s.icon+' '+s.name; renderLevelBar(); setSubView('topics'); }
+function renderTopics(){
+  const box=$('subbody'); box.innerHTML='';
+  const P=PAPERS[SUB.id];
+  const inp=document.createElement('input'); inp.placeholder='Search topics…'; inp.style.cssText='width:100%;margin-bottom:12px';
+  const list=document.createElement('div'); box.append(inp,list);
+  const draw=()=>{
+    const q=inp.value.trim().toLowerCase(); list.innerHTML='';
+    const groups=P.order.map(()=>[]);
+    SUB.sections.forEach((sec,si)=>sec.t.forEach((t,ti)=>{
+      if(!topicVisible(SUB,sec.s,t[0])) return;
+      if(q&&!(t[0]+' '+t[1].join(' ')+' '+sec.s).toLowerCase().includes(q)) return;
+      groups[P.sec(sec.s,t[0])].push({sec,si,t,ti});
+    }));
+    if(P.note&&!q){ const n=document.createElement('div'); n.className='muted'; n.style.marginBottom='8px'; n.textContent='ℹ️ '+P.note; list.appendChild(n); }
+    groups.forEach((items,gi)=>{
+      if(!items.length) return;
+      const h=document.createElement('h3'); h.textContent=P.order[gi]; h.style.margin='16px 2px 6px'; list.appendChild(h);
+      const bySec=new Map(); for(const it of items){ if(!bySec.has(it.sec.s)) bySec.set(it.sec.s,[]); bySec.get(it.sec.s).push(it); }
+      for(const [sname,its] of bySec){
+        const d=document.createElement('details'); d.className='card topic'; d.open=!!q;
+        const done=its.filter(({si,ti})=>(TD[tkey(SUB,si,ti)]||{}).rag==='g').length;
+        const sm=document.createElement('summary'); sm.textContent=`${sname.replace(/^(Paper \d|Component \d)[^:]*:\s*/,'')}  ·  ${done}/${its.length} 🟢`; d.appendChild(sm);
+        for(const {si,t,ti} of its){
+          const k=tkey(SUB,si,ti), td=TD[k]||{};
+          const row=document.createElement('button'); row.className='fitem'; row.style.cssText='width:100%;margin-top:8px;text-align:left';
+          const n=document.createElement('span'); n.className='nm'; n.textContent=(td.rag?RAGDOT[td.rag]+' ':'⚪ ')+t[0]+((HTOPICS[SUB.id]||[]).includes(t[0])?' (H)':'');
+          const st=document.createElement('span'); st.className='st'; const pc=cardsFor(SUB,t[0]).length+((td.cards||[]).length);
+          st.textContent=[(td.notes||'').trim()?'📝':'',pc?`🗂️ ${pc}`:''].join(' ');
+          row.append(n,st); row.onclick=()=>openTopic(si,ti); d.appendChild(row);
+        }
+        list.appendChild(d);
+      }
+    });
+    if(!list.querySelector('details')) list.innerHTML='<div class="muted">Nothing found.</div>';
+  };
+  inp.oninput=draw; draw();
+}
+// override: topic page (hide Higher points for Foundation, show ready-made cards)
+const _openTopic=openTopic;
+openTopic=function(si,ti){
+  _openTopic(si,ti);
+  const t=SUB.sections[si].t[ti], lis=[...$('tpkeys').children];
+  lis.forEach((li,i)=>{ if(!pointVisible(SUB,t[0],i)) li.remove(); else if(isHPoint(SUB,t[0],i)&&HASLEVEL[SUB.id]){ const b=document.createElement('span'); b.className='flag'; b.style.cssText='margin-left:6px;padding:1px 6px;font-size:.7rem'; b.textContent='H'; li.appendChild(b); } });
+  const pre=cardsFor(SUB,t[0]), box=$('tppre'); box.innerHTML='';
+  $('tpprecard').classList.toggle('hidden',!pre.length);
+  $('tpprecount').textContent=`${pre.length} card${pre.length===1?'':'s'}`;
+  for(const [q,a] of pre){ const d=document.createElement('details'); d.style.cssText='border-top:1px solid var(--edge);padding:8px 0';
+    const s=document.createElement('summary'); s.style.cursor='pointer'; s.textContent=q; const p=document.createElement('div'); p.style.cssText='color:#cfe9b5;margin-top:4px'; p.textContent=a; d.append(s,p); box.appendChild(d); }
+};
+async function studyTopic(includePre,includeOwn){
+  const d=tdOf(TP.k), own=d.cards.filter(c=>(c.f||'').trim()), pre=cardsFor(SUB,TP.t[0]).map(([f,b])=>({f,b}));
+  const cards=[...(includePre?pre:[]),...(includeOwn?own:[])];
+  if(!cards.length){ $('tpsaved').textContent='No cards to study yet!'; return; }
+  await saveTD(TP.k).catch(()=>{});
+  const deck={id:'t_'+TP.k,name:`${SUB.name}: ${TP.t[0]}`,cards};
+  await Store.save('decks',deck.id,{name:deck.name,cards}).catch(()=>{});
+  showScreen('cards'); C.cur=deck; startStudy();
+}
+$('tpstudy').onclick=()=>studyTopic(true,true);
+$('tpprestudy').onclick=()=>studyTopic(true,false);
 </script>
 
 <script type="module">
