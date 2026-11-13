@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Maths GCSE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <meta name="description" content="Maths GCSE revision">
 <meta property="og:title" content="Maths GCSE">
 <meta property="og:description" content="Maths GCSE revision">
@@ -354,7 +356,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 .wiki-read{white-space:pre-wrap;line-height:1.6;max-height:60vh;overflow:auto;margin-top:8px}
 
 .pill{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid var(--edge);font-weight:700;font-size:.9rem}
-.js-profile{background:none!important;border:0!important;padding:4px 6px!important}
+.chip .js-profile{background:none!important;border:0!important;padding:4px 6px!important}
 .avbtn{font-size:1.5rem;padding:4px 8px!important}.avbtn.on{outline:2px solid var(--accent)}
 .accbtn{width:34px;height:34px;border-radius:50%;padding:0!important;border:3px solid transparent!important}.accbtn.on{border-color:#fff!important}
 body.calm *{animation:none!important;transition:none!important}
@@ -3909,6 +3911,147 @@ $('wreview').onclick=async()=>{
 // mark revision activity
 const _startStudy=startStudy; startStudy=function(){ markStudied(); return _startStudy.apply(this,arguments); };
 const _openTopic3=openTopic; openTopic=function(){ markStudied(); return _openTopic3.apply(this,arguments); };
+</script>
+<style>
+/* ================= THEME v2: exercise book + highlighter (overrides the earlier look) ================= */
+:root{--ink:#101b30;--page:#17243c;--line:#2b3b58;--paper:#eef1f6;--muted:#9aa7be;--accent:#f2df4f;--margin:#e2574c;--panel:var(--page);--panel2:#13203a;--text:var(--paper);--bg:var(--ink);--edge:var(--line);--glass:var(--page)}
+html{background:var(--ink)}
+body{background:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:26px 26px;background-attachment:fixed}
+body::before,body::after{display:none!important;content:none!important}
+button,select,input,textarea{font-family:inherit}
+/* flat surfaces */
+.card,.tile,.wcard,.nlist,.ned,.deck,#side,.dmwrap,#resume{background:var(--page)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border:1px solid var(--line)!important;box-shadow:none!important;border-radius:8px!important}
+.wcard{border-top:4px solid var(--accent)!important}
+#resume{background:#1d2e1f!important}
+/* no decorative motion; only motion that answers an action stays */
+.screen:not(.hidden),#game:not(.hidden),.tiles>*,.bub{animation:none!important}
+.tile{transition:border-color .15s!important}
+.tile:hover{transform:none!important;box-shadow:none!important;border-color:var(--accent)!important}
+/* type */
+.logo{background:none!important;-webkit-background-clip:initial!important;background-clip:initial!important;color:var(--paper)!important;font-weight:700;letter-spacing:-.01em}
+.wcard .logo{filter:none!important}
+h1,h2,h3{letter-spacing:-.01em}
+#hub .hello{background:none!important;-webkit-background-clip:initial!important;background-clip:initial!important;color:var(--paper)!important;font-weight:700;display:inline}
+#hub .hello{background-image:linear-gradient(transparent 80%,rgba(242,223,79,.9) 80%,rgba(242,223,79,.9) 97%,transparent 97%)!important;padding:0 .1em .02em}
+/* page titles sit against a red exercise-book margin line */
+.apphead{border-left:3px solid var(--margin);padding-left:12px}
+.apphead .back{order:-1}
+/* buttons */
+button{border-radius:6px!important}
+button.primary,.tile .go{background:var(--accent)!important;border-color:var(--accent)!important;color:#141c2c!important;box-shadow:none!important;font-weight:700}
+button.primary:hover{filter:brightness(1.05);box-shadow:none!important}
+button:not(.primary){background:transparent!important;border:1px solid var(--line)!important;color:var(--paper)}
+button:not(.primary):hover{background:rgba(255,255,255,.05)!important}
+.htabs{background:transparent!important;border:1px solid var(--line)!important;border-radius:8px!important}
+.htabs button{border:0!important}
+.htabs button.on{background:var(--accent)!important;color:#141c2c!important}
+input,select,textarea{background:#0d1628!important;border:1px solid var(--line)!important;border-radius:6px!important;color:var(--paper)!important}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)!important;box-shadow:0 0 0 2px rgba(242,223,79,.25)!important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* tiles: icon left, plain */
+.tile .ic{background:transparent!important;box-shadow:none!important;width:auto!important;height:auto!important;margin-bottom:2px;color:var(--accent)}
+.tile .ic svg{width:30px;height:30px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tile .ic img{width:34px!important;height:34px!important}
+.tile .ic.abbr{background:var(--sc)!important;font-size:1rem!important;font-weight:700;color:#141c2c;width:38px!important;height:38px!important;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.tile b{font-size:1.05rem}
+.tile .go{padding:5px 12px;font-size:.85rem}
+.pill{background:transparent;border:1px solid var(--line)}
+.bub.me{background:#2d4a66!important}.bub.them{background:#22314d!important}
+.bub{box-shadow:none!important}
+.stat div{background:transparent;border:1px solid var(--line)}
+#status{background:#0d1628}
+.revwarn{background:#3a1717;border:1px solid var(--margin);color:#ffd9d6;border-radius:6px;font-weight:700}
+.flag{background:rgba(242,223,79,.15);color:var(--accent)}
+.sq.light{background:#e9ecef}.sq.dark{background:#7e93ad}
+.sq.last.light{background:#f4e98c}.sq.last.dark{background:#c3b85a}
+/* ---------- mobile version ---------- */
+#mnav{display:none}
+@media (max-width:700px){
+  body{padding:10px 10px 84px}
+  #mnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:#0d1628;border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  #mnav button{flex:1;border:0!important;background:transparent!important;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.7rem;color:var(--muted);padding:6px 2px!important}
+  #mnav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  #mnav button.on{color:var(--accent)}
+  #mnav .mbadge{position:absolute;margin-left:18px;margin-top:-2px;background:var(--margin);color:#fff;border-radius:9px;font-size:.62rem;padding:0 5px;font-weight:700}
+  body.nonav #mnav{display:none}
+  body.nonav{padding-bottom:10px}
+  #hub>.htabs{display:none}
+  .topbar .js-logout,.topbar .js-signin{display:none!important}
+  #hub .hello{font-size:1.6rem}
+  .tiles{grid-template-columns:1fr!important;gap:8px!important}
+  .tile{flex-direction:row!important;align-items:center!important;min-height:0!important;padding:12px 14px!important;gap:12px!important;flex-wrap:wrap}
+  .tile .ic{margin:0}
+  .tile b{flex:1;font-size:1rem}
+  .tile>span{flex-basis:100%;margin-left:44px;margin-top:-8px;font-size:.82rem}
+  .tile .go{display:none}
+  .tile .pbarx{margin-left:44px;width:calc(100% - 44px)!important}
+  .apphead h2{font-size:1.2rem}
+  .grid{grid-template-columns:1fr}
+  .card{padding:14px}
+}
+</style>
+<nav id="mnav" aria-label="Main">
+  <button data-go="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home</button>
+  <button data-go="subjects"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/></svg>Subjects</button>
+  <button data-go="gg"><svg viewBox="0 0 24 24"><path d="M6 12h4M8 10v4"/><circle cx="15.5" cy="11" r="1"/><circle cx="17.5" cy="13.5" r="1"/><rect x="2" y="7" width="20" height="11" rx="4"/></svg>GGCSE</button>
+  <button data-go="msgs"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>Messages<span class="mbadge hidden" id="mnbadge"></span></button>
+  <button data-go="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Me</button>
+</nav>
+<script>
+// ---------- line icons instead of emoji ----------
+const ICONS={
+ opennotes:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>',
+ opencards:'<rect x="3" y="7" width="14" height="12" rx="2"/><path d="M7 7V5h14v12h-2"/>',
+ openfriends:'<circle cx="9" cy="8" r="3.5"/><path d="M2 20c1-3.5 3.8-5.5 7-5.5s6 2 7 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .7 3.4 2.6 4 5.5"/>',
+ openmsgs:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+ openchat:'<path d="M4 5h16v11H9l-5 4z"/>',
+ opensearch:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/>',
+ openfb:'<rect x="7" y="7" width="10" height="13" rx="5"/><path d="M12 7V4M4 11h3M17 11h3M4 17h3M17 17h3M9 4l1.5 2M15 4l-1.5 2"/>',
+ openadmin:'<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/>',
+ profile:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 14.9H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 4.1V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+ soon:'<path d="M12 5v14M5 12h14"/>'
+};
+const svg=p=>`<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
+function iconize(){
+  for(const [id,p] of Object.entries(ICONS)){ const t=document.getElementById(id); const ic=t&&t.querySelector('.ic'); if(ic) ic.innerHTML=svg(p); }
+  const pt=document.querySelector('.tile.js-profile .ic'); if(pt) pt.innerHTML=svg(ICONS.profile);
+  for(const s of document.querySelectorAll('.tile.soon .ic')) s.innerHTML=svg(ICONS.soon);
+  // strip leading emoji from fixed headings so the type does the work
+  const EMO=/^(\p{Extended_Pictographic}|️|‍|\s)+/u;
+  for(const h of document.querySelectorAll('.apphead h2, .card > h3, #side h3, .tile b')){
+    const n=h.firstChild; if(n&&n.nodeType===3&&EMO.test(n.textContent)) n.textContent=n.textContent.replace(EMO,'');
+  }
+}
+iconize();
+// subject tiles: coloured two-letter label instead of emoji
+const _rst=renderSubjTiles;
+renderSubjTiles=async function(){ await _rst(); const ab={cs:'Cs',maths:'Ma',sci:'Sc',englang:'En',englit:'Li',rs:'Rs',bus:'Bu',geo:'Ge',hist:'Hi'};
+  [...document.querySelectorAll('#subjtiles .tile')].forEach((t,i)=>{ const s=SPEC[i], ic=t.querySelector('.ic'); if(s&&ic){ ic.classList.add('abbr'); ic.textContent=ab[s.id]||s.name.slice(0,2); ic.style.setProperty('--sc',s.color); ic.style.color='#fff'; } }); };
+
+// ---------- mobile bottom navigation ----------
+function mnavGo(k){
+  if(!(window.Acct&&Acct.user)&&k!=='home') return;
+  if(k==='home'||k==='subjects'||k==='gg'){ showScreen('hub'); setHubTab(k); }
+  else if(k==='msgs') openMsgs();
+  else if(k==='me') openProfile();
+}
+for(const b of document.querySelectorAll('#mnav button')) b.onclick=()=>mnavGo(b.dataset.go);
+function syncNav(id){
+  const tab=(()=>{ try{ return localStorage.getItem('cs_tab')||'home'; }catch(e){ return 'home'; } })();
+  const map={hub:tab,subject:'subjects',topic:'subjects',home:'gg',game:'gg',msgs:'msgs',dm:'msgs',profile:'me'};
+  const cur=map[id]||'';
+  for(const b of document.querySelectorAll('#mnav button')) b.classList.toggle('on',b.dataset.go===cur);
+  document.body.classList.toggle('nonav',['splash','welcome','game','together'].includes(id));
+}
+const _show=showScreen;
+showScreen=function(id){ _show(id); syncNav(id); };
+const _sht=setHubTab; setHubTab=function(t){ _sht(t); syncNav('hub'); };
+// unread messages badge on the bottom bar
+setInterval(()=>{ const u=(window.D&&D.inbox||[]).filter(x=>x.unread&&!x.mine).length, b=document.getElementById('mnbadge'); if(b){ b.textContent=u; b.classList.toggle('hidden',!u); } },1500);
+// default accent for the new theme (only if the user hasn't picked one)
+if(!localStorage.getItem('cs_settings')||!JSON.parse(localStorage.getItem('cs_settings')).accent){ SETTINGS.accent='#f2df4f'; applySettings(); }
+ACCENTS.splice(0,ACCENTS.length,'#f2df4f','#8fd16a','#7cc4ff','#ff9fc8','#ffb357','#c7a6ff');
 </script>
 
 <script type="module">
