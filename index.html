@@ -347,6 +347,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
 .gsc-tabHeader.gsc-tabhActive{color:#8fc75a!important;border-bottom:2px solid #8fc75a!important}
 .gcsc-find-more-on-google,.gcsc-find-more-on-google *{color:#a8d4ff!important;fill:#a8d4ff!important}
 .gsc-selected-option-container{background:#2a2a30!important;color:#e8e6e1!important;border-color:rgba(255,255,255,.15)!important}
+#sres .gsc-tabsArea .gsc-tabHeader,#sres div.gsc-tabHeader.gsc-tabhActive,#sres div.gsc-tabHeader.gsc-tabhInactive,#sres .gsc-tabHeader{background:transparent!important;background-color:transparent!important;color:#cfcdc7!important;border:0!important;padding:6px 12px!important}
+#sres div.gsc-tabHeader.gsc-tabhActive{color:#8fc75a!important;border-bottom:2px solid #8fc75a!important}
+#wres .wr{display:block;padding:10px 0;border-bottom:1px solid var(--edge);text-decoration:none;color:inherit}
+#wres .wr b{color:#a8d4ff}#wres .wr span{display:block;color:#cfcdc7;font-size:.9rem;margin-top:2px}
+.wiki-read{white-space:pre-wrap;line-height:1.6;max-height:60vh;overflow:auto;margin-top:8px}
 </style>
 </head>
 <body>
@@ -558,6 +563,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,182,7
     <div class="apphead"><button class="back js-tohub">← Home</button><h2>🔎 Search</h2></div>
     <form class="card row" id="sform" style="margin-top:0"><input id="sq" placeholder="Search the web…" style="flex:1;min-width:0;font-size:1.05rem;padding:12px 14px" autocomplete="off"><button class="primary" style="padding:12px 18px">Search</button></form>
     <div class="muted" style="font-size:.82rem;margin:0 0 10px">Searches here don't go into your browser history. Pages you open from the results will.</div>
+    <div class="card hidden" id="wres"></div>
     <div class="card" id="sres"><div class="muted">Results will show here.</div></div>
   </div>
 
@@ -2151,15 +2157,49 @@ function loadCSE(){
 }
 function openSearch(){
   showScreen('search');
-  if(!SEARCH_CX){ $('sres').innerHTML='<div class="muted">Search isn\'t switched on yet. The site owner needs to add a Google search ID.</div>'; }
+  if(!SEARCH_CX){ $('sres').classList.add('hidden'); }
   setTimeout(()=>$('sq').focus(),50);
+}
+// Wikipedia search inside the app (no setup needed, nothing added to browser history)
+async function wikiSearch(q){
+  const box=$('wres'); box.classList.remove('hidden'); box.innerHTML='<h3 style="margin-top:0">📚 Wikipedia</h3><div class="muted">Searching…</div>';
+  try{
+    const r=await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&format=json&origin=*&srlimit=6&srsearch='+encodeURIComponent(q));
+    const d=await r.json(); const hits=(d.query&&d.query.search)||[];
+    box.innerHTML='<h3 style="margin-top:0">📚 Wikipedia</h3>';
+    if(!hits.length){ box.innerHTML+='<div class="muted">No Wikipedia results.</div>'; return; }
+    for(const hit of hits){
+      const a=document.createElement('a'); a.className='wr'; a.href='#';
+      const b=document.createElement('b'); b.textContent=hit.title;
+      const sp=document.createElement('span'); sp.textContent=(hit.snippet||'').replace(/<[^>]+>/g,'').replace(/&quot;/g,'"').replace(/&amp;/g,'&').replace(/&#039;/g,"'");
+      a.append(b,sp); a.onclick=ev=>{ ev.preventDefault(); wikiRead(hit.title); }; box.appendChild(a);
+    }
+  }catch(err){ box.innerHTML='<h3 style="margin-top:0">📚 Wikipedia</h3><div class="muted">Couldn\'t reach Wikipedia.</div>'; }
+}
+// read the article's intro inside the app
+async function wikiRead(title){
+  const box=$('wres'); box.innerHTML='<div class="muted">Loading…</div>';
+  try{
+    const r=await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=plain&exchars=6000&format=json&origin=*&redirects=1&titles='+encodeURIComponent(title));
+    const d=await r.json(); const pg=Object.values((d.query&&d.query.pages)||{})[0]||{};
+    box.innerHTML='';
+    const back=fbtn('← Back to results','',()=>wikiSearch($('sq').value.trim()));
+    const h=document.createElement('h3'); h.textContent=pg.title||title; h.style.margin='10px 0 0';
+    const body=document.createElement('div'); body.className='wiki-read'; body.textContent=pg.extract||'No text available.';
+    const src=document.createElement('div'); src.className='muted'; src.style.cssText='font-size:.8rem;margin-top:8px'; src.textContent='From Wikipedia (CC BY-SA). ';
+    const ln=document.createElement('a'); ln.href='https://en.wikipedia.org/wiki/'+encodeURIComponent((pg.title||title).replace(/ /g,'_')); ln.target='_blank'; ln.rel='noopener noreferrer'; ln.textContent='Open full article'; ln.style.color='#a8d4ff'; src.appendChild(ln);
+    box.append(back,h,body,src);
+  }catch(err){ box.innerHTML='<div class="muted">Couldn\'t load the article.</div>'; }
 }
 $('sform').onsubmit=async e=>{
   e.preventDefault();
-  const q=$('sq').value.trim(); if(!q||!SEARCH_CX) return;
-  if(SAFETY.badWord(q)){ $('sres').innerHTML='<div class="muted">That search isn\'t allowed.</div>'; return; }
-  try{ await loadCSE(); google.search.cse.element.getElement('csq').execute(q); }
-  catch(err){ $('sres').innerHTML='<div class="muted">Couldn\'t load search. Check your connection.</div>'; }
+  const q=$('sq').value.trim(); if(!q) return;
+  if(SAFETY.badWord(q)){ $('sres').innerHTML='<div class="muted">That search isn\'t allowed.</div>'; $('wres').classList.add('hidden'); return; }
+  wikiSearch(q);
+  if(!SEARCH_CX) return;
+  try{ await loadCSE(); google.search.cse.element.getElement('csq').execute(q);
+    setTimeout(()=>{ const nr=$('sres').querySelector('.gs-no-results-result'); if(nr&&!$('sres').querySelector('.gnote')){ const n=document.createElement('div'); n.className='muted gnote'; n.style.marginTop='8px'; n.textContent='Google only searches the revision sites added to this search engine. If nothing shows, the site owner needs to add sites in Programmable Search → Sites to search.'; $('sres').appendChild(n); } },2500);
+  }catch(err){ $('sres').innerHTML='<div class="muted">Couldn\'t load Google search. Check your connection.</div>'; }
 };
 $('opensearch').onclick=openSearch;
 
