@@ -4026,6 +4026,24 @@ fixSz(); addEventListener('resize',fixSz); if(window.visualViewport) visualViewp
 if(!localStorage.getItem('cs_settings')||!JSON.parse(localStorage.getItem('cs_settings')).accent){ SETTINGS.accent='#f2df4f'; applySettings(); }
 ACCENTS.splice(0,ACCENTS.length,'#f2df4f','#8fd16a','#7cc4ff','#ff9fc8','#ffb357','#c7a6ff');
 </script>
+<style>
+body:not(.ggok) #hub .htabs [data-tab="gg"], body:not(.ggok) #ftabs [data-ft="gg"], body:not(.ggok) #mnav [data-go="gg"]{display:none!important}
+</style>
+<script>
+// GGCSE stays hidden until the account "GGCSE" is one of your friends
+function ggUnlocked(){ return !!(window.Acct&&Acct.user) && F.friends.some(f=>(f.name||'').toLowerCase()==='ggcse'); }
+function syncGG(){
+  const ok=ggUnlocked(); document.body.classList.toggle('ggok',ok);
+  if(!ok){
+    const tabOn=document.querySelector('#hub .htabs [data-tab="gg"].on'); if(tabOn) setHubTab('home');
+    if(typeof fTab!=='undefined'&&fTab==='gg') setFTab('friends');
+    if(!$('home').classList.contains('hidden')&&!(typeof G!=='undefined'&&G)) { showScreen('hub'); setHubTab('home'); }
+  }
+}
+const _setFr=App.setFriends; App.setFriends=list=>{ _setFr(list); syncGG(); };
+const _sgo=App.signedOut; if(_sgo) App.signedOut=function(){ const r=_sgo.apply(this,arguments); F.friends=[]; syncGG(); return r; };
+syncGG();
+</script>
 
 <script type="module">
 // ======== PASTE YOUR FIREBASE CONFIG HERE (see setup steps) ========
