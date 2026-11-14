@@ -4031,7 +4031,17 @@ body:not(.ggok) #hub .htabs [data-tab="gg"], body:not(.ggok) #ftabs [data-ft="gg
 </style>
 <script>
 // GGCSE stays hidden until the account "GGCSE" is one of your friends
-function ggUnlocked(){ return !!(window.Acct&&Acct.user) && F.friends.some(f=>(f.name||'').toLowerCase()==='ggcse'); }
+const ggKey=()=>'cs_gg_'+((window.Acct&&Acct.user&&Acct.user.uid)||'');
+function ggUnlocked(){ try{ return !!(window.Acct&&Acct.user) && localStorage.getItem(ggKey())==='1'; }catch(e){ return false; } }
+function ggSet(on){ try{ on?localStorage.setItem(ggKey(),'1'):localStorage.removeItem(ggKey()); }catch(e){} syncGG(); if(!$('friends').classList.contains('hidden')) renderFriends(); }
+// "GGCSE" is a built-in name: adding it unlocks straight away, no real account needed
+const _fadd=$('faddbtn').onclick;
+$('faddbtn').onclick=function(){ if($('fadd').value.trim().toLowerCase()==='ggcse'&&window.Acct&&Acct.user){ $('fadd').value=''; if(ggUnlocked()){ $('faddmsg').textContent='GGCSE is already your friend.'; return; } ggSet(true); $('faddmsg').textContent='GGCSE added. The GGCSE tab is unlocked.'; return; } return _fadd.apply(this,arguments); };
+const _rf=renderFriends;
+renderFriends=async function(){ await _rf(); if(!ggUnlocked()) return; const box=$('flist'); if(!F.friends.length) box.innerHTML='';
+  const it=document.createElement('div'); it.className='fitem'; const nm=document.createElement('span'); nm.className='nm'; nm.textContent='GGCSE';
+  const st=document.createElement('span'); st.className='st'; st.textContent='Unlocks the GGCSE tab';
+  const rm=fbtn('Remove','',()=>confirmBtn(rm,'Remove',()=>ggSet(false))); it.append(nm,st,rm); box.prepend(it); };
 function syncGG(){
   const ok=ggUnlocked(); document.body.classList.toggle('ggok',ok);
   if(!ok){
@@ -4041,7 +4051,8 @@ function syncGG(){
   }
 }
 const _setFr=App.setFriends; App.setFriends=list=>{ _setFr(list); syncGG(); };
-const _sgo=App.signedOut; if(_sgo) App.signedOut=function(){ const r=_sgo.apply(this,arguments); F.friends=[]; syncGG(); return r; };
+const _sgo=App.signedOut; if(_sgo) App.signedOut=function(){ const r=_sgo.apply(this,arguments); syncGG(); return r; };
+const _sgi=App.signedIn; if(_sgi) App.signedIn=function(){ const r=_sgi.apply(this,arguments); setTimeout(syncGG,0); return r; };
 syncGG();
 </script>
 
